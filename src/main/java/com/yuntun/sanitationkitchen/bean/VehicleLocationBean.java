@@ -1,6 +1,6 @@
 package com.yuntun.sanitationkitchen.bean;
 
-import com.venton.ss.common.core.NetAreaPoint;
+
 import lombok.Data;
 
 @Data
@@ -9,5 +9,5 @@ public class VehicleLocationBean {
     private String carNo;
 
     //车辆位置
-    private NetAreaPoint location;
+//    private NetAreaPoint location;
 }
