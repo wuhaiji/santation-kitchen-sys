@@ -6,13 +6,13 @@ package com.yuntun.sanitationkitchen.interceptor;
  * @author whj
  */
 public class UserIdHolder {
-    private static final ThreadLocal<Integer> userTl = new ThreadLocal<>();
+    private static final ThreadLocal<Long> userTl = new ThreadLocal<>();
 
-    public static void set(Integer userId) {
+    public static void set(Long userId) {
         userTl.set(userId);
     }
 
-    public static Integer get() {
+    public static Long get() {
         return userTl.get();
     }
 

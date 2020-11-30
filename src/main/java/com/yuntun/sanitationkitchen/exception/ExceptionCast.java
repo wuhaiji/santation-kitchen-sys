@@ -1,7 +1,7 @@
 package com.yuntun.sanitationkitchen.exception;
 
 
-import com.yuntun.sanitationkitchen.model.code.CommonCode;
+import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.ResultCode;
 import com.yuntun.sanitationkitchen.model.response.Result;
 

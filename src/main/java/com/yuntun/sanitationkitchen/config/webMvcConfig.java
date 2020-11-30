@@ -2,8 +2,9 @@ package com.yuntun.sanitationkitchen.config;
 
 
 import com.yuntun.sanitationkitchen.interceptor.ApiInterceptor;
-import com.yuntun.sanitationkitchen.interceptor.SysLoginInterceptor;
+import com.yuntun.sanitationkitchen.interceptor.LoginInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -27,7 +28,7 @@ public class webMvcConfig implements WebMvcConfigurer {
     ApiInterceptor apiInterceptor;
 
     @Autowired
-    SysLoginInterceptor sysLoginInterceptor;
+    LoginInterceptor loginInterceptor;
 
     // @Autowired
     // PermissionInterceptor permissionInterceptor;
@@ -36,25 +37,11 @@ public class webMvcConfig implements WebMvcConfigurer {
     // WechatLoginInterceptor wechatLoginInterceptor;
 
     public static final List<String> SYS_LOGIN_WHITE_LIST = new ArrayList<>();
-    public static final List<String> WECHAT_LOGIN_WHITE_LIST = new ArrayList<>();
 
     static {
-        // SYS_LOGIN_WHITE_LIST.add("/sys/sysuser/captcha/**");
-        // SYS_LOGIN_WHITE_LIST.add("/sys/sysuser/login");
-        // SYS_LOGIN_WHITE_LIST.add("/sys/sysuser/publickey");
-        // //不拦截小程序端的接口
-        // SYS_LOGIN_WHITE_LIST.add("/wechat/**");
-        // SYS_LOGIN_WHITE_LIST.add("/error/**");
-        // //不拦截open请求
-        // SYS_LOGIN_WHITE_LIST.add("/open/**");
-        //
-        //
-        // //不拦截后台管理系统的请求
-        // WECHAT_LOGIN_WHITE_LIST.add("/wechat/user/login");
-        // WECHAT_LOGIN_WHITE_LIST.add("/sys/**");
-        // SYS_LOGIN_WHITE_LIST.add("/error/**");
-        // //不拦截open请求
-        // WECHAT_LOGIN_WHITE_LIST.add("/open/**");
+        SYS_LOGIN_WHITE_LIST.add("/error/**");
+        //不拦截open请求
+        SYS_LOGIN_WHITE_LIST.add("/open/**");
     }
 
     @Override
@@ -64,7 +51,7 @@ public class webMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
         ;
 
-        registry.addInterceptor(sysLoginInterceptor)
+        registry.addInterceptor(loginInterceptor)
                 .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
                 .addPathPatterns("/**")
         ;
@@ -83,4 +70,6 @@ public class webMvcConfig implements WebMvcConfigurer {
                 .maxAge(3600)
                 .allowCredentials(true);
     }
+
+
 }

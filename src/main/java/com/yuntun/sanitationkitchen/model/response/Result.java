@@ -3,7 +3,7 @@ package com.yuntun.sanitationkitchen.model.response;
 
 
 
-import com.yuntun.sanitationkitchen.model.code.CommonCode;
+import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.ResultCode;
 
 import java.io.Serializable;

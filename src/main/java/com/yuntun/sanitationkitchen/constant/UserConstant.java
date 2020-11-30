@@ -9,17 +9,30 @@ package com.yuntun.sanitationkitchen.constant;
  * @since 2020/11/6
  */
 public interface UserConstant {
+
     /**
-     * 小程序用户创建分布式锁名
+     * 浏览器保存token key
      */
-    String INSERT_USER_DISTRIBUTED_LOCK_PREFIX = "wechat_login_redis_lock";
+    String TOKEN_HEADER_KEY = "token";
+
     /**
-     * 小程序token放在redis中的key
+     * 图片验证码放在session中的key
      */
-    String WECHAT_TOKEN_REDIS_KEY = "wechat_token";
+    String CAPTCHA_ID_REDIS_KEY = "sk:captcha_id:";
+
     /**
-     * 用户token放在redis超时时间 毫秒
+     * 密匙对redis中的key
      */
-    long USER_TOKEN_REDIS_EXPIRE = 3600_000;
+    String RSA_KEYPAIR_REDIS_KEY = "sk:login_keypair:";
+
+    /**
+     * 未禁用
+     */
+    Integer NOT_DISABLED = 0;
+
+    /**
+     * 未禁用
+     */
+    Integer IS_DISABLED = 1;
 
 }

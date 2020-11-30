@@ -1,6 +1,6 @@
 package com.yuntun.sanitationkitchen.exception;
 
-import com.yuntun.sanitationkitchen.model.code.CommonCode;
+import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.ResultCode;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import org.slf4j.Logger;
@@ -37,8 +37,6 @@ public class ExceptionCatch {
     @ExceptionHandler(ServiceException.class)
     @ResponseBody
     public Result<Object> ServiceException(ServiceException e) {
-        log.error("ServiceException:{}", e.getMsg());
-        e.printStackTrace();
         return Result.error(e.getCode(), e.getMsg());
     }
 

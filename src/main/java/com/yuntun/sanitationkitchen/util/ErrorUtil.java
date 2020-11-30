@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.util;
 
 
+import com.yuntun.sanitationkitchen.constant.CommonConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 
 import java.util.Collection;
@@ -31,7 +32,7 @@ public class ErrorUtil {
      * 参数检查， 目标不能为null
      *
      * @param collection 目标集合
-     * @param msg    异常信息
+     * @param msg        异常信息
      */
     public static void isListEmpty(Collection collection, String msg) {
         if (collection == null) {
@@ -166,5 +167,32 @@ public class ErrorUtil {
         if (integer < i) {
             throw new ServiceException("PARAM_ERROR", msg + "不能小于" + i);
         }
+    }
+
+    /**
+     * 参数检查，字符串长度不能小于等于目标值
+     *
+     * @param integer 目标值
+     * @param i       目标下限值
+     * @param k       目标上限值
+     * @param msg     异常信息
+     */
+    public static void isNumberOutOfRange(Integer integer, int i, int k, String msg) {
+        if (integer == null) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能为空");
+        }
+        if (integer < i || integer > k) {
+            throw new ServiceException("PARAM_ERROR", msg + "长度不能小于" + i + "或者大于" + k);
+        }
+    }
+
+    /**
+     * 检查参数快捷方法
+     * @param pageSize
+     * @param pageNo
+     */
+    public static void PageParamError(Integer pageSize,Integer pageNo){
+        ErrorUtil.isNumberOutOfRange(pageSize, 0, CommonConstant.PageSizeMax, "pageSize");
+        ErrorUtil.isNumberValueLe(pageNo, 0, "pageNo");
     }
 }

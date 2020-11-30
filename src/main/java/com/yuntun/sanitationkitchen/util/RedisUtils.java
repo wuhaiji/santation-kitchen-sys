@@ -1,5 +1,7 @@
 package com.yuntun.sanitationkitchen.util;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.HashOperations;
@@ -20,6 +22,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class RedisUtils {
     private static final Logger log = LoggerFactory.getLogger(RedisUtils.class);
+    // jackson转换工具
+    private static final ObjectMapper jackson = new ObjectMapper()
+            .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 
     private RedisUtils() {
     }
@@ -217,6 +222,27 @@ public class RedisUtils {
             throw new RuntimeException("redis获取string值异常");
         }
         return string;
+    }
+
+    /**
+     * 获取string值     *
+     *
+     * @param key 键
+     * @return 对象
+     */
+    public static <T> T getObject(final String key, Class<T> tClass) {
+        T t;
+        try {
+            String string = (String) redisTemplate.opsForValue().get(key);
+            if(string==null){
+                return null;
+            }
+            t = jackson.readValue(string, tClass);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("redis获取Object值异常");
+        }
+        return t;
     }
     // 存储Hash操作
 

@@ -24,11 +24,8 @@ public class RSAUtils {
     public static final String PRIVATE_KEY_STR = "privateKey";
     private static final int DEFAULT_RSA_KEY_SIZE = 1024;
     public static final String publickey =
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDiapTZA/qjrYhWtT8rwIelleBAnndDJ8fizkAqMpPFmYXKLZIcoEsvkO5mPkpKM7WFRsWQO5I6NxKgUaJcIRTKXZ5xjIemrM8E5IR2JJqa40fc500fcZ1WEPMQ3+87sl5dXYTd4bcQjy/7+XsBRFjc4DSS2in/l+w+TfZ2R1g05QIDAQAB"
 
-
-
-
+"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC9HfHFS+OfaFj9ZmofphSw3N9YhqA7QKkyB7IsMID70WZovAe9aZ/P2xUNobN/KWKawY8t3ft/15BJPGdocqyIcC1cO/osbWoVgPfnWSm62Mz63ep9lSosKhLOgjhdWW92WSlGvWTNZpeLcKbUelTOIPaE1ozjmt6mf1T/NG1fUQIDAQAB"
 
             ;
 
@@ -45,7 +42,7 @@ public class RSAUtils {
         // System.out.println("公钥：" + map.get(PUBLIC_KEY_STR));
         // System.out.println("私钥：" + map.get(PRIVATE_KEY_STR));
 
-        String encrypt = encrypt("456789",
+        String encrypt = encrypt("123456",
                 publickey
         );
         System.out.println("加密后的字符串：" + encrypt);

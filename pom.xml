@@ -126,10 +126,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>jakarta.xml.bind</groupId>-->
-<!--            <artifactId>jakarta.xml.bind-api</artifactId>-->
-<!--        </dependency>-->
 
     </dependencies>
 

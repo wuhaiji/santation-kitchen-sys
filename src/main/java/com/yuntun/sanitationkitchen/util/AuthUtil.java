@@ -1,9 +1,13 @@
 package com.yuntun.sanitationkitchen.util;
 
+import com.alibaba.fastjson.JSON;
+import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.slf4j.LoggerFactory;
 
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -16,16 +20,25 @@ import java.util.UUID;
  */
 
 public class AuthUtil {
+
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
     /**
-     * token过期一个小时
+     * token过期时间
      */
-    public static final int TOKEN_TIMEOUT = 1800;
+    public static final int TOKEN_TIMEOUT = 4500;
+    public static final int TOKEN_TIMEOUT_80_PERCENTAGE = 3600;
     /**
-     * 刷新token，1天
+     * 刷新token，3天
      */
-    public static final int REFRESH_TOKEN_TIME = 3600 * 24;
+    public static final int REFRESH_TOKEN_TIME = 3600 * 24 * 3;
+
+    /**
+     * redis存储token的键前缀
+     */
     public static final String SK_TOKEN = "sk:token:";
+    /**
+     * redis存储refresh_token的键前缀
+     */
     public static final String SK_REFRESH_TOKEN = "sk:refresh_token:";
 
 
@@ -33,40 +46,109 @@ public class AuthUtil {
      * 生成uuid token
      *
      * @param userId    用户id
-     * @param userAgent 用户浏览器信息
      * @return token
      */
-    public TokenBody generalToken(String userId, String userAgent) {
+    public static TokenInfo generalToken(Long userId) {
         if (EptUtil.isEmpty(userId)) {
             log.error("AuthUtil:generalToken->userId 非法:" + userId);
             return null;
         }
-        TokenBody tokenBody = new TokenBody();
-        tokenBody.setToken(UUID.randomUUID().toString().replace("-", ""));
-        tokenBody.setRefreshToken(UUID.randomUUID().toString().replace("-", ""));
+        TokenInfo tokenInfo = new TokenInfo();
+        tokenInfo.setToken(getUUID());
+        tokenInfo.setRefreshToken(getUUID());
+        tokenInfo.setCreatTime(System.currentTimeMillis());
+        tokenInfo.setUserId(userId);
+        //过期时间取80%防止token到达过期临界点
+        tokenInfo.setExpireTime(System.currentTimeMillis() + TOKEN_TIMEOUT_80_PERCENTAGE);
 
+        RedisUtils.setValueExpireSeconds(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
+        RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
 
-        RedisUtils.setValueExpireSeconds(SK_TOKEN + tokenBody.getToken(), tokenBody, TOKEN_TIMEOUT);
-        RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenBody.getRefreshToken(), tokenBody, REFRESH_TOKEN_TIME);
-
-        return tokenBody;
+        return tokenInfo;
     }
 
     /**
-     * 生成uuid token
+     * 通过refresh token获取t新的oken
+     *
+     * @param refreshToken refreshToken
      * @return token
      */
-    public TokenBody validateToken(String token) {
-        return null;
+    public static TokenInfo refreshToken(String refreshToken) {
+        if (EptUtil.isEmpty(refreshToken)) {
+            log.error("AuthUtil:generalToken->refreshToken 非法:" + refreshToken);
+            return null;
+        }
+        TokenInfo tokenInfo = RedisUtils.getObject(SK_REFRESH_TOKEN + refreshToken, TokenInfo.class);
+        if (tokenInfo == null) {
+            throw new ServiceException(UserCode.LOGIN_FAILED_TIME_OUT);
+        }
+        tokenInfo.setToken(getUUID());
+        tokenInfo.setCreatTime(System.currentTimeMillis());
+        //过期时间取80%防止token到达过期临界点
+        tokenInfo.setExpireTime(System.currentTimeMillis() + TOKEN_TIMEOUT_80_PERCENTAGE);
+        RedisUtils.setValueExpireSeconds(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
+        RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+        return tokenInfo;
     }
 
+    /**
+     * 验证token是否过期
+     *
+     * @return TokenBody token信息
+     */
+    public static TokenInfo validateToken(String token) {
+        return RedisUtils.getObject(SK_TOKEN + token, TokenInfo.class);
+    }
+
+    /**
+     * 注销登录
+     */
+    public static void removeToken(String token) {
+        TokenInfo tokenInfo = RedisUtils.getObject(SK_TOKEN + token, TokenInfo.class);
+        if (tokenInfo == null) {
+            throw new ServiceException(UserCode.LOGIN_FAILED_TIME_OUT);
+        }
+        RedisUtils.delKey(SK_TOKEN + tokenInfo.getToken());
+        RedisUtils.delKey(SK_REFRESH_TOKEN + tokenInfo.getToken());
+    }
+
+
+    private static String getUUID() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+    /**
+     * 生成随机字符串
+     *
+     * @param length 要生成的字符串长度
+     * @return
+     */
+    public static String getRandomString(int length) {
+        //1.  定义一个字符串（A-Z，a-z，0-9,1-9对应键盘符号）即62个数字字母；
+        String str = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()";
+        //2.  由Random生成随机数
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        //3.  长度为几就循环几次
+        for (int i = 0; i < length; ++i) {
+            //从62个的数字或字母中选择
+            int number = random.nextInt(str.length());
+            //将产生的数字通过length次承载到sb中
+            sb.append(str.charAt(number));
+        }
+        //将承载的字符转换成字符串
+        return sb.toString();
+    }
+    /**
+     * token信息类
+     */
     @Data
     @Accessors(chain = true)
-    public static class TokenBody {
+    public static class TokenInfo {
         String token;
         String refreshToken;
         Long creatTime;
         Long expireTime;
+        Long userId;
 
     }
 }

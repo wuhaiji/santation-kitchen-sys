@@ -15,10 +15,7 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface Limit {
 
-    boolean needLogin() default true;
+    String [] value() default {};
 
-    String [] hasPerm() default {};
-
-    String [] hasRole() default {};
 
 }
