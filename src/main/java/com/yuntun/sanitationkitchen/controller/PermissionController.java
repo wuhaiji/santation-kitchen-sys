@@ -5,15 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
-import com.yuntun.sanitationkitchen.model.entity.Permission;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.interceptor.UserIdHolder;
 import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.PermissionListPageDto;
 import com.yuntun.sanitationkitchen.model.dto.PermissionOptionsDto;
 import com.yuntun.sanitationkitchen.model.dto.PermissionSaveDto;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.PermissionListVo;
@@ -54,20 +52,14 @@ public class PermissionController {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
-        IPage<Permission> iPage;
-        try {
-            iPage = iPermissionService.page(
-                    new Page<Permission>()
-                            .setSize(dto.getPageSize())
-                            .setCurrent(dto.getPageNo()),
-                    new QueryWrapper<Permission>()
-                            .orderByDesc("create_time")
+        IPage<Permission> iPage = iPermissionService.page(
+                new Page<Permission>()
+                        .setSize(dto.getPageSize())
+                        .setCurrent(dto.getPageNo()),
+                new QueryWrapper<Permission>()
+                        .orderByDesc("create_time")
 
-            );
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+        );
 
         List<Permission> records = iPage.getRecords();
         List<PermissionListVo> collect = records.parallelStream().map(
@@ -97,7 +89,7 @@ public class PermissionController {
                             .eq("parent_id", dto.getParentId())
             );
         } catch (Exception e) {
-            throw new ServiceException(PermissionCode.LIST_PAGE_PERMISSION_BY_USERID_ERROR);
+            throw new ServiceException(PermissionCode.OPTIONS_ERROR);
         }
         List<Object> collect = permissionList.parallelStream().map(
                 i -> new PermissionOptionsVo()
@@ -109,20 +101,14 @@ public class PermissionController {
 
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/get/{uid}")
     @Limit("Permission:get")
-    public Result<Object> get(@PathVariable("id") Long id) {
-        ErrorUtil.isObjectNull(id, "参数");
-        try {
-            Permission Permission = iPermissionService.getById(id);
-            if (EptUtil.isNotEmpty(Permission))
-                return Result.ok(Permission);
-            return Result.error(PermissionCode.GET_ERROR);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(PermissionCode.GET_ERROR);
-        }
-
+    public Result<Object> get(@PathVariable("uid") Long uid) {
+        ErrorUtil.isObjectNull(uid, "参数");
+        Permission Permission = iPermissionService.getOne(new QueryWrapper<Permission>().eq("uid", uid));
+        if (EptUtil.isNotEmpty(Permission))
+            return Result.ok(Permission);
+        return Result.error(PermissionCode.GET_ERROR);
     }
 
     @PostMapping("/save")
@@ -133,20 +119,38 @@ public class PermissionController {
         ErrorUtil.isObjectNull(dto.getPermissionName(), "权限名称");
         ErrorUtil.isObjectNull(dto.getPermissionTag(), "权限标识");
 
+
+        checkRepeatedValue(dto);
+
         Permission permission = new Permission()
                 .setUid(SnowflakeUtil.getUnionId())
                 .setPermissionName(dto.getPermissionName())
                 .setPermissionTag(dto.getPermissionTag())
                 .setParentId(dto.getParentId())
                 .setCreator(UserIdHolder.get());
-        try {
-            boolean save = iPermissionService.save(permission);
-            if (save)
-                return Result.ok();
-            return Result.error(PermissionCode.SAVE_ERROR);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.ADD_SYSUSER_FAILURE);
+
+        boolean save = iPermissionService.save(permission);
+        if (save)
+            return Result.ok();
+        return Result.error(PermissionCode.SAVE_ERROR);
+
+    }
+
+    private void checkRepeatedValue(PermissionSaveDto dto) {
+        //检查数据库是否存在同名权限
+        List<Permission> permissionsOne = iPermissionService.list(
+                new QueryWrapper<Permission>().eq("permission_name", dto.getPermissionName())
+        );
+        if(permissionsOne.size()>0){
+            throw new ServiceException(PermissionCode.NAME_ALREADY_EXISTS_ERROR);
+        }
+
+        //检查数据库是否存在同标识权限
+        List<Permission> permissionsTag = iPermissionService.list(
+                new QueryWrapper<Permission>().eq("permission_tag", dto.getPermissionTag())
+        );
+        if(permissionsTag.size()>0){
+            throw new ServiceException(PermissionCode.TAG_ALREADY_EXISTS_ERROR);
         }
     }
 }

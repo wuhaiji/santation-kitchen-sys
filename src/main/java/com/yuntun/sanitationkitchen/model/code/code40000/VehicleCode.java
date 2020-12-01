@@ -18,8 +18,11 @@ public enum VehicleCode implements ResultCode {
     UPDATE_ERROR("40105", "修改异常"),
     DELETE_ERROR("40106", "删除异常"),
     ID_NOT_EXIST("40106", "id不存在"),
+    NUMBER_PLATE_ALREADY_EXISTS("40106", "车牌号已存在"),
+    RFID_PLATE_ALREADY_EXISTS("40106", "RFID号已存在"),
 
     ;
+
 
     VehicleCode(String resultCode, String resultMsg) {
         this.resultCode = resultCode;

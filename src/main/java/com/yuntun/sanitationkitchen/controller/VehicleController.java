@@ -7,10 +7,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.interceptor.UserIdHolder;
-import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
-import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
-import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
@@ -56,25 +52,20 @@ public class VehicleController {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
-        IPage<Vehicle> iPage;
-        try {
-            iPage = iVehicleService.page(
-                    new Page<Vehicle>()
-                            .setSize(dto.getPageSize())
-                            .setCurrent(dto.getPageNo()),
-                    new QueryWrapper<Vehicle>()
-                            .eq(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
-                            .eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-                            .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
-                            .eq(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", dto.getPurchaseDate())
-                            .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
-                            .orderByDesc("create_time")
+        IPage<Vehicle> iPage = iVehicleService.page(
+                new Page<Vehicle>()
+                        .setSize(dto.getPageSize())
+                        .setCurrent(dto.getPageNo()),
+                new QueryWrapper<Vehicle>()
+                        .eq(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
+                        .eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
+                        .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
+                        .eq(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", dto.getPurchaseDate())
+                        .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
+                        .orderByDesc("create_time")
 
-            );
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+        );
+
         List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, iPage.getRecords());
         RowData<VehicleListVo> data = new RowData<VehicleListVo>()
                 .setRows(vehicleListVos)
@@ -87,31 +78,19 @@ public class VehicleController {
     @Limit("vehicle:options")
     @GetMapping("/options")
     public Result<Object> options() {
-        List<Vehicle> list;
-        try {
-            list = iVehicleService.list();
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+        List<Vehicle> list = iVehicleService.list();
         List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, list);
         return Result.ok(vehicleListVos);
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/get/{uid}")
     @Limit("vehicle:get")
-    public Result<Object> get(@PathVariable("id") Long id) {
-        ErrorUtil.isObjectNull(id, "参数");
-        try {
-            Vehicle byId = iVehicleService.getById(id);
-            if (EptUtil.isNotEmpty(byId))
-                return Result.ok(byId);
-            return Result.error(VehicleCode.GET_ERROR);
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
-
+    public Result<Object> get(@PathVariable("uid") Long uid) {
+        ErrorUtil.isObjectNull(uid, "参数");
+        Vehicle byId = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
+        if (EptUtil.isNotEmpty(byId))
+            return Result.ok(byId);
+        return Result.error(VehicleCode.GET_ERROR);
     }
 
     @PostMapping("/save")
@@ -125,6 +104,9 @@ public class VehicleController {
         ErrorUtil.isObjectNull(dto.getRfid(), "RFID");
         ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构id");
 
+        checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
+
+
         Vehicle role = new Vehicle()
                 .setUid(SnowflakeUtil.getUnionId())
                 .setDriverName(dto.getDriverName())
@@ -135,16 +117,30 @@ public class VehicleController {
                 .setDriverPhone(dto.getDriverPhone())
                 .setCreator(UserIdHolder.get());
 
-        try {
-            boolean save = iVehicleService.save(role);
-            if (save)
-                return Result.ok();
-            return Result.error(VehicleCode.SAVE_ERROR);
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
+        boolean save = iVehicleService.save(role);
+        if (save)
+            return Result.ok();
+        return Result.error(VehicleCode.SAVE_ERROR);
+
+    }
+
+    private void checkRepeatedValue(String numberPlate, String rfid) {
+        //检查数据库中是否有同名用户
+        List<Vehicle> listNumberPlate = iVehicleService.list(
+                new QueryWrapper<Vehicle>().eq("username", numberPlate)
+        );
+        if (listNumberPlate.size() > 0) {
+            throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
         }
 
+
+        //检查数据库中是否有同名用户
+        List<Vehicle> listRfid = iVehicleService.list(
+                new QueryWrapper<Vehicle>().eq("username", rfid)
+        );
+        if (listRfid.size() > 0) {
+            throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
+        }
     }
 
     @PostMapping("/update")
@@ -153,46 +149,37 @@ public class VehicleController {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆uid不能为空");
 
+        checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
+
         Vehicle vehicle = new Vehicle().setUpdator(UserIdHolder.get());
+
         BeanUtils.copyProperties(dto, vehicle);
-        try {
-            boolean save = iVehicleService.update(vehicle,
-                    new QueryWrapper<Vehicle>().eq("uid", dto.getUid())
-            );
-            if (save)
-                return Result.ok();
-            return Result.error(VehicleCode.UPDATE_ERROR);
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+
+        boolean save = iVehicleService.update(vehicle,
+                new QueryWrapper<Vehicle>().eq("uid", dto.getUid())
+        );
+        if (save)
+            return Result.ok();
+        return Result.error(VehicleCode.UPDATE_ERROR);
+
 
     }
 
     @PostMapping("/delete/{id}")
     @Limit("vehicle:delete")
-    public Result<Object> delete(@PathVariable("id") Long id) {
-        ErrorUtil.isObjectNull(id, "id");
-        Vehicle uid = null;
-        try {
-            uid = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", id));
-        } catch (Exception e) {
-            log.error("Exception",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
-        if(uid==null){
+    public Result<Object> delete(@PathVariable("id") Long uid) {
+        ErrorUtil.isObjectNull(uid, "id");
+        Vehicle vehicle = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
+
+        if (vehicle == null) {
             log.error("删除车辆异常->uid不存在");
             throw new ServiceException(VehicleCode.ID_NOT_EXIST);
         }
-        try {
-            boolean b = iVehicleService.removeById(id);
-            if (b)
-                return Result.ok();
-            return Result.error(VehicleCode.DELETE_ERROR);
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+        boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().eq("uid", uid));
+        if (b)
+            return Result.ok();
+        return Result.error(VehicleCode.DELETE_ERROR);
+
     }
 
 }

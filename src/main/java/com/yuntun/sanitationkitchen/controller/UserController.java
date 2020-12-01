@@ -1,25 +1,26 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.constant.UserConstant;
-import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
+import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.interceptor.UserIdHolder;
+import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
+import com.yuntun.sanitationkitchen.model.dto.UserSaveDto;
+import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.Permission;
 import com.yuntun.sanitationkitchen.model.entity.User;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
-import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.service.IUserService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.ListUtil;
+import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -62,109 +63,96 @@ public class UserController {
         ErrorUtil.isNumberValueLt(pageSize, 0, "pageSize");
         ErrorUtil.isNumberValueLt(pageNo, 0, "pageNo");
 
-        IPage<User> iPage;
-        try {
-            iPage = iUserService.page(
-                    new Page<User>()
-                            .setSize(pageSize)
-                            .setCurrent(pageNo),
-                    new QueryWrapper<User>()
-                            .eq(EptUtil.isNotEmpty(User.getUsername()), "User_name", User.getUsername())
-                            .eq(EptUtil.isNotEmpty(User.getPhone()), "create_time", User.getPhone())
-                            .orderByDesc("id")
-            );
-        } catch (Exception e) {
-            log.error("Exception:",e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
+        IPage<User> iPage = iUserService.page(
+                new Page<User>()
+                        .setSize(pageSize)
+                        .setCurrent(pageNo),
+                new QueryWrapper<User>()
+                        .eq(EptUtil.isNotEmpty(User.getUsername()), "User_name", User.getUsername())
+                        .eq(EptUtil.isNotEmpty(User.getPhone()), "create_time", User.getPhone())
+                        .orderByDesc("id")
+        );
 
+        List<User> users = ListUtil.listMap(User.class, iPage.getRecords());
         RowData<User> data = new RowData<User>()
-                .setRows(iPage.getRecords())
+                .setRows(users)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/get/{uid}")
     @Limit("user:get")
-    public Result<Object> detail(@PathVariable("id") String id) {
-        ErrorUtil.isObjectNull(id, "参数");
-        try {
-            User User = iUserService.getById(id);
-            if (EptUtil.isNotEmpty(User))
-                return Result.ok(User);
-            return Result.error(UserCode.DETAIL_SYSUSER_FAILURE);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.DETAIL_SYSUSER_FAILURE);
-        }
+    public Result<Object> detail(@PathVariable("uid") String uid) {
+        ErrorUtil.isObjectNull(uid, "参数");
+        User User = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
+        if (EptUtil.isNotEmpty(User))
+            return Result.ok(User);
+        return Result.error(UserCode.DETAIL_SYSUSER_FAILURE);
 
     }
 
     @PostMapping("/save")
     @Limit("user:save")
-    public Result<Object> save(User User) {
+    public Result<Object> save(UserSaveDto dto) {
 
-        ErrorUtil.isStringEmpty(User.getPhone(), "电话");
-        ErrorUtil.isStringLengthOutOfRange(User.getUsername(), 2, 10, "用户名");
-        ErrorUtil.isStringLengthOutOfRange(User.getPassword(), 6, 16, "密码");
-        String password = User.getPassword();
-        User.setPassword(SecureUtil.md5(password));
+        ErrorUtil.isStringEmpty(dto.getPhone(), "电话");
+        ErrorUtil.isStringLengthOutOfRange(dto.getUsername(), 2, 10, "用户名");
+        ErrorUtil.isStringLengthOutOfRange(dto.getPassword(), 6, 16, "密码");
+        String password = dto.getPassword();
+        dto.setPassword(SecureUtil.md5(password));
 
-        long uid = IdUtil.getSnowflake(1, 1).nextId();
-        User.setUid(uid);
-        //校验用户名是否重复
-        List<User> UserList = iUserService.list(
-                new QueryWrapper<User>()
-                        .eq("username", User.getUsername())
-        );
-        if (UserList.size() > 0) {
-            throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
-        }
+        checkRepeatedValue(dto.getUsername(), dto.getPhone());
 
-        //校验手机号是否重复
-        List<User> phoneUserList = iUserService.list(
-                new QueryWrapper<User>()
-                        .eq("phone", User.getPhone())
-        );
-        if (phoneUserList.size() > 0) {
-            throw new ServiceException(UserCode.PHONE_NUMBER_ALREADY_EXISTS);
-        }
+        User user = new User()
+                .setUid(SnowflakeUtil.getUnionId())
+                .setCreator(UserIdHolder.get());
+        BeanUtils.copyProperties(dto, user);
 
-        try {
-            boolean save = iUserService.save(User);
-            if (save)
-                return Result.ok();
-            return Result.error(UserCode.ADD_SYSUSER_FAILURE);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.ADD_SYSUSER_FAILURE);
-        }
+        boolean save = iUserService.save(user);
+        if (save)
+            return Result.ok();
+        return Result.error(UserCode.ADD_SYSUSER_FAILURE);
 
     }
 
     @PostMapping("/update")
     @Limit("user:update")
-    public Result<Object> update(UserUpdateDto UserDto, String publickey) {
+    public Result<Object> update(UserUpdateDto dto, String publickey) {
 
-        ErrorUtil.isObjectNull(UserDto.getUid(), "角色id");
+        ErrorUtil.isObjectNull(dto.getUid(), "角色id");
         ErrorUtil.isStringEmpty(publickey, "公钥");
 
-        String passwordDecrypt = LoginController.getPasswordDecrypt(UserDto.getPassword(), publickey);
+        checkRepeatedValue(dto.getUsername(), dto.getPhone());
+
+        String passwordDecrypt = LoginController.getPasswordDecrypt(dto.getPassword(), publickey);
 
         User User = new User();
-        BeanUtils.copyProperties(UserDto, User);
+        BeanUtils.copyProperties(dto, User);
         User.setPassword(BCrypt.hashpw(passwordDecrypt));
-        try {
-            boolean save = iUserService.updateById(User);
-            if (save)
-                return Result.ok();
-            return Result.error(UserCode.UPDATE_SYSUSER_FAILURE);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.UPDATE_SYSUSER_FAILURE);
+        boolean save = iUserService.updateById(User);
+        if (save)
+            return Result.ok();
+        return Result.error(UserCode.UPDATE_SYSUSER_FAILURE);
+
+    }
+
+    private void checkRepeatedValue(String username, String phone) {
+        //检查数据库中是否有同名用户
+        List<User> listName = iUserService.list(
+                new QueryWrapper<User>().eq("username", username)
+        );
+        if (listName.size() > 0) {
+            throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
         }
 
+        //检查数据库中是否有同电话用户
+        List<User> listPhone = iUserService.list(
+                new QueryWrapper<User>().eq("phone", phone)
+        );
+        if (listPhone.size() > 0) {
+            throw new ServiceException(UserCode.PHONE_NUMBER_ALREADY_EXISTS);
+        }
     }
 
     @PostMapping("/password/update")
@@ -194,61 +182,60 @@ public class UserController {
         ErrorUtil.isStringLengthOutOfRange(newPasswordDecrypt, 6, 16, "新密码");
         String newPasswordMd5 = BCrypt.hashpw(newPasswordDecrypt);
         targetUser.setPassword(newPasswordMd5);
-        try {
-            boolean save = iUserService.updateById(targetUser);
-            if (save)
-                return Result.ok();
-            return Result.error(UserCode.PASSWORD_UPDATE_ERROR);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.UPDATE_SYSUSER_FAILURE);
-        }
+        boolean save = iUserService.update(targetUser, new QueryWrapper<User>().eq("uid", targetUser.getUid()));
+        if (save)
+            return Result.ok();
+        return Result.error(UserCode.PASSWORD_UPDATE_ERROR);
+
     }
 
-    @PostMapping("/delete/{id}")
+    @PostMapping("/delete/{uid}")
     @Limit("user:delete")
-    public Result<Object> delete(@PathVariable("id") Integer id) {
-        ErrorUtil.isObjectNull(id, "信息id");
-        try {
-            boolean b = iUserService.removeById(id);
-            if (b)
-                return Result.ok();
-            return Result.error(UserCode.DELETE_SYSUSER_FAILURE);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.DELETE_SYSUSER_FAILURE);
+    public Result<Object> delete(@PathVariable("uid") Long uid) {
+        ErrorUtil.isObjectNull(uid, "信息id");
+        User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
+        if (user == null) {
+            throw new ServiceException(UserCode.USER_DOES_NOT_EXIST);
         }
+
+        boolean b = iUserService.remove(new QueryWrapper<User>().eq("uid", uid));
+        if (b)
+            return Result.ok();
+        return Result.error(UserCode.DELETE_SYSUSER_FAILURE);
+
     }
 
+    @PostMapping("/disable/{uid}/{disabled}")
+    @Limit("user:disable")
+    public Result<Object> disable(@PathVariable("uid") Long uid, @PathVariable Integer disabled) {
 
-    @PostMapping("/disabled/{id}")
-    @Limit("user:delete")
-    public Result<Object> disable(@PathVariable("id") Integer id) {
-        ErrorUtil.isObjectNull(id, "用户id");
-        try {
-            User User = new User().setDisabled(UserConstant.IS_DISABLED).setId(id);
-            boolean b = iUserService.updateById(User);
-            if (b)
-                return Result.ok();
-            return Result.error(UserCode.DISABLED_FAILED);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(UserCode.DISABLED_FAILED);
+        ErrorUtil.isObjectNull(uid, "角色id");
+        ErrorUtil.isNumberOutOfRange(disabled, 0, 1, "禁用状态");
+
+        QueryWrapper<User> query = new QueryWrapper<User>().eq("uid", uid);
+        User user = iUserService.getOne(query);
+        if (user == null) {
+            log.error("禁用用户->用户id不存在");
+            throw new ServiceException(UserCode.USER_DOES_NOT_EXIST);
         }
+        user.setDisabled(disabled);
+        user.setDisabledBy(UserIdHolder.get());
+        boolean b = iUserService.update(user, query);
+        if (b)
+            return Result.ok();
+        return Result.error(UserCode.DISABLED_FAILED);
+
     }
 
-    @GetMapping("/list/permission/{userId}")
+    @GetMapping("/list/permission/{uid}")
     @Limit("user:listPermission")
-    public Result<Object> listPermission(@PathVariable Long userId) {
+    public Result<Object> listPermission(@PathVariable Long uid) {
 
-        ErrorUtil.isObjectNull(userId, "用户id");
+        ErrorUtil.isObjectNull(uid, "用户id");
 
-        List<Permission> userPermissionList = iUserService.getUserPermissionList(userId);
+        List<Permission> userPermissionList = iUserService.getUserPermissionList(uid);
 
         return Result.ok(userPermissionList);
     }
-
-
-
 
 }

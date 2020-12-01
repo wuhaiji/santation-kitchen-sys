@@ -5,15 +5,16 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.model.entity.Permission;
-import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.interceptor.UserIdHolder;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
-import com.yuntun.sanitationkitchen.model.dto.*;
+import com.yuntun.sanitationkitchen.model.dto.RoleListPageDto;
+import com.yuntun.sanitationkitchen.model.dto.RoleSaveDto;
+import com.yuntun.sanitationkitchen.model.dto.RoleUpdateDto;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.RoleOptionsVo;
@@ -65,7 +66,7 @@ public class RoleController {
 
             );
         } catch (Exception e) {
-            log.error("Exception:",e);
+            log.error("Exception:", e);
             throw new ServiceException(CommonCode.SERVER_ERROR);
         }
 
@@ -75,6 +76,7 @@ public class RoleController {
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
+
     @Limit("role:options")
     @GetMapping("/options")
     public Result<Object> options() {
@@ -82,7 +84,8 @@ public class RoleController {
         try {
             list = iRoleService.list();
         } catch (Exception e) {
-            throw new ServiceException(PermissionCode.LIST_PAGE_PERMISSION_BY_USERID_ERROR);
+            log.error("Exception:", e);
+            throw new ServiceException(RoleCode.OPTIONS_ERROR);
         }
         List<Object> collect = list.parallelStream().map(
                 i -> {
@@ -93,6 +96,7 @@ public class RoleController {
         ).collect(Collectors.toList());
         return Result.ok(collect);
     }
+
     @GetMapping("/get/{id}")
     @Limit("role:get")
     public Result<Object> get(@PathVariable("id") Long id) {
@@ -115,25 +119,35 @@ public class RoleController {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getRoleName(), 2, 30, "角色名称");
         ErrorUtil.isObjectNull(dto.getRoleType(), "角色类型");
+        checkRepeatedValue(dto.getRoleName());
+
 
         Role role = new Role()
                 .setRoleType(dto.getRoleType())
                 .setRoleName(dto.getRoleName())
                 .setUid(SnowflakeUtil.getUnionId())
-                .setCreator(UserIdHolder.get())
-
-                ;
+                .setCreator(UserIdHolder.get());
 
         try {
             boolean save = iRoleService.save(role);
             if (save)
                 return Result.ok();
-            return Result.error(UserCode.ADD_SYSUSER_FAILURE);
+            return Result.error(RoleCode.ADD_ERROR);
         } catch (Exception e) {
             log.error("异常:", e);
-            throw new ServiceException(UserCode.ADD_SYSUSER_FAILURE);
+            throw new ServiceException(RoleCode.ADD_ERROR);
         }
 
+    }
+
+    private void checkRepeatedValue(String roleName) {
+        //检查数据库是否存在同名权限
+        List<Role> listName = iRoleService.list(
+                new QueryWrapper<Role>().eq("permission_name", roleName)
+        );
+        if (listName.size() > 0) {
+            throw new ServiceException(RoleCode.NAME_ALREADY_EXISTS_ERROR);
+        }
     }
 
     @PostMapping("/update")
@@ -142,6 +156,9 @@ public class RoleController {
 
         ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
 
+        //检查数据库是否存在同名权限
+        checkRepeatedValue(dto.getRoleName());
+
         Role role = new Role().setRoleName(dto.getRoleName()).setRoleType(true);
         try {
             boolean save = iRoleService.update(role,
@@ -149,10 +166,10 @@ public class RoleController {
             );
             if (save)
                 return Result.ok();
-            return Result.error(UserCode.UPDATE_SYSUSER_FAILURE);
+            return Result.error(RoleCode.UPDATE_ERROR);
         } catch (Exception e) {
             log.error("异常:", e);
-            throw new ServiceException(UserCode.UPDATE_SYSUSER_FAILURE);
+            throw new ServiceException(RoleCode.UPDATE_ERROR);
         }
 
     }
@@ -172,34 +189,25 @@ public class RoleController {
         }
     }
 
-    @PostMapping("/disable/{id}/{disabled}")
+    @PostMapping("/disable/{uid}/{disabled}")
     @Limit("role:disable")
-    public Result<Object> disable(@PathVariable("id") Long roleId, @PathVariable Integer disabled) {
+    public Result<Object> disable(@PathVariable("uid") Long uid, @PathVariable Integer disabled) {
 
-        ErrorUtil.isObjectNull(roleId, "id");
+        ErrorUtil.isObjectNull(uid, "角色id");
         ErrorUtil.isNumberOutOfRange(disabled, 0, 1, "禁用状态");
 
-        Role byId;
-        try {
-            byId = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", roleId));
-        } catch (Exception e) {
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
-        if (byId == null) {
+        QueryWrapper<Role> query = new QueryWrapper<Role>().eq("uid", uid);
+        Role role = iRoleService.getOne(query);
+        if (role == null) {
+            log.error("禁用角色->角色id不存在");
             throw new ServiceException(RoleCode.ROLE_NOT_EXIST);
         }
+        role.setDisabled(disabled);
+        role.setDisabledBy(UserIdHolder.get());
+        boolean b = iRoleService.update(role, query);
+        if (b)
+            return Result.ok();
+        return Result.error(RoleCode.DELETE_ERROR);
 
-        byId.setDisabled(disabled);
-        Long userId = UserIdHolder.get();
-        byId.setDisabledBy(userId);
-        try {
-            boolean b = iRoleService.updateById(byId);
-            if (b)
-                return Result.ok();
-            return Result.error(RoleCode.DELETE_ERROR);
-        } catch (Exception e) {
-            log.error("Exception:", e);
-            throw new ServiceException(RoleCode.DELETE_ERROR);
-        }
     }
 }

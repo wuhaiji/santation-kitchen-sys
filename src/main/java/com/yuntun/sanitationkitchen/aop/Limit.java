@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * 权限控制
- * @author tang
- * @since 2020/8/11
+ * @author whj
+ * @since 2020/11/30
  */
 @Target(value = {ElementType.METHOD})
 @Retention(value = RetentionPolicy.RUNTIME)
