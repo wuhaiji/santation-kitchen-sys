@@ -1,8 +1,8 @@
 package com.yuntun.sanitationkitchen.util;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
+import com.yuntun.sanitationkitchen.properties.IdProperties;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.slf4j.LoggerFactory;
@@ -42,10 +42,11 @@ public class AuthUtil {
     public static final String SK_REFRESH_TOKEN = "sk:refresh_token:";
 
 
+
     /**
      * 生成uuid token
      *
-     * @param userId    用户id
+     * @param userId 用户id
      * @return token
      */
     public static TokenInfo generalToken(Long userId) {
@@ -80,7 +81,7 @@ public class AuthUtil {
         }
         TokenInfo tokenInfo = RedisUtils.getObject(SK_REFRESH_TOKEN + refreshToken, TokenInfo.class);
         if (tokenInfo == null) {
-            throw new ServiceException(UserCode.LOGIN_FAILED_TIME_OUT);
+            return null;
         }
         tokenInfo.setToken(getUUID());
         tokenInfo.setCreatTime(System.currentTimeMillis());
@@ -103,19 +104,21 @@ public class AuthUtil {
     /**
      * 注销登录
      */
-    public static void removeToken(String token) {
+    public static boolean removeToken(String token) {
         TokenInfo tokenInfo = RedisUtils.getObject(SK_TOKEN + token, TokenInfo.class);
         if (tokenInfo == null) {
-            throw new ServiceException(UserCode.LOGIN_FAILED_TIME_OUT);
+            return false;
         }
         RedisUtils.delKey(SK_TOKEN + tokenInfo.getToken());
         RedisUtils.delKey(SK_REFRESH_TOKEN + tokenInfo.getToken());
+        return true;
     }
 
 
     private static String getUUID() {
         return UUID.randomUUID().toString().replace("-", "");
     }
+
     /**
      * 生成随机字符串
      *
@@ -138,6 +141,7 @@ public class AuthUtil {
         //将承载的字符转换成字符串
         return sb.toString();
     }
+
     /**
      * token信息类
      */

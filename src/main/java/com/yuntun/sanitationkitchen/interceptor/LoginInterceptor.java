@@ -40,7 +40,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         //retJSON为空则说明jwt超时或非法
         if (tokenInfo==null) {
             log.info("[sys登录校验拦截器]-JWT非法或已超时，重新登录");
-            throw new ServiceException(UserCode.LOGIN_FAILED_TIME_OUT);
+            throw new ServiceException(UserCode.TOKEN_TIME_OUT);
         }
         Long userId = tokenInfo.getUserId();
         //将客户Id设置到threadLocal中,方便以后使用

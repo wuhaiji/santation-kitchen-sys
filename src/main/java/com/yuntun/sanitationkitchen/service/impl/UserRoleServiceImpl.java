@@ -1,15 +1,10 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yuntun.sanitationkitchen.entity.UserRole;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.model.entity.UserRole;
 import com.yuntun.sanitationkitchen.mapper.UserRoleMapper;
-import com.yuntun.sanitationkitchen.model.dto.UserRoleListDto;
 import com.yuntun.sanitationkitchen.service.IUserRoleService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * <p>

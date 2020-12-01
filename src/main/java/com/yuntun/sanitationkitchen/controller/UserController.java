@@ -9,8 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
-import com.yuntun.sanitationkitchen.entity.Permission;
-import com.yuntun.sanitationkitchen.entity.User;
+import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
@@ -54,8 +55,8 @@ public class UserController {
     @Autowired
     IUserService iUserService;
 
-    @Limit("user:listPage")
-    @GetMapping("/list/page")
+    @Limit("user:list")
+    @GetMapping("/list")
     public Result<RowData<User>> list(Integer pageSize, Integer pageNo, User User) {
 
         ErrorUtil.isNumberValueLt(pageSize, 0, "pageSize");
@@ -73,7 +74,8 @@ public class UserController {
                             .orderByDesc("id")
             );
         } catch (Exception e) {
-            throw new ServiceException(UserCode.LIST_SYSUSER_FAILURE);
+            log.error("Exception:",e);
+            throw new ServiceException(CommonCode.SERVER_ERROR);
         }
 
         RowData<User> data = new RowData<User>()

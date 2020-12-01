@@ -5,25 +5,30 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.interceptor.UserIdHolder;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
-import com.yuntun.sanitationkitchen.model.dto.RoleListPageDto;
-import com.yuntun.sanitationkitchen.model.dto.RoleSaveDto;
-import com.yuntun.sanitationkitchen.model.dto.RoleUpdateDto;
+import com.yuntun.sanitationkitchen.model.dto.*;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.RoleOptionsVo;
 import com.yuntun.sanitationkitchen.service.IRoleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -42,9 +47,9 @@ public class RoleController {
     @Autowired
     IRoleService iRoleService;
 
-    @Limit("role:listPage")
-    @GetMapping("/list/page")
-    public Result<Object> listPage(RoleListPageDto dto) {
+    @Limit("role:list")
+    @GetMapping("/list")
+    public Result<Object> list(RoleListPageDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
@@ -60,7 +65,8 @@ public class RoleController {
 
             );
         } catch (Exception e) {
-            throw new ServiceException(PermissionCode.LIST_PAGE_PERMISSION_BY_USERID_ERROR);
+            log.error("Exception:",e);
+            throw new ServiceException(CommonCode.SERVER_ERROR);
         }
 
         RowData<Role> data = new RowData<Role>()
@@ -69,7 +75,24 @@ public class RoleController {
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
-
+    @Limit("role:options")
+    @GetMapping("/options")
+    public Result<Object> options() {
+        List<Role> list;
+        try {
+            list = iRoleService.list();
+        } catch (Exception e) {
+            throw new ServiceException(PermissionCode.LIST_PAGE_PERMISSION_BY_USERID_ERROR);
+        }
+        List<Object> collect = list.parallelStream().map(
+                i -> {
+                    RoleOptionsVo roleOptionsVo = new RoleOptionsVo();
+                    BeanUtils.copyProperties(i, roleOptionsVo);
+                    return roleOptionsVo;
+                }
+        ).collect(Collectors.toList());
+        return Result.ok(collect);
+    }
     @GetMapping("/get/{id}")
     @Limit("role:get")
     public Result<Object> get(@PathVariable("id") Long id) {
@@ -93,7 +116,13 @@ public class RoleController {
         ErrorUtil.isStringLengthOutOfRange(dto.getRoleName(), 2, 30, "角色名称");
         ErrorUtil.isObjectNull(dto.getRoleType(), "角色类型");
 
-        Role role = new Role().setRoleType(dto.getRoleType()).setRoleName(dto.getRoleName());
+        Role role = new Role()
+                .setRoleType(dto.getRoleType())
+                .setRoleName(dto.getRoleName())
+                .setUid(SnowflakeUtil.getUnionId())
+                .setCreator(UserIdHolder.get())
+
+                ;
 
         try {
             boolean save = iRoleService.save(role);
@@ -109,10 +138,9 @@ public class RoleController {
 
     @PostMapping("/update")
     @Limit("role:update")
-    public Result<Object> update(RoleUpdateDto dto, String publickey) {
+    public Result<Object> update(RoleUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
-        ErrorUtil.isStringEmpty(publickey, "公钥");
 
         Role role = new Role().setRoleName(dto.getRoleName()).setRoleType(true);
         try {
