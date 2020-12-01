@@ -21,6 +21,7 @@
         <fastjson.version>1.2.71</fastjson.version>
         <mybatisplus.version>3.4.0</mybatisplus.version>
         <hutool.version>5.4.7</hutool.version>
+        <netty.version>4.1.53.Final</netty.version>
     </properties>
 
     <dependencies>
@@ -137,6 +138,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!--   引入netty     -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>${netty.version}</version>
         </dependency>
 
     </dependencies>

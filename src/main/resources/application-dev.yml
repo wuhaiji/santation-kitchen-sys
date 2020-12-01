@@ -52,3 +52,33 @@ gofastdfs:
     path: http://192.168.0.108:8089/
     group: group1
     host: http://192.168.0.108:8089
+
+# 自定义配置
+g780-data-package:
+  # 标识位
+  flag:
+    index: 0
+    size: 1
+  # 数据头
+  data-header:
+    # 数据包类型
+    type:
+      index: 1
+      size: 1
+    # 数据包长度(但不包括数据体)
+    length:
+      index: 2
+      size: 2
+    # 设备号
+    device-number:
+      index: 4
+      size: 11
+    # 移动IP
+    ip:
+      index: 15
+      size: 4
+    # 端口
+    port:
+      index: 19
+      size: 2
+
