@@ -3,9 +3,8 @@ package com.yuntun.sanitationkitchen.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.entity.RolePermission;
+import com.yuntun.sanitationkitchen.model.entity.RolePermission;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RolePermissionCode;
 import com.yuntun.sanitationkitchen.model.dto.RolePermissionSaveDto;
 import com.yuntun.sanitationkitchen.model.response.Result;

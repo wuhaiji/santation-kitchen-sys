@@ -82,3 +82,6 @@ g780-data-package:
       index: 19
       size: 2
 
+id:
+  datacenter-id: 1
+  worker-id: 1

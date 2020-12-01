@@ -1,7 +1,7 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yuntun.sanitationkitchen.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.mapper.RoleMapper;
 import com.yuntun.sanitationkitchen.service.IRoleService;
 import org.springframework.stereotype.Service;

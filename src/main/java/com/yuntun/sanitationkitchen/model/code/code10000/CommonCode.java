@@ -17,7 +17,7 @@ public enum CommonCode implements ResultCode {
     PARAMETER_ABNORMAL("10006", "参数异常"),
     FREQUENT_OPERATION("10007", "操作频繁,请稍后再试"),
     PERMISSION_OPERATION("10008", "权限不足"),
-    SERVER_ERROR("99999", "服务器异常，请稍后重试！");
+    SERVER_ERROR("99999", "系统异常！");
 
 
     CommonCode(String resultCode, String resultMsg) {

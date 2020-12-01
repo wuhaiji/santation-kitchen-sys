@@ -1,8 +1,8 @@
 package com.yuntun.sanitationkitchen.interceptor;
 
 import com.yuntun.sanitationkitchen.aop.Limit;
-import com.yuntun.sanitationkitchen.entity.Permission;
-import com.yuntun.sanitationkitchen.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.service.IRoleService;

@@ -1,7 +1,7 @@
 package com.yuntun.sanitationkitchen.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.yuntun.sanitationkitchen.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.Role;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

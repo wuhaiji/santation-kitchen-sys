@@ -2,12 +2,13 @@ package com.yuntun.sanitationkitchen.controller;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.CircleCaptcha;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
-import com.yuntun.sanitationkitchen.entity.User;
+import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
@@ -49,7 +50,6 @@ public class LoginController {
 
     @Autowired
     IUserService iUserService;
-
 
 
     @PostMapping("/login")
@@ -121,25 +121,47 @@ public class LoginController {
         return Result.ok(userLoginVo);
     }
 
+    @PostMapping("/refresh_token")
+    public Result<Object> getRoomDeviceList(String refreshToken) {
+        System.out.println(refreshToken.length());
+        ErrorUtil.isStringLengthOutOfRange(refreshToken, 0, 32, "刷新token");
+        AuthUtil.TokenInfo tokenInfo;
+        try {
+            tokenInfo = AuthUtil.refreshToken(refreshToken);
+        } catch (Exception e) {
+            log.error("Exception:", e);
+            throw new ServiceException(CommonCode.SERVER_ERROR);
+        }
+        if (tokenInfo == null) {
+            throw new ServiceException(UserCode.REFRESH_TOKEN_EXPIRED);
+        }
+        return Result.ok(tokenInfo);
+    }
+
     public static void main(String[] args) {
-        String hashpw = BCrypt.hashpw("123456");
-        System.out.println(hashpw);
-        System.out.println(BCrypt.checkpw("123456", hashpw));
+        // String hashpw = BCrypt.hashpw("123456");
+        // System.out.println(hashpw);
+        // System.out.println(BCrypt.checkpw("123456", hashpw));
+        long l = IdUtil.getSnowflake(1, 1).nextId();
+        System.out.println(l);
     }
 
     @PostMapping("/logout")
     public Result<Object> logout(HttpServletRequest request) {
         String token = request.getHeader(UserConstant.TOKEN_HEADER_KEY);
         try {
-            AuthUtil.removeToken(token);
+            boolean b = AuthUtil.removeToken(token);
+            if (!b) {
+                throw new ServiceException(UserCode.TOKEN_TIME_OUT);
+            }
+            return Result.ok();
         } catch (ServiceException e) {
             log.error("ServiceException", e);
             throw e;
         } catch (Exception e) {
             log.error("Exception", e);
-            throw new ServiceException(UserCode.LOGOUT_ERROR);
+            throw new ServiceException(UserCode.LOGIN_OUT_ERROR);
         }
-        return Result.ok();
     }
 
     /**
@@ -177,6 +199,7 @@ public class LoginController {
         jsonObject.put("base64Img", imageBase64);
         jsonObject.put("captchaId", captchaId);
         //5分钟
+        //Handheld
         RedisUtils.setValueExpireSeconds(UserConstant.CAPTCHA_ID_REDIS_KEY + captchaId, code, FIVE_MINUTE);
         return Result.ok(jsonObject);
     }

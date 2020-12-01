@@ -12,7 +12,8 @@ import com.yuntun.sanitationkitchen.model.code.ResultCode;
  */
 public enum PermissionCode implements ResultCode {
     LIST_PAGE_PERMISSION_BY_USERID_ERROR("20501", "分页查询权限列表异常"),
-    GET_PERMISSION_ERROR("20502", "分页查询权限列表异常"),
+    GET_ERROR("20502", "分页查询权限列表异常"),
+    SAVE_ERROR("20503", "保存权限异常"),
     ;
     /**
      * 错误码

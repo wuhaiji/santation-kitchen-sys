@@ -1,7 +1,7 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yuntun.sanitationkitchen.entity.RolePermission;
+import com.yuntun.sanitationkitchen.model.entity.RolePermission;
 
 /**
  * <p>

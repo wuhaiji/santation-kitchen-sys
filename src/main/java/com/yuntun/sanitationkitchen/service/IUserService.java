@@ -1,9 +1,9 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yuntun.sanitationkitchen.entity.Permission;
-import com.yuntun.sanitationkitchen.entity.Role;
-import com.yuntun.sanitationkitchen.entity.User;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.model.dto.UserGetDto;
 
 import java.util.List;
