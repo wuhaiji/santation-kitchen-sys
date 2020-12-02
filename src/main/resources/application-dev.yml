@@ -3,8 +3,6 @@ server:
   undertow:
     max-http-post-size: 100MB
 
-#  servlet:
-#    context-path: /calendar-sys
 spring:
   servlet:
     multipart:

@@ -1,4 +1,4 @@
-package com.yuntun.sanitationkitchen.model.entity;
+package com.yuntun.sanitationkitchen.model.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -12,22 +12,15 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 油耗监测设备表
+ * 车载摄像头表
  * </p>
  *
  * @author whj
  * @since 2020-12-02
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_sk_ticket_machine")
-public class TicketMachine implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+public class VehicleCameraListDto  {
 
     /**
      * uuid
@@ -60,19 +53,9 @@ public class TicketMachine implements Serializable {
     private String model;
 
     /**
-     * 车辆id
-     */
-    private Long vehicleId;
-
-    /**
      * 品牌
      */
     private String brand;
-
-    /**
-     * 创建人id
-     */
-    private Long creator;
 
     /**
      * 创建时间
@@ -83,41 +66,6 @@ public class TicketMachine implements Serializable {
      * 禁用状态
      */
     private Integer disabled;
-
-    /**
-     * 禁用人id
-     */
-    private Long disabledBy;
-
-    /**
-     * 禁用时间
-     */
-    private LocalDateTime disabledTime;
-
-    /**
-     * 修改者id
-     */
-    private Long updator;
-
-    /**
-     * 修改时间
-     */
-    private LocalDateTime updateTime;
-
-    /**
-     * 删除状态
-     */
-    private Integer deleted;
-
-    /**
-     * 删除人
-     */
-    private Long deletedBy;
-
-    /**
-     * 删除时间
-     */
-    private LocalDateTime deletedTime;
 
 
 }

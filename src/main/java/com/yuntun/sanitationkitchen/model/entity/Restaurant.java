@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 后台管理系统用户表
+ * 餐馆表
  * </p>
  *
  * @author whj
@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_sk_sanitation_office")
-public class SanitationOffice implements Serializable {
+@TableName("tb_sk_restaurant")
+public class Restaurant implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,14 +35,24 @@ public class SanitationOffice implements Serializable {
     private Long uid;
 
     /**
-     * 用户名
+     * 餐馆名称
      */
     private String name;
 
     /**
-     * 管理员id
+     * 负责人
      */
-    private Long managerId;
+    private String managerName;
+
+    /**
+     * 电话
+     */
+    private String phone;
+
+    /**
+     * 餐馆地址
+     */
+    private String address;
 
     /**
      * 创建人id

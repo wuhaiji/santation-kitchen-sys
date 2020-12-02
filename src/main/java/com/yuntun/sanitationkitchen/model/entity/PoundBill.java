@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 后台管理系统用户表
+ * 地磅配置表
  * </p>
  *
  * @author whj
@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_sk_sanitation_office")
-public class SanitationOffice implements Serializable {
+@TableName("tb_sk_pound_bill")
+public class PoundBill implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,14 +35,49 @@ public class SanitationOffice implements Serializable {
     private Long uid;
 
     /**
-     * 用户名
+     * 流水号
      */
-    private String name;
+    private String serialCode;
 
     /**
-     * 管理员id
+     * 环卫所id
      */
-    private Long managerId;
+    private Long sanitationOfficeId;
+
+    /**
+     * 车牌
+     */
+    private String numberPlate;
+
+    /**
+     * 车辆id
+     */
+    private Long vehicleId;
+
+    /**
+     * 垃圾箱
+     */
+    private Long trashCanId;
+
+    /**
+     * 垃圾箱名称
+     */
+    private String trashCanCode;
+
+    /**
+     * 毛重
+     */
+    private Double grossWeight;
+
+    /**
+     * 皮重
+     */
+    private Double tare;
+
+    /**
+     * 净重
+     */
+    private Double netWeight;
 
     /**
      * 创建人id

@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author whj
- * @since 2020-12-01
+ * @since 2020-12-02
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -78,6 +78,24 @@ public class TrashCan implements Serializable {
      * 联系人电话
      */
     private String contactPersonPhone;
+
+    /**
+     * 餐馆id
+     */
+    private Long restaurantId;
+
+    /**
+     * 经度，肯定是存储数据精度越高，最终位置定位越准确。
+     * 但是考虑到数据库资源以及可定位到精准性，根据谷歌官方的建议，
+     * 存储经纬度的时候，使用double(10,6)就可以了。
+     * 这样，这些字段将会存储小数点后 6 位数以及小数点前最多 4 位数，如 -153.456783 度
+     */
+    private Double longitude;
+
+    /**
+     * 纬度
+     */
+    private Double latitude;
 
     /**
      * 创建人id
