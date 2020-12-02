@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.model.code.code10000;
 import com.yuntun.sanitationkitchen.model.code.ResultCode;
 
 /**
+ * 通用
  * 10000常用错误信息枚举
  * @author whj
  */

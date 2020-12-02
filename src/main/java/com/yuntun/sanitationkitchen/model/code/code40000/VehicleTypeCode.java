@@ -4,7 +4,7 @@ import com.yuntun.sanitationkitchen.model.code.ResultCode;
 
 /**
  * <p>
- *
+ *  设备
  * </p>
  *
  * @author whj
