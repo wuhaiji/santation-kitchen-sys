@@ -2,10 +2,8 @@ package com.yuntun.sanitationkitchen.controller;
 
 
 import com.yuntun.sanitationkitchen.auth.Limit;
-import com.yuntun.sanitationkitchen.model.dto.FuelDeviceDto;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
-import com.yuntun.sanitationkitchen.service.IFuelDeviceService;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
