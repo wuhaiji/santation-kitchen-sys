@@ -19,8 +19,8 @@ public class G780Util {
      * @since 2020-12-01 15:49
      */
     public byte[] getDeviceNumber(byte[] bytes) {
-        Integer deviceNumberIndex = g780DataPackageFormat.getG780DataHeader().getDeviceNumberIndex();
-        Integer deviceNumberSize = g780DataPackageFormat.getG780DataHeader().getDeviceNumberSize();
+        Integer deviceNumberIndex = g780DataPackageFormat.getDataHeader().getDeviceNumberIndex();
+        Integer deviceNumberSize = g780DataPackageFormat.getDataHeader().getDeviceNumberSize();
 
         byte[] deviceNumber = new byte[deviceNumberSize];
         System.arraycopy(bytes, deviceNumberIndex, deviceNumber,0, deviceNumberSize);

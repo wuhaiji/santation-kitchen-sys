@@ -25,6 +25,6 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        new NettyServer().bind(8088);
+//        new NettyServer().bind(8088);
     }
 }

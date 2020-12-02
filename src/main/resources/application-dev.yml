@@ -62,25 +62,20 @@ g780-data-package:
   # 数据头
   data-header:
     # 数据包类型
-    type:
-      index: 1
-      size: 1
+    type-index: 1
+    type-size: 1
     # 数据包长度(但不包括数据体)
-    length:
-      index: 2
-      size: 2
+    length-index: 2
+    length-size: 2
     # 设备号
-    device-number:
-      index: 4
-      size: 11
+    device-number-index: 4
+    device-number-size: 11
     # 移动IP
-    ip:
-      index: 15
-      size: 4
+    ip-index: 15
+    ip-size: 4
     # 端口
-    port:
-      index: 19
-      size: 2
+    port-index: 19
+    port-size: 2
 
 id:
   datacenter-id: 1

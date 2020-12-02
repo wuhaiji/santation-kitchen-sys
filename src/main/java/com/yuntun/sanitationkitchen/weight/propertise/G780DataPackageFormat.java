@@ -2,6 +2,8 @@ package com.yuntun.sanitationkitchen.weight.propertise;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,11 +17,47 @@ import org.springframework.stereotype.Component;
 public class G780DataPackageFormat {
 
     // 标识位
-    private Integer flagIndex;
-
-    private Integer flagSize;
+    private G780DataFlag flag;
 
     // 数据头
-    private G780DataHeader g780DataHeader;
+    private G780DataHeader dataHeader;
+
+    @Data
+    public static class G780DataFlag {
+
+        private Integer index;
+
+        private Integer size;
+    }
+
+    @Data
+    public static class G780DataHeader {
+
+        // 数据包类型
+        private Integer typeIndex;
+
+        private Integer typeSize;
+
+        // 数据包长度（不包括数据体）
+        private Integer lengthIndex;
+
+        private Integer lengthSize;
+
+        // 设备号
+        private Integer deviceNumberIndex;
+
+        private Integer deviceNumberSize;
+
+        // ip
+        private Integer ipIndex;
+
+        private Integer ipSize;
+
+        // 端口
+        private Integer portIndex;
+
+        private Integer portSize;
+
+    }
 
 }
