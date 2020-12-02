@@ -2,7 +2,7 @@ package com.yuntun.sanitationkitchen.controller;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.yuntun.sanitationkitchen.aop.Limit;
+import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.entity.RolePermission;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code20000.RolePermissionCode;

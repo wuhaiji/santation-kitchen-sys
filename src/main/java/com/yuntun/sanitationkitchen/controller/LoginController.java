@@ -15,7 +15,7 @@ import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.vo.UserLoginVo;
 import com.yuntun.sanitationkitchen.service.IUserService;
-import com.yuntun.sanitationkitchen.util.AuthUtil;
+import com.yuntun.sanitationkitchen.auth.AuthUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.RSAUtils;
 import com.yuntun.sanitationkitchen.util.RedisUtils;

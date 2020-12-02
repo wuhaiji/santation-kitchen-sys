@@ -1,10 +1,8 @@
-package com.yuntun.sanitationkitchen.config;
+package com.yuntun.sanitationkitchen.auth;
 
 
-import com.yuntun.sanitationkitchen.interceptor.ApiInterceptor;
-import com.yuntun.sanitationkitchen.interceptor.LoginInterceptor;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,7 +20,7 @@ import java.util.List;
  * @since 2020/11/6
  */
 @Configuration
-public class webMvcConfig implements WebMvcConfigurer {
+public class AuthWebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
     ApiInterceptor apiInterceptor;
@@ -61,7 +59,6 @@ public class webMvcConfig implements WebMvcConfigurer {
         //         .addPathPatterns("/**")
         // ;
     }
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -70,6 +67,4 @@ public class webMvcConfig implements WebMvcConfigurer {
                 .maxAge(3600)
                 .allowCredentials(true);
     }
-
-
 }

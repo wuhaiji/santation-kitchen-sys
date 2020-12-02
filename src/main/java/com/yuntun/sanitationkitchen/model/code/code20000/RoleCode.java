@@ -18,6 +18,8 @@ public enum RoleCode implements ResultCode {
     DELETE_ERROR("20304", "删除异常"),
     LIST_ERROR("20305", "分页查询列表异常"),
     ROLE_NOT_EXIST("20306", "角色不存在"),
+    OPTIONS_ERROR("20307", "查询选项列表异常"),
+    NAME_ALREADY_EXISTS_ERROR("20308", "角色名称已存在"),
 
     ;
     /**
