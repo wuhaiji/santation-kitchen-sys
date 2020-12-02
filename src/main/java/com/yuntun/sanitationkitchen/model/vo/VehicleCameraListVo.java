@@ -1,4 +1,4 @@
-package com.yuntun.sanitationkitchen.model.dto;
+package com.yuntun.sanitationkitchen.model.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -20,11 +20,14 @@ import java.time.LocalDateTime;
  */
 @Data
 @Accessors(chain = true)
-public class VehicleCameraListDto  {
+public class VehicleCameraListVo implements Serializable {
 
-    private Integer pageSize;
+    private static final long serialVersionUID = 1L;
 
-    private Integer pageNo;
+    /**
+     * uuid
+     */
+    private Long uid;
 
     /**
      * 设备名
@@ -61,15 +64,15 @@ public class VehicleCameraListDto  {
      */
     private String brand;
 
+
     /**
      * 创建时间
      */
     private LocalDateTime createTime;
 
-    /**
-     * 禁用状态
-     */
-    private Integer disabled;
+
+
+
 
 
 }

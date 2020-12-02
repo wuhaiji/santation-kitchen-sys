@@ -1,14 +1,7 @@
 package com.yuntun.sanitationkitchen.model.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -20,12 +13,9 @@ import java.time.LocalDateTime;
  */
 @Data
 @Accessors(chain = true)
-public class VehicleCameraListDto  {
+public class VehicleCameraUpdateDto {
 
-    private Integer pageSize;
-
-    private Integer pageNo;
-
+    private Long uid;
     /**
      * 设备名
      */
@@ -47,11 +37,6 @@ public class VehicleCameraListDto  {
     private Long sanitationOfficeId;
 
     /**
-     * 设备状态0.在线 1.离线
-     */
-    private Integer status;
-
-    /**
      * 型号
      */
     private String model;
@@ -60,16 +45,6 @@ public class VehicleCameraListDto  {
      * 品牌
      */
     private String brand;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * 禁用状态
-     */
-    private Integer disabled;
 
 
 }

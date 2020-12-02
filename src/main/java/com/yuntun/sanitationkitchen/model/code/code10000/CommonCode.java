@@ -4,8 +4,6 @@ import com.yuntun.sanitationkitchen.model.code.ResultCode;
 
 /**
  * 10000常用错误信息枚举
- * 20000业务异常（20100：用户异常，20200：角色异常）
- *
  * @author whj
  */
 public enum CommonCode implements ResultCode {
@@ -13,11 +11,9 @@ public enum CommonCode implements ResultCode {
     SUCCESS("10000", "成功!"),
     METHOD_NOT_SUPPORT("10001", "请求方法不支持!"),
     NETWORK_ANOMALY("10004", "网络异常!"),
-    LOGOUT_FAILED("10005", "登出失败"),
-    PARAMETER_ABNORMAL("10006", "参数异常"),
-    FREQUENT_OPERATION("10007", "操作频繁,请稍后再试"),
-    PERMISSION_OPERATION("10008", "权限不足"),
-    SERVER_ERROR("99999", "系统异常！");
+    FREQUENT_OPERATION("10005", "操作频繁,请稍后再试"),
+    PERMISSION_OPERATION("10006", "权限不足"),
+    SERVER_ERROR("99999", "系统异常");
 
 
     CommonCode(String resultCode, String resultMsg) {
