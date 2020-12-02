@@ -1,6 +1,5 @@
 package com.yuntun.sanitationkitchen.controller;
 
-
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
@@ -30,7 +29,7 @@ public class SanitationOfficeController{
      * @param sanitationOfficeDto
      * @since 2020-12-02 11:21
      */
-    @Limit("SanitationOffice:list")
+    @Limit("sanitationOffice:list")
     @GetMapping("/list")
     public Result list(SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.PageParamError(sanitationOfficeDto.getPageSize(), sanitationOfficeDto.getPageNo());
@@ -43,7 +42,7 @@ public class SanitationOfficeController{
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("SanitationOffice:get")
+    @Limit("sanitationOffice:get")
     @GetMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -57,10 +56,10 @@ public class SanitationOfficeController{
      * @since 2020-12-02 11:39
      */
     @PostMapping("/save")
-    @Limit("SanitationOffice:save")
+    @Limit("sanitationOffice:save")
     public Result save(SanitationOfficeDto sanitationOfficeDto) {
-        ErrorUtil.isObjectNull(sanitationOfficeDto.getName(), "用户名不能为空");
-        ErrorUtil.isObjectNull(sanitationOfficeDto.getManagerId(), "管理员id不能为空");
+        ErrorUtil.isObjectNull(sanitationOfficeDto.getName(), "用户名");
+        ErrorUtil.isObjectNull(sanitationOfficeDto.getManagerId(), "管理员id");
         return Result.ok(iSanitationOfficeService.insertSanitationOffice(sanitationOfficeDto));
     }
 
@@ -71,9 +70,9 @@ public class SanitationOfficeController{
      * @since 2020-12-02 11:39
      */
     @PostMapping("/update")
-    @Limit("SanitationOffice:update")
+    @Limit("sanitationOffice:update")
     public Result update(SanitationOfficeDto sanitationOfficeDto) {
-        ErrorUtil.isObjectNull(sanitationOfficeDto.getUid(), "uid不能为空");
+        ErrorUtil.isObjectNull(sanitationOfficeDto.getUid(), "uid");
         return Result.ok(iSanitationOfficeService.updateSanitationOffice(sanitationOfficeDto));
     }
 
@@ -84,7 +83,7 @@ public class SanitationOfficeController{
      * @since 2020-12-02 12:12
      */
     @PostMapping("/delete/{uid}")
-    @Limit("SanitationOffice:delete")
+    @Limit("sanitationOffice:delete")
     public Result delete(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uid));

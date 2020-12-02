@@ -1,6 +1,5 @@
 package com.yuntun.sanitationkitchen.controller;
 
-
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
@@ -30,7 +29,7 @@ public class TrashCanController {
      * @param trashCanDto
      * @since 2020-12-02 11:21
      */
-    @Limit("TrashCan:list")
+    @Limit("trashCan:list")
     @GetMapping("/list")
     public Result list(TrashCanDto trashCanDto) {
         ErrorUtil.PageParamError(trashCanDto.getPageSize(), trashCanDto.getPageNo());
@@ -43,7 +42,7 @@ public class TrashCanController {
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("TrashCan:get")
+    @Limit("trashCan:get")
     @GetMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -57,7 +56,7 @@ public class TrashCanController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/save")
-    @Limit("TrashCan:save")
+    @Limit("trashCan:save")
     public Result save(TrashCanDto trashCanDto) {
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
@@ -69,9 +68,9 @@ public class TrashCanController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/update")
-    @Limit("TrashCan:update")
+    @Limit("trashCan:update")
     public Result update(TrashCanDto trashCanDto) {
-        ErrorUtil.isObjectNull(trashCanDto.getUid(), "uid不能为空");
+        ErrorUtil.isObjectNull(trashCanDto.getUid(), "uid");
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
     }
 
@@ -82,7 +81,7 @@ public class TrashCanController {
      * @since 2020-12-02 12:12
      */
     @PostMapping("/delete/{uid}")
-    @Limit("TrashCan:delete")
+    @Limit("trashCan:delete")
     public Result delete(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "uid");
         return Result.ok(iTrashCanService.deleteTrashCan(uid));

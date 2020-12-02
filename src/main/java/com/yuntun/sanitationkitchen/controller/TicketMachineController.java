@@ -2,7 +2,6 @@ package com.yuntun.sanitationkitchen.controller;
 
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
-import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.service.ITicketMachineService;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
@@ -30,7 +29,7 @@ public class TicketMachineController {
      * @param ticketMachineDto
      * @since 2020-12-02 11:21
      */
-    @Limit("TicketMachine:list")
+    @Limit("ticketMachine:list")
     @GetMapping("/list")
     public Result list(TicketMachineDto ticketMachineDto) {
         ErrorUtil.PageParamError(ticketMachineDto.getPageSize(), ticketMachineDto.getPageNo());
@@ -43,7 +42,7 @@ public class TicketMachineController {
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("TicketMachine:get")
+    @Limit("ticketMachine:get")
     @GetMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -57,7 +56,7 @@ public class TicketMachineController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/save")
-    @Limit("TicketMachine:save")
+    @Limit("ticketMachine:save")
     public Result save(TicketMachineDto ticketMachineDto) {
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
@@ -69,9 +68,9 @@ public class TicketMachineController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/update")
-    @Limit("TicketMachine:update")
+    @Limit("ticketMachine:update")
     public Result update(TicketMachineDto ticketMachineDto) {
-        ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid不能为空");
+        ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));
     }
 
@@ -82,7 +81,7 @@ public class TicketMachineController {
      * @since 2020-12-02 12:12
      */
     @PostMapping("/delete/{uid}")
-    @Limit("TicketMachine:delete")
+    @Limit("ticketMachine:delete")
     public Result delete(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "uid");
         return Result.ok(iTicketMachineService.deleteTicketMachine(uid));

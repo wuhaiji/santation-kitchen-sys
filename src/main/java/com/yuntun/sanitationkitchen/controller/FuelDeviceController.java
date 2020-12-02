@@ -1,6 +1,5 @@
 package com.yuntun.sanitationkitchen.controller;
 
-
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.FuelDeviceDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
@@ -32,7 +31,7 @@ public class FuelDeviceController {
      * @param fuelDeviceDto
      * @since 2020-12-02 11:21
      */
-    @Limit("FuelDevice:list")
+    @Limit("fuelDevice:list")
     @GetMapping("/list")
     public Result list(FuelDeviceDto fuelDeviceDto) {
         ErrorUtil.PageParamError(fuelDeviceDto.getPageSize(), fuelDeviceDto.getPageNo());
@@ -45,7 +44,7 @@ public class FuelDeviceController {
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("FuelDevice:get")
+    @Limit("fuelDevice:get")
     @GetMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -59,9 +58,9 @@ public class FuelDeviceController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/save")
-    @Limit("FuelDevice:save")
+    @Limit("fuelDevice:save")
     public Result save(FuelDeviceDto fuelDeviceDto) {
-        ErrorUtil.isStringLengthOutOfRange(fuelDeviceDto.getBrand(), 2, 16, "品牌不能为空");
+        ErrorUtil.isStringLengthOutOfRange(fuelDeviceDto.getBrand(), 2, 16, "品牌");
         return Result.ok(iFuelDeviceService.insertFuelDevice(fuelDeviceDto));
     }
 
@@ -72,9 +71,9 @@ public class FuelDeviceController {
      * @since 2020-12-02 11:39
      */
     @PostMapping("/update")
-    @Limit("FuelDevice:update")
+    @Limit("fuelDevice:update")
     public Result update(FuelDeviceDto fuelDeviceDto) {
-        ErrorUtil.isObjectNull(fuelDeviceDto.getUid(), "油耗uid不能为空");
+        ErrorUtil.isObjectNull(fuelDeviceDto.getUid(), "油耗uid");
         return Result.ok(iFuelDeviceService.updateFuelDevice(fuelDeviceDto));
     }
 
@@ -85,7 +84,7 @@ public class FuelDeviceController {
      * @since 2020-12-02 12:12
      */
     @PostMapping("/delete/{uid}")
-    @Limit("FuelDevice:delete")
+    @Limit("fuelDevice:delete")
     public Result delete(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "uid");
         return Result.ok(iFuelDeviceService.deleteFuelDevice(uid));
