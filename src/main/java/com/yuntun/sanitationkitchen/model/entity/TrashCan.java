@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author whj
- * @since 2020-12-01
+ * @since 2020-12-02
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -78,6 +78,11 @@ public class TrashCan implements Serializable {
      * 联系人电话
      */
     private String contactPersonPhone;
+
+    /**
+     * 餐馆id
+     */
+    private Long restaurantId;
 
     /**
      * 创建人id
