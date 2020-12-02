@@ -1,8 +1,10 @@
-package com.yuntun.sanitationkitchen.util;
+package com.yuntun.sanitationkitchen.auth;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.yuntun.sanitationkitchen.properties.IdProperties;
+import com.yuntun.sanitationkitchen.util.EptUtil;
+import com.yuntun.sanitationkitchen.util.RedisUtils;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.slf4j.LoggerFactory;

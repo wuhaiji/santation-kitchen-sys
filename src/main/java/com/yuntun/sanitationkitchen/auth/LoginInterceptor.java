@@ -1,9 +1,8 @@
-package com.yuntun.sanitationkitchen.interceptor;
+package com.yuntun.sanitationkitchen.auth;
 
 import com.yuntun.sanitationkitchen.constant.UserConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
-import com.yuntun.sanitationkitchen.util.AuthUtil;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,5 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
-import com.yuntun.sanitationkitchen.util.AuthUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

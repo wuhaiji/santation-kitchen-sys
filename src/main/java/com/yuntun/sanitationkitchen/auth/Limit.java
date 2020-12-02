@@ -1,4 +1,4 @@
-package com.yuntun.sanitationkitchen.aop;
+package com.yuntun.sanitationkitchen.auth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.yuntun.sanitationkitchen.interceptor;
+package com.yuntun.sanitationkitchen.auth;
 
 /**
  * 用于保存管理系统用户的Id,每个请求对应一个
