@@ -1,5 +1,7 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yuntun.sanitationkitchen.constant.DateConst;
 import com.yuntun.sanitationkitchen.model.dto.BasePageDto;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -63,6 +65,7 @@ public class FuelDeviceVo {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
 
     /**
@@ -78,6 +81,7 @@ public class FuelDeviceVo {
     /**
      * 禁用时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime disabledTime;
 
     /**
@@ -88,6 +92,7 @@ public class FuelDeviceVo {
     /**
      * 修改时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime updateTime;
 
     /**
@@ -103,6 +108,7 @@ public class FuelDeviceVo {
     /**
      * 删除时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime deletedTime;
 
 

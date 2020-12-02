@@ -13,16 +13,23 @@ import java.time.LocalDateTime;
  * </p>
  *
  * @author whj
- * @since 2020/11/30
+ * @since 2020/12/2
  */
 @Data
 @Accessors(chain = true)
-public class PermissionListVo {
-    Long uid;
-    Long parentId;
-    String permissionName;
-    String permissionTag;
+public class FuelCountListVo {
+
+    /**
+     * 车牌号
+     */
+    private String plateNo;
+    /**
+     * 更新时间
+     */
     @JsonFormat(pattern = DateConst.dateTimePattern)
-    LocalDateTime createTime;
-    Long creator;
+    private LocalDateTime updateTime;
+    /**
+     * 油耗余量
+     */
+    private String fuelRemaining;
 }

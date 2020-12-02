@@ -1,5 +1,7 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
@@ -66,6 +68,7 @@ public class TicketMachineVo {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
 
     /**
@@ -81,6 +84,7 @@ public class TicketMachineVo {
     /**
      * 禁用时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime disabledTime;
 
     /**
@@ -91,6 +95,7 @@ public class TicketMachineVo {
     /**
      * 修改时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime updateTime;
 
     /**
@@ -106,6 +111,7 @@ public class TicketMachineVo {
     /**
      * 删除时间
      */
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime deletedTime;
 
 

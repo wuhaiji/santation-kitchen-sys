@@ -19,7 +19,7 @@ public interface IVehicle {
    *
    * @return
    */
-  List<VehicleBean> getVehicleInfo();
+  List<VehicleBean> list();
 
   /**
    * 获取车辆实时信息
@@ -27,7 +27,7 @@ public interface IVehicle {
    * @param ids
    * @return
    */
-  List<VehicleBean> getVehicleRealtimeData( String ids);
+  List<VehicleBean> getVehicleRealtimeData( List<String> ids);
 
   /**
    * 查询用户下所有车实时当前状态数据

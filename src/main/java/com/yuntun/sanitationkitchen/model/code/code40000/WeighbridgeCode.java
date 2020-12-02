@@ -4,23 +4,23 @@ import com.yuntun.sanitationkitchen.model.code.ResultCode;
 
 /**
  * <p>
- *  设备
+ *
  * </p>
  *
  * @author whj
  * @since 2020/11/10
  */
-public enum VehicleTypeCode implements ResultCode {
-    SAVE_ERROR("40200", "保存异常"),
-    LIST_ERROR("40203", "查询列表异常"),
-    OPTIONS_ERROR("40204", "查询选项列表"),
-    UPDATE_ERROR("40205", "修改异常"),
-    DELETE_ERROR("40206", "删除异常"),
-    ID_NOT_EXIST("40207", "数据不存在"),
-
+public enum WeighbridgeCode implements ResultCode {
+    SAVE_ERROR("40600", "保存异常"),
+    ID_NOT_EXIST("40602", "数据不存在"),
+    LIST_ERROR("40703", "查询列表异常"),
+    OPTIONS_ERROR("40704", "查询选项列表"),
+    UPDATE_ERROR("40705", "修改异常"),
+    DELETE_ERROR("40706", "删除异常"),
+    //
     ;
 
-    VehicleTypeCode(String resultCode, String resultMsg) {
+    WeighbridgeCode(String resultCode, String resultMsg) {
         this.resultCode = resultCode;
         this.resultMsg = resultMsg;
     }
