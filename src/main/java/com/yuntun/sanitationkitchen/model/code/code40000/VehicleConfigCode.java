@@ -10,7 +10,7 @@ import com.yuntun.sanitationkitchen.model.code.ResultCode;
  * @author whj
  * @since 2020/11/10
  */
-public enum VehicleTypeCode implements ResultCode {
+public enum VehicleConfigCode implements ResultCode {
     SAVE_ERROR("40200", "保存异常"),
     GET_ERROR("40202", "查询详情异常"),
     LIST_ERROR("40203", "查询列表异常"),
@@ -21,7 +21,7 @@ public enum VehicleTypeCode implements ResultCode {
 
     ;
 
-    VehicleTypeCode(String resultCode, String resultMsg) {
+    VehicleConfigCode(String resultCode, String resultMsg) {
         this.resultCode = resultCode;
         this.resultMsg = resultMsg;
     }

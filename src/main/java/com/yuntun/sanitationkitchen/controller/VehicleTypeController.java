@@ -1,13 +1,13 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleTypeCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleTypeListDto;
@@ -43,12 +43,12 @@ public class VehicleTypeController {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
 
-
     @Autowired
     IVehicleTypeService iVehicleTypeService;
 
-    @Limit("vehicle:list")
+
     @GetMapping("/list")
+    @Limit("vehicleType:list")
     public Result<Object> list(VehicleTypeListDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -71,12 +71,13 @@ public class VehicleTypeController {
                 .setRows(vehicleListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
+
         return Result.ok(data);
     }
 
 
-    @Limit("vehicle:options")
     @GetMapping("/options")
+    @Limit("vehicleType:options")
     public Result<Object> options() {
         List<VehicleType> list = iVehicleTypeService.list();
 
@@ -85,37 +86,39 @@ public class VehicleTypeController {
     }
 
     @GetMapping("/get/{uid}")
-    @Limit("vehicle:get")
+    @Limit("vehicleType:get")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         VehicleType byId = iVehicleTypeService.getOne(new QueryWrapper<VehicleType>().eq("uid", uid));
-        if (EptUtil.isNotEmpty(byId))
-            return Result.ok(byId);
-        return Result.error(VehicleTypeCode.UPDATE_ERROR);
 
+        if (EptUtil.isEmpty(byId)) {
+            log.error("vehicle->get->查询车辆类型详情失败,uid:{}", uid);
+            return Result.error(VehicleTypeCode.ID_NOT_EXIST);
+        }
+        return Result.ok(byId);
     }
 
     @PostMapping("/save")
-    @Limit("vehicle:save")
+    @Limit("vehicleType:save")
     public Result<Object> save(VehicleTypeSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 16, "品牌不能为空");
         ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 16, "名称不能为空");
-        ErrorUtil.isStringLengthOutOfRange(dto.getTrait(), 2, 16, "车辆特性");
+        ErrorUtil.isStringLengthOutOfRange(dto.getTrait(), 2, 100, "车辆特性");
+
         VehicleType vehicleType = new VehicleType();
         BeanUtils.copyProperties(dto, vehicleType);
 
-
-
-
         boolean save = iVehicleTypeService.save(vehicleType);
-        if (save)
-            return Result.ok();
-        return Result.error(VehicleTypeCode.SAVE_ERROR);
+        if (!save) {
+            log.error("vehicle->save->保存失败,VehicleTypeSaveDto:{}", JSON.toJSONString(dto));
+            return Result.error(VehicleTypeCode.SAVE_ERROR);
+        }
+        return Result.ok();
     }
 
     @PostMapping("/update")
-    @Limit("vehicle:update")
+    @Limit("vehicleType:update")
     public Result<Object> update(VehicleUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
@@ -125,27 +128,33 @@ public class VehicleTypeController {
         boolean save = iVehicleTypeService.update(vehicleType,
                 new QueryWrapper<VehicleType>().eq("uid", dto.getUid())
         );
-        if (save)
-            return Result.ok();
-        return Result.error(VehicleTypeCode.UPDATE_ERROR);
+        if (!save) {
+            log.error("vehicle->update->修改车辆类型失败,VehicleUpdateDto:{}", JSON.toJSONString(dto));
+            return Result.error(VehicleTypeCode.UPDATE_ERROR);
+        }
+        return Result.ok();
+
     }
 
     @PostMapping("/delete/{uid}")
-    @Limit("vehicle:delete")
+    @Limit("vehicleType:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
 
         ErrorUtil.isObjectNull(uid, "uid");
 
         VehicleType vehicleType = iVehicleTypeService.getOne(new QueryWrapper<VehicleType>().eq("uid", uid));
         if (vehicleType == null) {
-            log.error("删除车辆异常->uid不存在");
+            log.error("vehicle->delete->uid不存在,uid:{}", uid);
             throw new ServiceException(VehicleCode.ID_NOT_EXIST);
         }
 
         boolean b = iVehicleTypeService.remove(new QueryWrapper<VehicleType>().eq("uid", uid));
-        if (b)
-            return Result.ok();
-        return Result.error(RoleCode.DELETE_ERROR);
+
+        if (!b) {
+            log.error("vehicle->delete->删除车辆类型失败,uid:{}", uid);
+            return Result.error(VehicleTypeCode.DELETE_ERROR);
+        }
+        return Result.ok();
 
     }
 }

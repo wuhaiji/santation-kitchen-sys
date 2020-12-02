@@ -42,7 +42,6 @@ public class VehicleController {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
 
-
     @Autowired
     IVehicleService iVehicleService;
 
@@ -90,7 +89,7 @@ public class VehicleController {
         Vehicle byId = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
         if (EptUtil.isNotEmpty(byId))
             return Result.ok(byId);
-        return Result.error(VehicleCode.GET_ERROR);
+        return Result.error(VehicleCode.ID_NOT_EXIST);
     }
 
     @PostMapping("/save")
@@ -121,11 +120,9 @@ public class VehicleController {
         if (save)
             return Result.ok();
         return Result.error(VehicleCode.SAVE_ERROR);
-
     }
 
     private void checkRepeatedValue(String numberPlate, String rfid) {
-        //检查数据库中是否有同名用户
         List<Vehicle> listNumberPlate = iVehicleService.list(
                 new QueryWrapper<Vehicle>().eq("username", numberPlate)
         );
@@ -133,8 +130,6 @@ public class VehicleController {
             throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
         }
 
-
-        //检查数据库中是否有同名用户
         List<Vehicle> listRfid = iVehicleService.list(
                 new QueryWrapper<Vehicle>().eq("username", rfid)
         );
@@ -179,7 +174,6 @@ public class VehicleController {
         if (b)
             return Result.ok();
         return Result.error(VehicleCode.DELETE_ERROR);
-
     }
 
 }
