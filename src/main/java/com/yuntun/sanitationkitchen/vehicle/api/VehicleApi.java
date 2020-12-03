@@ -1,10 +1,13 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.yuntun.sanitationkitchen.bean.*;
 import com.yuntun.sanitationkitchen.config.ApiStatusConfig;
 import com.yuntun.sanitationkitchen.config.ThirdApiConfig;
+import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.HttpUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -26,6 +29,10 @@ import java.util.Map;
 public class VehicleApi implements IVehicle {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
+    public static final String realtimeDataByPlateUrl = "/deviceData/realtimeDataByPlate.do";
+    public static final String realtimeDataByIdsUrl = "/deviceData/realtimeData.do";
+    public static final String KEY = "key";
+    public static final String IDS = "ids";
 
     /**
      * 查询车辆信息
@@ -47,15 +54,13 @@ public class VehicleApi implements IVehicle {
             String obj = jsonObject.getString("obj");
             if (obj != null) {
                 vehicleBeans = JSONObject.parseArray(obj, VehicleBean.class);
-            }else{
+            } else {
                 log.error("来源云查询车辆列表异常");
                 vehicleBeans = new ArrayList<>();
             }
         }
         return vehicleBeans;
     }
-
-
 
 
     /**
@@ -66,7 +71,7 @@ public class VehicleApi implements IVehicle {
      */
     @Override
     public List<VehicleBean> getVehicleRealtimeData(List<String> ids) {
-        if(ids.size()<=0){
+        if (ids.size() <= 0) {
             return new ArrayList<>();
         }
         List<VehicleBean> vehicleBeanList = new ArrayList<>();
@@ -262,17 +267,17 @@ public class VehicleApi implements IVehicle {
     /**
      * 根据车牌号查询车辆动态数据
      *
-     * @param plate
+     * @param plates
      */
     @Override
-    public List<VehicleBean> getRealtimeDataByPlate(String plate) {
+    public List<VehicleBean> getRealtimeDataByPlate(List<String> plates) {
         List<VehicleBean> vehicleBeanList = new ArrayList<>();
         List<TireBean> tireBeanList = new ArrayList<>();
         VehicleBean vehicleBean;
         Map<String, Object> params = new HashMap<>(3);
         params.put("key", ThirdApiConfig.key);
         params.put("type", "1");
-        params.put("plate", plate);
+        params.put("plate", String.join(",", plates));
         HttpUtils httpUtils = new HttpUtils();
         String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeDataByPlate.do", params);
         System.out.println("返回结果==" + result);
@@ -330,6 +335,105 @@ public class VehicleApi implements IVehicle {
         return vehicleBeanList;
     }
 
+    /**
+     * 根据车辆ids查询车辆动态数据
+     *
+     * @param ids 车俩 ids
+     * @return
+     */
+    @Override
+    public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByIds(List<String> ids) {
+
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds->params:{}",ids);
+
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put(KEY, ThirdApiConfig.key);
+        paramsMap.put(IDS, String.join(",", ids));
+
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds,response:{}",response);
+
+        if (EptUtil.isEmpty(response)) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用无返回信息");
+            return new ArrayList<>();
+        }
+
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
+
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用返回失败消息，msg{}",resultDto.getMsg());
+        }
+        return resultDto.getObj();
+    }
+
+    /**
+     * 根据车牌号查询车辆动态数据
+     *
+     * @param plates 车牌号list
+     * @return
+     */
+    @Override
+    public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByPlates(List<String> plates) {
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates->params:{}",plates);
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("key", ThirdApiConfig.key);
+        paramsMap.put("plate", String.join(",", plates));
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates,response:{}",response);
+        if (EptUtil.isEmpty(response)) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用无返回信息");
+            return new ArrayList<>();
+        }
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用返回失败消息，msg{}",resultDto.getMsg());
+        }
+        return resultDto.getObj();
+    }
+
+    public static void main(String[] args) {
+
+        //根据车牌号查询车辆动态数据
+        // ArrayList<String> plates = new ArrayList<String>() {{
+        //     add("13302690436");
+        // }};
+        // HashMap<String, Object> paramsMap = new HashMap<>();
+        // paramsMap.put(KEY, ThirdApiConfig.key);
+        // paramsMap.put("plate", String.join(",", plates));
+        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto1 = JSONObject.parseObject(
+        //         response,
+        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+        //         }
+        // );
+        // System.out.println(resultDto1);
+
+
+        //根据车辆ids查询车辆动态数据
+
+
+        ArrayList<String> list = new ArrayList<String>() {{
+            add("F6FA39393347F2B86E734D40396CDE93");
+        }};
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put(KEY, ThirdApiConfig.key);
+        paramsMap.put(IDS, String.join(",", list));
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto2 = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
+        System.out.println(resultDto2);
+    }
     /**
      * 查询实时ADAS报警
      */

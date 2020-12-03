@@ -54,7 +54,7 @@ public class VehicleListVo implements Serializable {
     private Double fuelRemaining;
 
     /**
-     * 状态0. 正常 1.离线
+     * 0：从未上线 1：行驶 2：停车 3：离线 4：服务到期
      */
     private Integer status;
 

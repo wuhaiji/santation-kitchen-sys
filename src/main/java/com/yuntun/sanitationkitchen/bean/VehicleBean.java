@@ -76,8 +76,6 @@ public class VehicleBean {
   private String vehicleDeviceStatusValue;
 
 
-
-
   /**
    * 设备号
    */
