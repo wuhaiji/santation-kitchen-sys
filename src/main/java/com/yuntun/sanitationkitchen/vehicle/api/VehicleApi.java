@@ -344,14 +344,14 @@ public class VehicleApi implements IVehicle {
     @Override
     public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByIds(List<String> ids) {
 
-        log.info("vehicle api->ListVehicleRealtimeStatusByIds->params:{}",ids);
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds->params:{}", ids);
 
         HashMap<String, Object> paramsMap = new HashMap<>();
         paramsMap.put(KEY, ThirdApiConfig.key);
         paramsMap.put(IDS, String.join(",", ids));
 
         String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
-        log.info("vehicle api->ListVehicleRealtimeStatusByIds,response:{}",response);
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds,response:{}", response);
 
         if (EptUtil.isEmpty(response)) {
             log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用无返回信息");
@@ -365,7 +365,7 @@ public class VehicleApi implements IVehicle {
         );
 
         if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
-            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用返回失败消息，msg{}",resultDto.getMsg());
+            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用返回失败消息，msg{}", resultDto.getMsg());
         }
         return resultDto.getObj();
     }
@@ -378,25 +378,43 @@ public class VehicleApi implements IVehicle {
      */
     @Override
     public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByPlates(List<String> plates) {
-        log.info("vehicle api->ListVehicleRealtimeStatusByPlates->params:{}",plates);
+
+
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates->params:{}", plates);
+
         HashMap<String, Object> paramsMap = new HashMap<>();
         paramsMap.put("key", ThirdApiConfig.key);
         paramsMap.put("plate", String.join(",", plates));
+
         String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
-        log.info("vehicle api->ListVehicleRealtimeStatusByPlates,response:{}",response);
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates,response:{}", response);
+
         if (EptUtil.isEmpty(response)) {
-            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用无返回信息");
+            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用无返回信息,response:{}", response);
             return new ArrayList<>();
         }
+
         AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
                 response,
                 new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
                 }
         );
-        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
-            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用返回失败消息，msg{}",resultDto.getMsg());
-        }
+
+        checkResponse(response, resultDto);
+
         return resultDto.getObj();
+    }
+
+    private void checkResponse(String response, AdasResultDto<?> resultDto) {
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error(
+                    "vehicle api->?->api调用返回失败消息，msg:{},response:{}",
+                    resultDto.getMsg(),
+                    response
+            );
+            //直接异常
+            throw new RuntimeException("调用来源云api失败");
+        }
     }
 
     public static void main(String[] args) {
@@ -434,6 +452,7 @@ public class VehicleApi implements IVehicle {
         );
         System.out.println(resultDto2);
     }
+
     /**
      * 查询实时ADAS报警
      */
