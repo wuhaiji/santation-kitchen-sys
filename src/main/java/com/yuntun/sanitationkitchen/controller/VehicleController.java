@@ -57,19 +57,7 @@ public class VehicleController {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
-
-        IPage<Vehicle> iPage = iVehicleService.page(
-                new Page<Vehicle>()
-                        .setSize(dto.getPageSize())
-                        .setCurrent(dto.getPageNo()),
-                new QueryWrapper<Vehicle>()
-                        .eq(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
-                        .eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-                        .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
-                        .eq(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", dto.getPurchaseDate())
-                        .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
-                        .orderByDesc("create_time")
-        );
+        IPage<Vehicle> iPage = iVehicleService.listPage(dto);
 
         List<Vehicle> records = iPage.getRecords();
         //获取车辆实时信息
