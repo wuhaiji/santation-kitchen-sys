@@ -2,7 +2,6 @@ package com.yuntun.sanitationkitchen.model.dto;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <p>
@@ -14,12 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Data
 @Accessors(chain = true)
-public class UserGetDto {
+public class UserListDto {
+
+    Integer pageSize;
+
+    Integer pageNo;
 
     /**
      * uuid
      */
     private Long uid;
+
+    private Integer disabled;
 
     /**
      * 用户名
@@ -32,13 +37,13 @@ public class UserGetDto {
     private String phone;
 
     /**
+     * 角色id
+     */
+    private Long roleId;
+
+    /**
      * 环卫局id
      */
     private Long sanitationOfficeId;
-
-    /**
-     * 环卫局名称
-     */
-    private String sanitationOfficeName;
 
 }

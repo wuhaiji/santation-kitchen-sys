@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -29,10 +30,26 @@ public class UserGetVo {
      */
     private String username;
 
+
     /**
-     * 密码
+     * 角色id
      */
-    private String password;
+    private Long roleId;
+
+    /**
+     * 所属角色名称
+     */
+    private String roleName;
+
+    /**
+     * 环卫局id
+     */
+    private Long sanitationOfficeId;
+
+    /**
+     * 环卫局名称
+     */
+    private String sanitationOfficeName;
 
     /**
      * 手机号
@@ -43,12 +60,14 @@ public class UserGetVo {
      * 最后一次登录时间
      */
     @DateTimeFormat(pattern = DateConst.dateTimePattern)
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime lastLoginTime;
 
     /**
      * 创建时间
      */
     @DateTimeFormat(pattern = DateConst.dateTimePattern)
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
 
     /**

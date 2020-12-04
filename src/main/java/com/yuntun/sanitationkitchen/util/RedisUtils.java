@@ -154,7 +154,16 @@ public class RedisUtils {
     public static void setValueExpireSeconds(final String key, final Object value, final long timeout) {
         redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.SECONDS);
     }
-
+    /**
+     * 存入普通对象
+     *
+     * @param key     键
+     * @param value   值
+     * @param timeout 有效期，单位毫秒
+     */
+    public static void setValueExpireMills(final String key, final Object value, final long timeout) {
+        redisTemplate.opsForValue().set(key, value, timeout, TimeUnit.MILLISECONDS);
+    }
     /**
      * 存入普通对象
      *

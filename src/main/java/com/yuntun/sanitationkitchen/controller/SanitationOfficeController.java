@@ -2,31 +2,40 @@ package com.yuntun.sanitationkitchen.controller;
 
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
+import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
+import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
-* <p>
-* 后台管理系统用户表 前端控制器
-* </p>
-*
-* @author whj
-* @since 2020-12-01
-*/
+ * <p>
+ * 后台管理系统用户表 前端控制器
+ * </p>
+ *
+ * @author whj
+ * @since 2020-12-01
+ */
 @RestController
 @RequestMapping("/sanitationOffice")
-public class SanitationOfficeController{
+public class SanitationOfficeController {
 
     @Autowired
     private ISanitationOfficeService iSanitationOfficeService;
 
     /**
      * 分页查询后台管理系统用户表
-     * @author wujihong
+     *
      * @param sanitationOfficeDto
+     * @author wujihong
      * @since 2020-12-02 11:21
      */
     @Limit("sanitationOffice:list")
@@ -38,8 +47,9 @@ public class SanitationOfficeController{
 
     /**
      * 根据uid查询后台管理系统用户表
-     * @author wujihong
+     *
      * @param uid
+     * @author wujihong
      * @since 2020-12-02 11:30
      */
     @Limit("sanitationOffice:get")
@@ -51,8 +61,9 @@ public class SanitationOfficeController{
 
     /**
      * 插入后台管理系统用户表
-     * @author wujihong
+     *
      * @param sanitationOfficeDto
+     * @author wujihong
      * @since 2020-12-02 11:39
      */
     @PostMapping("/save")
@@ -65,8 +76,9 @@ public class SanitationOfficeController{
 
     /**
      * 根据uid修改后台管理系统用户表
-     * @author wujihong
+     *
      * @param sanitationOfficeDto
+     * @author wujihong
      * @since 2020-12-02 11:39
      */
     @PostMapping("/update")
@@ -78,8 +90,9 @@ public class SanitationOfficeController{
 
     /**
      * 根据uid删除后台管理系统用户表
-     * @author wujihong
+     *
      * @param uid
+     * @author wujihong
      * @since 2020-12-02 12:12
      */
     @PostMapping("/delete/{uid}")
@@ -89,4 +102,13 @@ public class SanitationOfficeController{
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uid));
     }
 
+    @GetMapping("/options")
+    @Limit("sanitationOffice:options")
+    public Result<Object> options() {
+        List<SanitationOffice> list = iSanitationOfficeService.list();
+        List<OptionsVo> collect = list.parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getName()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(collect);
+    }
 }

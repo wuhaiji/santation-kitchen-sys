@@ -37,4 +37,15 @@ public class UserSaveDto  {
      */
     private String phone;
 
+    /**
+     * 角色id
+     */
+    private Long roleId;
+
+    /**
+     * 环卫局id
+     */
+    private Long sanitationOfficeId;
+
+
 }

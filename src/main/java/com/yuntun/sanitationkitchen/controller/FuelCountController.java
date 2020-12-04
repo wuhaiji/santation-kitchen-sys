@@ -54,7 +54,8 @@ public class FuelCountController {
                         .setPageNo(dto.getPageNo())
         );
 
-        List<String> plates = ListUtil.listMap(String.class, vehicleIPage.getRecords());
+        List<Vehicle> records = vehicleIPage.getRecords();
+        List<String> plates = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
 
         List<VehicleRealtimeStatusAdasDto> list = iVehicle.ListVehicleRealtimeStatusByIds(plates);
 

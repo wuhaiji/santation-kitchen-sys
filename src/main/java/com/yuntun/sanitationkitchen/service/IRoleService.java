@@ -2,6 +2,9 @@ package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.vo.UserRoleListVo;
+
+import java.util.List;
 
 /**
  * <p>

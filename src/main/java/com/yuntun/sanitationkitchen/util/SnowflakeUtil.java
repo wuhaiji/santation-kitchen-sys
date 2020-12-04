@@ -18,4 +18,6 @@ public class SnowflakeUtil {
     public static Long getUnionId() {
         return IdUtil.getSnowflake(idProperties.getWorkerId(), idProperties.getDatacenterId()).nextId();
     }
+
+
 }

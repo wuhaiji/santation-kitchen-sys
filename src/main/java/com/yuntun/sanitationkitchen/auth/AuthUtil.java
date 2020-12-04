@@ -25,14 +25,14 @@ public class AuthUtil {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
     /**
-     * token过期时间
+     * token过期时间,1个小时
      */
-    public static final int TOKEN_TIMEOUT = 4500;
-    public static final int TOKEN_TIMEOUT_80_PERCENTAGE = 3600;
+    public static final int TOKEN_TIMEOUT = 3700_000;
+    public static final int TOKEN_TIMEOUT_80_PERCENTAGE = 3600_000;
     /**
      * 刷新token，3天
      */
-    public static final int REFRESH_TOKEN_TIME = 3600 * 24 * 3;
+    public static final int REFRESH_TOKEN_TIME = 259200_000;
 
     /**
      * redis存储token的键前缀
@@ -42,7 +42,6 @@ public class AuthUtil {
      * redis存储refresh_token的键前缀
      */
     public static final String SK_REFRESH_TOKEN = "sk:refresh_token:";
-
 
 
     /**
@@ -64,8 +63,8 @@ public class AuthUtil {
         //过期时间取80%防止token到达过期临界点
         tokenInfo.setExpireTime(System.currentTimeMillis() + TOKEN_TIMEOUT_80_PERCENTAGE);
 
-        RedisUtils.setValueExpireSeconds(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
-        RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+        RedisUtils.setValueExpireMills(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
+        RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
 
         return tokenInfo;
     }
@@ -89,8 +88,8 @@ public class AuthUtil {
         tokenInfo.setCreatTime(System.currentTimeMillis());
         //过期时间取80%防止token到达过期临界点
         tokenInfo.setExpireTime(System.currentTimeMillis() + TOKEN_TIMEOUT_80_PERCENTAGE);
-        RedisUtils.setValueExpireSeconds(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
-        RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+        RedisUtils.setValueExpireMills(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
+        RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
         return tokenInfo;
     }
 

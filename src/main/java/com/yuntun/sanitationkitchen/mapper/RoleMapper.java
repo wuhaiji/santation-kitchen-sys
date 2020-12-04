@@ -2,7 +2,10 @@ package com.yuntun.sanitationkitchen.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.UserRole;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
 * <p>
@@ -14,5 +17,6 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface RoleMapper extends BaseMapper<Role> {
+
 
 }

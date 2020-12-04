@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +35,9 @@ public class ListUtil {
         if (tClass == null) {
             return new ArrayList<>();
         }
+        if(list.size()<=0){
+            return new ArrayList<>();
+        }
         return list.parallelStream()
                 .map(
                         i -> {
@@ -50,4 +54,6 @@ public class ListUtil {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
+
+
 }
