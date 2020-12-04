@@ -2,7 +2,9 @@ package com.yuntun.sanitationkitchen.mapper;
 
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOfficeValue;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
 
 /**
 * <p>
@@ -14,5 +16,8 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface SanitationOfficeMapper extends BaseMapper<SanitationOffice> {
+
+    // 查询所有的uid和name
+    List<SanitationOfficeValue> selectSanitationOfficeOption();
 
 }

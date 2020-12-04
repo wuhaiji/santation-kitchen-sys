@@ -46,7 +46,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         UserIdHolder.set(userId);
         return true;
     }
-
+    
     @Override
     public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
     }

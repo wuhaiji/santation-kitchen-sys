@@ -6,11 +6,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
 import com.yuntun.sanitationkitchen.mapper.TicketMachineMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOfficeValue;
 import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
 import com.yuntun.sanitationkitchen.service.ITicketMachineService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
@@ -21,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -36,6 +41,36 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
     @Autowired
     private TicketMachineMapper ticketMachineMapper;
 
+    @Autowired
+    private SanitationOfficeMapper sanitationOfficeMapper;
+
+    @Override
+    public SelectOptionVo selectTicketMachineOption() {
+        SelectOptionVo selectOptionVo = new SelectOptionVo();
+        // 1.查询设备品牌
+        List<String> brandList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("brand")).stream()
+                .map(TicketMachine::getBrand).distinct().collect(Collectors.toList());
+        selectOptionVo.setBrandList(brandList);
+
+        // 2.查询设备型号
+        List<String> modelList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("model")).stream().
+                map(TicketMachine::getModel).distinct().collect(Collectors.toList());
+        selectOptionVo.setModelList(modelList);
+
+        // 3.查询环卫机构
+        List<SanitationOfficeValue> sanitationOfficeList = sanitationOfficeMapper.selectList(new QueryWrapper<SanitationOffice>().
+                select("uid", "name")).stream().map(sanitationOffice -> {
+                    SanitationOfficeValue sanitationOfficeValue = new SanitationOfficeValue();
+                    sanitationOfficeValue.setSanitationOfficeId(sanitationOffice.getUid());
+                    sanitationOfficeValue.setSanitationOfficeName(sanitationOffice.getName());
+                    return sanitationOfficeValue;
+                }).collect(Collectors.toList());
+
+//        List<SanitationOfficeValue> sanitationOfficeList = sanitationOfficeMapper.selectSanitationOfficeOption();
+        selectOptionVo.setSanitationOfficeList(sanitationOfficeList);
+        return selectOptionVo;
+    }
+
     @Override
     public RowData<TicketMachineVo> findTicketMachineList(TicketMachineDto ticketMachineDto) {
         IPage<TicketMachine> iPage = ticketMachineMapper.selectPage(
@@ -43,8 +78,11 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
                         .setSize(ticketMachineDto.getPageSize())
                         .setCurrent(ticketMachineDto.getPageNo()),
                 new QueryWrapper<TicketMachine>()
+                        .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceCode()), "device_code", ticketMachineDto.getDeviceCode())
+                        .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceName()), "device_name", ticketMachineDto.getDeviceName())
+                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getBrand()), "brand", ticketMachineDto.getBrand())
+                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getModel()), "model", ticketMachineDto.getModel())
                         .eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()), "sanitation_office_id", ticketMachineDto.getSanitationOfficeId())
-                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getStatus()), "status", ticketMachineDto.getStatus())
                         .orderByDesc("create_time")
         );
         List<TicketMachineVo> ticketMachineVoList = ListUtil.listMap(TicketMachineVo.class, iPage.getRecords());
