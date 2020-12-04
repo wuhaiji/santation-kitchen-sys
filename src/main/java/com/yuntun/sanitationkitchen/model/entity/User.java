@@ -45,6 +45,28 @@ public class User implements Serializable {
     private String password;
 
     /**
+     * 角色id
+     */
+    private Long roleId;
+
+     /**
+     * 角色名称
+     */
+    private String roleName;
+
+
+    /**
+     * 角色id
+     */
+    private Long sanitationOfficeId;
+
+     /**
+     * 角色名称
+     */
+    private String sanitationOfficeName;
+
+
+    /**
      * 手机号
      */
     private String phone;
@@ -53,6 +75,8 @@ public class User implements Serializable {
      * 最后一次登录时间
      */
     private LocalDateTime lastLoginTime;
+
+
     /**
      * 创建人id
      */

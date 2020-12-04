@@ -20,6 +20,8 @@ import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
+import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
+import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -45,31 +48,45 @@ public class VehicleController {
     @Autowired
     IVehicleService iVehicleService;
 
+    @Autowired
+    IVehicle iVehicle;
+
     @Limit("vehicle:list")
     @GetMapping("/list")
     public Result<Object> list(VehicleListDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
-        IPage<Vehicle> iPage = iVehicleService.page(
-                new Page<Vehicle>()
-                        .setSize(dto.getPageSize())
-                        .setCurrent(dto.getPageNo()),
-                new QueryWrapper<Vehicle>()
-                        .eq(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
-                        .eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-                        .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
-                        .eq(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", dto.getPurchaseDate())
-                        .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
-                        .orderByDesc("create_time")
+        IPage<Vehicle> iPage = iVehicleService.listPage(dto);
 
-        );
+        List<Vehicle> records = iPage.getRecords();
+        //获取车辆实时信息
+        List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
+        List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
+                .ListVehicleRealtimeStatusByPlates(plateNos);
 
-        List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, iPage.getRecords());
+        List<VehicleListVo> collect = records.parallelStream().map(i -> {
+            VehicleListVo vehicleListVo = new VehicleListVo();
+            BeanUtils.copyProperties(i, vehicleListVo);
+            //循环找出油量信息和在线离线信息
+            for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
+                if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
+                    vehicleListVo.setStatus(status.getVehicleStatus());
+                    String oil = status.getOil();
+                    if (EptUtil.isEmpty(oil)) {
+                        vehicleListVo.setFuelRemaining(0.0);
+                    }
+                }
+            }
+            return vehicleListVo;
+        }).collect(Collectors.toList());
+
         RowData<VehicleListVo> data = new RowData<VehicleListVo>()
-                .setRows(vehicleListVos)
+                .setRows(collect)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
+
+
         return Result.ok(data);
     }
 

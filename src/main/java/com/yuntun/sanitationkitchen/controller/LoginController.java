@@ -58,8 +58,7 @@ public class LoginController {
             String password,
             String code,
             String publickey,
-            String captchaId,
-            HttpServletRequest request
+            String captchaId
     ) {
 
         ErrorUtil.isStringEmpty(code, "图形验证码");
@@ -117,11 +116,12 @@ public class LoginController {
         UserLoginVo userLoginVo = new UserLoginVo()
                 .setPhone(targetUser.getPhone())
                 .setUsername(targetUser.getUsername())
+                .setUserId(targetUser.getUid())
                 .setTokenInfo(tokenInfo);
         return Result.ok(userLoginVo);
     }
 
-    @PostMapping("/refresh_token")
+    @PostMapping("/refresh/token")
     public Result<Object> getRoomDeviceList(String refreshToken) {
         System.out.println(refreshToken.length());
         ErrorUtil.isStringLengthOutOfRange(refreshToken, 0, 32, "刷新token");

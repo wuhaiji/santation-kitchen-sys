@@ -1,0 +1,39 @@
+{
+  "flag": 1,
+  "msg": "查询成功.",
+  "obj": [
+    {
+      "acc": 1,
+      "RSignal": 0,
+      "hornSignal": 0,
+      "tirePressure": [],
+      "lbSignal": 0,
+      "direct": 340.0,
+      "scale": "",
+      "plate": "13302690436",
+      "lon": 114.125096,
+      "sensorSpeed": 0,
+      "alarmInfo": "终端主电源掉电",
+      "speed": 0.0,
+      "ltlSignal": 0,
+      "rtlSignal": 0,
+      "brakeSignal": 0,
+      "oil": "",
+      "temperature": "",
+      "id": "F6FA39393347F2B86E734D40396CDE93",
+      "lat": 30.613866,
+      "acSignal": 0,
+      "terminalNo": "13302690436",
+      "turnDir": -1,
+      "formatTime": "离线107天22小时8分",
+      "gpsTime": "2020-08-17 12:18:01",
+      "terminalType": "GF-1078",
+      "mlileage": 519.0,
+      "hbSignal": 0,
+      "netModel": 3,
+      "isPos": 0,
+      "vehicleStatus": 3
+    }
+  ],
+  "extend": {}
+}

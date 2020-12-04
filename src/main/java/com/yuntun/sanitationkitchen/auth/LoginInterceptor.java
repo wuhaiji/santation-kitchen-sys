@@ -22,13 +22,16 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginInterceptor implements HandlerInterceptor {
 
     private static final Logger log = LoggerFactory.getLogger(LoginInterceptor.class);
+    public static final String OPTIONS = "OPTIONS";
 
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
-
+        if(OPTIONS.equals(httpServletRequest.getMethod())){
+            return true;
+        }
         //首先从请求头中获取jwt串，与页面约定好存放jwt值的请求头属性名为user-token
         String jwtToken = httpServletRequest.getHeader(UserConstant.TOKEN_HEADER_KEY);
-        log.debug("[sys登录校验拦截器]-jwtToken:{}", jwtToken);
+        log.debug("[sys登录校验拦截器]-Token:{}", jwtToken);
         //判断jwt是否有效
         if (EptUtil.isEmpty(jwtToken)) {
             log.info("[sys登录校验拦截器]-未登录");

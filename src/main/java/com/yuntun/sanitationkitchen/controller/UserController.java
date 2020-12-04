@@ -1,21 +1,28 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
-import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
+import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
+import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.dto.UserSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.UserGetVo;
+import com.yuntun.sanitationkitchen.model.vo.UserListVo;
+import com.yuntun.sanitationkitchen.service.IRoleService;
+import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.service.IUserService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
@@ -47,37 +54,36 @@ import java.util.List;
  * @since 2020-11-05
  */
 @RestController
-@RequestMapping("/User")
+@RequestMapping("/user")
 public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
-    public static final int FIVE_MINUTE = 300;
 
     @Autowired
     IUserService iUserService;
+    @Autowired
+    IRoleService iRoleService;
+
+    @Autowired
+    ISanitationOfficeService iSanitationOfficeService;
 
     @Limit("user:list")
     @GetMapping("/list")
-    public Result<RowData<User>> list(Integer pageSize, Integer pageNo, User User) {
+    public Result<Object> list(UserListDto dto) {
 
-        ErrorUtil.isNumberValueLt(pageSize, 0, "pageSize");
-        ErrorUtil.isNumberValueLt(pageNo, 0, "pageNo");
+        ErrorUtil.isNumberValueLt(dto.getPageSize(), 0, "pageSize");
+        ErrorUtil.isNumberValueLt(dto.getPageNo(), 0, "pageNo");
 
-        IPage<User> iPage = iUserService.page(
-                new Page<User>()
-                        .setSize(pageSize)
-                        .setCurrent(pageNo),
-                new QueryWrapper<User>()
-                        .eq(EptUtil.isNotEmpty(User.getUsername()), "User_name", User.getUsername())
-                        .eq(EptUtil.isNotEmpty(User.getPhone()), "create_time", User.getPhone())
-                        .orderByDesc("id")
-        );
+        IPage<User> iPage = iUserService.listPage(dto);
 
-        List<User> users = ListUtil.listMap(User.class, iPage.getRecords());
-        RowData<User> data = new RowData<User>()
-                .setRows(users)
+        List<User> records = iPage.getRecords();
+        List<UserListVo> userListVos = ListUtil.listMap(UserListVo.class, records);
+
+        RowData<UserListVo> data = new RowData<UserListVo>()
+                .setRows(userListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
+
         return Result.ok(data);
     }
 
@@ -85,11 +91,13 @@ public class UserController {
     @Limit("user:get")
     public Result<Object> detail(@PathVariable("uid") String uid) {
         ErrorUtil.isObjectNull(uid, "参数");
-        User User = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
-        if (EptUtil.isNotEmpty(User))
-            return Result.ok(User);
-        return Result.error(UserCode.DETAIL_SYSUSER_FAILURE);
-
+        User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
+        if (EptUtil.isEmpty(user)) {
+            throw new ServiceException(UserCode.USER_DOES_NOT_EXIST);
+        }
+        UserGetVo userGetVo = new UserGetVo();
+        BeanUtils.copyProperties(user, userGetVo);
+        return Result.ok(userGetVo);
     }
 
     @PostMapping("/save")
@@ -99,14 +107,39 @@ public class UserController {
         ErrorUtil.isStringEmpty(dto.getPhone(), "电话");
         ErrorUtil.isStringLengthOutOfRange(dto.getUsername(), 2, 10, "用户名");
         ErrorUtil.isStringLengthOutOfRange(dto.getPassword(), 6, 16, "密码");
+        ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
+
+        //查询
         String password = dto.getPassword();
-        dto.setPassword(SecureUtil.md5(password));
+        dto.setPassword(BCrypt.hashpw(password));
+
 
         checkRepeatedValue(dto.getUsername(), dto.getPhone());
 
+        //查询角色名称，冗余到用户表
+        Role role = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", dto.getRoleId()));
+        if (role == null) {
+            throw new ServiceException(RoleCode.ROLE_NOT_EXIST);
+        }
+
+        //查询机构名称，冗余到用户表
+        SanitationOffice sanitationOffice = iSanitationOfficeService.getOne(
+                new QueryWrapper<SanitationOffice>()
+                        .eq("uid", dto.getSanitationOfficeId())
+        );
+
+        if (sanitationOffice == null) {
+            throw new ServiceException(CommonCode.PARAMS_ERROR);
+        }
+
         User user = new User()
                 .setUid(SnowflakeUtil.getUnionId())
-                .setCreator(UserIdHolder.get());
+                .setCreator(UserIdHolder.get())
+                .setRoleName(role.getRoleName())
+                .setRoleId(role.getUid())
+                .setSanitationOfficeId(sanitationOffice.getUid())
+                .setSanitationOfficeName(sanitationOffice.getName());
+
         BeanUtils.copyProperties(dto, user);
 
         boolean save = iUserService.save(user);
@@ -123,14 +156,48 @@ public class UserController {
         ErrorUtil.isObjectNull(dto.getUid(), "角色id");
         ErrorUtil.isStringEmpty(publickey, "公钥");
 
-        checkRepeatedValue(dto.getUsername(), dto.getPhone());
+        //先判断是否修改了名字
+        User oldUser = iUserService.getOne(
+                new QueryWrapper<User>().eq("uid", dto.getUid())
+        );
+
+
+        List<User> listName = iUserService.list(
+                new QueryWrapper<User>().eq("username", dto.getUsername())
+        );
+
+        //检查数据库中是否有同名用户
+        if (oldUser.getUsername().equals(dto.getUsername())) {
+            if (listName.size() > 1) {
+                throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
+            }
+        } else {
+            if (listName.size() > 0) {
+                throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
+            }
+        }
+
+        //检查数据库中是否有同电话用户
+        List<User> listPhone = iUserService.list(
+                new QueryWrapper<User>().eq("phone", dto.getPhone())
+        );
+        if (oldUser.getPhone().equals(dto.getPhone())) {
+            if (listPhone.size() > 1) {
+                throw new ServiceException(UserCode.PHONE_NUMBER_ALREADY_EXISTS);
+            }
+        } else {
+            if (listName.size() > 0) {
+                throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
+            }
+        }
+
 
         String passwordDecrypt = LoginController.getPasswordDecrypt(dto.getPassword(), publickey);
 
-        User User = new User();
-        BeanUtils.copyProperties(dto, User);
-        User.setPassword(BCrypt.hashpw(passwordDecrypt));
-        boolean save = iUserService.updateById(User);
+        User user = new User();
+        BeanUtils.copyProperties(dto, user);
+        user.setPassword(BCrypt.hashpw(passwordDecrypt));
+        boolean save = iUserService.update(user, new QueryWrapper<User>().eq("uid", dto.getUid()));
         if (save)
             return Result.ok();
         return Result.error(UserCode.UPDATE_SYSUSER_FAILURE);

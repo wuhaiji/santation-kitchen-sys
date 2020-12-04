@@ -1,19 +1,27 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.UserMapper;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.UserGetDto;
+import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.entity.*;
+import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.UserListVo;
+import com.yuntun.sanitationkitchen.model.vo.UserRoleListVo;
 import com.yuntun.sanitationkitchen.service.*;
 import com.yuntun.sanitationkitchen.util.EptUtil;
+import com.yuntun.sanitationkitchen.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         } catch (Exception e) {
             throw new ServiceException(UserCode.LIST_USER_PERMISSION_ERROR);
         }
-        if (userRoleList.size() <= 0){
+        if (userRoleList.size() <= 0) {
             return new ArrayList<>();
         }
         List<Long> roleIds = userRoleList.parallelStream()
@@ -59,13 +67,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //查询角色权限关联表
         List<RolePermission> rolePermissionList;
         try {
-            rolePermissionList=iRolePermissionService.list(
+            rolePermissionList = iRolePermissionService.list(
                     new QueryWrapper<RolePermission>().in("role_id", roleIds)
             );
         } catch (Exception e) {
             throw new ServiceException(UserCode.LIST_USER_PERMISSION_ERROR);
         }
-        if (rolePermissionList.size() <= 0){
+        if (rolePermissionList.size() <= 0) {
             return new ArrayList<>();
         }
         List<Long> permissionIds = rolePermissionList.parallelStream()
@@ -93,7 +101,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         } catch (Exception e) {
             throw new ServiceException(UserCode.LIST_USER_ROLE_ERROR);
         }
-        if (userRoleList.size() <= 0){
+        if (userRoleList.size() <= 0) {
             return new ArrayList<>();
         }
         List<Long> roleIds = userRoleList.parallelStream()
@@ -133,4 +141,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return user;
     }
+
+    @Override
+    public IPage<User> listPage(UserListDto dto) {
+
+        IPage<User> iPage = this.page(
+                new Page<User>()
+                        .setSize(dto.getPageSize())
+                        .setCurrent(dto.getPageNo()),
+                new QueryWrapper<User>()
+                        .likeRight(EptUtil.isNotEmpty(dto.getUsername()), "username", dto.getUsername())
+                        .eq(EptUtil.isNotEmpty(dto.getPhone()), "phone", dto.getPhone())
+                        .eq(EptUtil.isNotEmpty(dto.getRoleId()), "role_id", dto.getRoleId())
+                        .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_id", dto.getSanitationOfficeId())
+                        .eq(EptUtil.isNotEmpty(dto.getDisabled()), "disabled", dto.getDisabled())
+                        .orderByDesc("create_time")
+        );
+
+
+        return iPage;
+
+    }
+
+
 }

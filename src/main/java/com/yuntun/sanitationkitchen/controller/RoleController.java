@@ -15,14 +15,13 @@ import com.yuntun.sanitationkitchen.model.dto.RoleUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
-import com.yuntun.sanitationkitchen.model.vo.RoleOptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
 import com.yuntun.sanitationkitchen.service.IRoleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,7 +52,6 @@ public class RoleController {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
         IPage<Role> iPage;
-        try {
             iPage = iRoleService.page(
                     new Page<Role>()
                             .setSize(dto.getPageSize())
@@ -63,35 +61,22 @@ public class RoleController {
                             .orderByDesc("create_time")
 
             );
-        } catch (Exception e) {
-            log.error("Exception:", e);
-            throw new ServiceException(CommonCode.SERVER_ERROR);
-        }
 
         RowData<Role> data = new RowData<Role>()
                 .setRows(iPage.getRecords())
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
+
         return Result.ok(data);
     }
 
-    @Limit("role:options")
     @GetMapping("/options")
+    @Limit("sanitationOffice:options")
     public Result<Object> options() {
-        List<Role> list;
-        try {
-            list = iRoleService.list();
-        } catch (Exception e) {
-            log.error("Exception:", e);
-            throw new ServiceException(RoleCode.OPTIONS_ERROR);
-        }
-        List<Object> collect = list.parallelStream().map(
-                i -> {
-                    RoleOptionsVo roleOptionsVo = new RoleOptionsVo();
-                    BeanUtils.copyProperties(i, roleOptionsVo);
-                    return roleOptionsVo;
-                }
-        ).collect(Collectors.toList());
+        List<Role> list = iRoleService.list();
+        List<OptionsVo> collect = list.parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getRoleName()).setValue(i.getUid()))
+                .collect(Collectors.toList());
         return Result.ok(collect);
     }
 

@@ -1,23 +1,25 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.yuntun.sanitationkitchen.bean.AsdsBean;
-import com.yuntun.sanitationkitchen.bean.MileBean;
-import com.yuntun.sanitationkitchen.bean.TireBean;
-import com.yuntun.sanitationkitchen.bean.TrackBean;
-import com.yuntun.sanitationkitchen.bean.VehicleBean;
+import com.alibaba.fastjson.TypeReference;
+import com.yuntun.sanitationkitchen.bean.*;
 import com.yuntun.sanitationkitchen.config.ApiStatusConfig;
 import com.yuntun.sanitationkitchen.config.ThirdApiConfig;
+import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.HttpUtils;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Test;
-import org.springframework.stereotype.Component;
 
 /**
  * @author yookfeng 2020/8/17
@@ -26,208 +28,212 @@ import org.springframework.stereotype.Component;
 @Component
 public class VehicleApi implements IVehicle {
 
-  /**
-   * 查询车辆信息
-   *
-   * @return
-   */
-  @Override
-  public List<VehicleBean> getVehicleInfo() {
-    List<VehicleBean> vehicleBeanList = new ArrayList<>();
-    VehicleBean vehicleBean;
-    Map<String, Object> params = new HashMap<>(2);
-    params.put("key", ThirdApiConfig.key);
-    params.put("type", "1");
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/vehicleBaseInfo.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      JSONArray jsonArray = jsonObject.getJSONArray("obj");
-      for (int i = 0; i < jsonArray.size(); i++) {
-        vehicleBean = new VehicleBean();
-        JSONObject jb = jsonArray.getJSONObject(i);
-        vehicleBean.setTerminalNo(jb.getString("terminalNo"));
-        vehicleBean.setSim(jb.getString("sim"));
-        vehicleBean.setVehicleDeviceId(jb.getString("id"));
-        vehicleBean.setTerminalNo(jb.getString("terminalType"));
-        vehicleBean.setPlateNo(jb.getString("plate"));
-        vehicleBeanList.add(vehicleBean);
-      }
-    }
-    return vehicleBeanList;
-  }
+    private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
+    public static final String realtimeDataByPlateUrl = "/deviceData/realtimeDataByPlate.do";
+    public static final String realtimeDataByIdsUrl = "/deviceData/realtimeData.do";
+    public static final String KEY = "key";
+    public static final String IDS = "ids";
 
+    /**
+     * 查询车辆信息
+     *
+     * @return
+     */
+    @Override
+    public List<VehicleBean> list() {
+        Map<String, Object> params = new HashMap<>(2);
+        params.put("key", ThirdApiConfig.key);
+        HttpUtils httpUtils = new HttpUtils();
 
-  /**
-   * 获取车辆s实时信息
-   *
-   * @param ids
-   * @return
-   */
-  @Override
-  public List<VehicleBean> getVehicleRealtimeData(String ids) {
-    List<VehicleBean> vehicleBeanList = new ArrayList<>();
-    VehicleBean vehicleBean;
-    Map<String, Object> params = new HashMap<>(3);
-    params.put("key", ThirdApiConfig.key);
-    params.put("ids", ids);
-    params.put("type", "1");
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeData.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      JSONArray jsonArray = jsonObject.getJSONArray("obj");
-      for (int i = 0; i < jsonArray.size(); i++) {
-        vehicleBean = new VehicleBean();
-        JSONObject jb = jsonArray.getJSONObject(i);
-        vehicleBean.setTerminalNo(jb.getString("terminalNo"));
-        vehicleBean.setSim(jb.getString("sim"));
-        vehicleBean.setVehicleDeviceId(jb.getString("id"));
-        vehicleBean.setTerminalNo(jb.getString("terminalType"));
-        vehicleBeanList.add(vehicleBean);
-      }
-    }
-    return vehicleBeanList;
-  }
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/vehicleBaseInfo.do", params);
+        System.out.println("返回结果==" + result);
 
-  /**
-   * 查询用户下所有车实时当前状态数据
-   *
-   * @return
-   */
-  @Override
-  public List<VehicleBean> getAllRealtimeData() {
-    List<VehicleBean> vehicleBeanList = new ArrayList<>();
-    List<TireBean> tireBeanList = new ArrayList<>();
-    VehicleBean vehicleBean;
-    Map<String, Object> params = new HashMap<>(3);
-    params.put("key", ThirdApiConfig.key);
-    params.put("type", "1");
-    params.put("filterTime", String.valueOf(System.currentTimeMillis()));
-
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/allRealData.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      JSONObject obj = jsonObject.getJSONObject("obj");
-      JSONArray jsonArray = obj.getJSONArray("data");
-      for (int i = 0; i < jsonArray.size(); i++) {
-        vehicleBean = new VehicleBean();
-        JSONObject jb = jsonArray.getJSONObject(i);
-        vehicleBean.setTerminalNo(jb.getString("terminalNo"));
-        vehicleBean.setSim(jb.getString("sim"));
-        vehicleBean.setVehicleDeviceId(jb.getString("id"));
-        vehicleBean.setTerminalNo(jb.getString("terminalType"));
-        //车辆平台状态
-        vehicleBean.setVehicleDeviceStatus(Integer.parseInt(jb.getString("vehicleStatus")));
-        //胎压信息
-        JSONArray tireArray = jb.getJSONArray("tirePressureInfo");
-        for (int j = 0; j < tireArray.size(); j++) {
-          JSONObject tireObject = tireArray.getJSONObject(j);
-          TireBean tireBean = new TireBean();
-          tireBean.setAlarmStatus(tireObject.getString("alarmStatus"));
-          tireBean.setTyrePemperature(tireObject.getString("tyreIdentifier"));
-          tireBean.setTyrePressure(tireObject.getString("tyrePressure"));
-          tireBean.setTyrePressure(tireObject.getString("tyrePemperature"));
-          tireBean.setStatus(tireObject.getString("status"));
-          tireBeanList.add(tireBean);
-          vehicleBean.setTireBeans(tireBeanList);
+        List<VehicleBean> vehicleBeans = null;
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            String obj = jsonObject.getString("obj");
+            if (obj != null) {
+                vehicleBeans = JSONObject.parseArray(obj, VehicleBean.class);
+            } else {
+                log.error("来源云查询车辆列表异常");
+                vehicleBeans = new ArrayList<>();
+            }
         }
-
-        vehicleBeanList.add(vehicleBean);
-      }
+        return vehicleBeans;
     }
-    return vehicleBeanList;
-  }
 
-  /**
-   * 查询单个车辆里程数据
-   *
-   * @param id
-   * @param startTime
-   * @param endTime
-   * @return
-   */
-  @Override
-  public List<MileBean> getMileageData(String id, Long startTime, Long endTime) {
-    List<MileBean> mileBeanList = new ArrayList<>();
-    Map<String, Object> params = new HashMap<>(5);
-    params.put("key", ThirdApiConfig.key);
-    params.put("type", "1");
-    params.put("id", id);
-    params.put("startTime", String.valueOf(System.currentTimeMillis()));
-    params.put("endTime", String.valueOf(System.currentTimeMillis()));
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/mileage/mileageData.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      String flag = jsonObject.getString("flag");
-      if (ApiStatusConfig.ok.equals(flag)) {
-        JSONArray jsonArray = jsonObject.getJSONArray("obj");
-        for (int i = 0; i < jsonArray.size(); i++) {
-          MileBean mileBean = new MileBean();
-          JSONObject jb = jsonArray.getJSONObject(i);
-          mileBean.setPlate(jb.getString("plate"));
-          mileBean.setBeginTime(jb.getString("beginTime"));
-          mileBean.setEndTime(jb.getString("endTime"));
-          mileBean.setLatBegin(jb.getString("latBegin"));
-          mileBean.setLatEnd(jb.getString("latEnd"));
-          mileBean.setLonBegin(jb.getString("lonBegin"));
-          mileBean.setLonEnd(jb.getString("lonEnd"));
-          mileBean.setMileageBegin(jb.getString("mileageBegin"));
-          mileBean.setMileageEnd(jb.getString("mileageEnd"));
-          mileBean.setSpeed(jb.getString("speed"));
-          mileBean.setThisMileage(jb.getString("thisMileage"));
-          mileBean.setThisSecs(jb.getString("thisSecs"));
-          mileBeanList.add(mileBean);
+
+    /**
+     * 获取车辆s实时信息
+     *
+     * @param ids
+     * @return
+     */
+    @Override
+    public List<VehicleBean> getVehicleRealtimeData(List<String> ids) {
+        if (ids.size() <= 0) {
+            return new ArrayList<>();
         }
-      } else {
-        return null;
-      }
+        List<VehicleBean> vehicleBeanList = new ArrayList<>();
+        VehicleBean vehicleBean;
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("key", ThirdApiConfig.key);
+        params.put("ids", String.join(",", ids));
+        HttpUtils httpUtils = new HttpUtils();
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeData.do", params);
+        System.out.println("返回结果==" + result);
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            JSONArray jsonArray = jsonObject.getJSONArray("obj");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                vehicleBean = new VehicleBean();
+                JSONObject jb = jsonArray.getJSONObject(i);
+                vehicleBean.setTerminalNo(jb.getString("terminalNo"));
+                vehicleBean.setSim(jb.getString("sim"));
+                vehicleBean.setVehicleDeviceId(jb.getString("id"));
+                vehicleBean.setTerminalNo(jb.getString("terminalType"));
+                vehicleBeanList.add(vehicleBean);
+            }
+        }
+        return vehicleBeanList;
     }
-    return mileBeanList;
-  }
 
-  @Test
-  public void test() {
-    long start = LocalDateTime.of(2020, 8, 1, 0, 0, 1).toInstant(ZoneOffset.of("+8")).toEpochMilli();
-    long end = LocalDateTime.of(2020, 8, 10, 0, 0, 1).toInstant(ZoneOffset.of("+8")).toEpochMilli();
-    System.err.println(queryTrackData(
-        "F6FA39393347F2B86E734D40396CDE93", start, end));
-  }
+    /**
+     * 查询用户下所有车实时当前状态数据
+     *
+     * @return
+     */
+    @Override
+    public List<VehicleBean> getAllRealtimeData() {
+        List<VehicleBean> vehicleBeanList = new ArrayList<>();
+        List<TireBean> tireBeanList = new ArrayList<>();
+        VehicleBean vehicleBean;
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("key", ThirdApiConfig.key);
+        params.put("type", "1");
+        params.put("filterTime", String.valueOf(System.currentTimeMillis()));
 
-  /**
-   * 根据时间查询单个车辆轨迹数据
-   *
-   * @param id
-   * @param startTime
-   * @param endTime
-   */
-  @Override
-  public List<TrackBean> queryTrackData(String id, Long startTime, Long endTime) {
-    List<TrackBean> trackBeanList = new ArrayList<>();
-    Map<String, Object> params = new HashMap<>(5);
-    params.put("key", ThirdApiConfig.key);
-    params.put("type", "1");
-    params.put("id", id);
-    params.put("startTime", String.valueOf(startTime));
-    params.put("endTime", String.valueOf(endTime));
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/track/queryTrackData.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      JSONArray jsonArray = jsonObject.getJSONArray("obj");
-      for (int i = 0; i < jsonArray.size(); i++) {
-        TrackBean trackBean = new TrackBean();
-        JSONObject jb = jsonArray.getJSONObject(i);
-        trackBean.setDevTime(jb.getString("devTime"));
-        trackBean.setLon(Double.parseDouble(jb.getString("lon")));
-        trackBean.setLat(Double.parseDouble(jb.getString("lat")));
+        HttpUtils httpUtils = new HttpUtils();
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/allRealData.do", params);
+        System.out.println("返回结果==" + result);
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            JSONObject obj = jsonObject.getJSONObject("obj");
+            JSONArray jsonArray = obj.getJSONArray("data");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                vehicleBean = new VehicleBean();
+                JSONObject jb = jsonArray.getJSONObject(i);
+                vehicleBean.setTerminalNo(jb.getString("terminalNo"));
+                vehicleBean.setSim(jb.getString("sim"));
+                vehicleBean.setVehicleDeviceId(jb.getString("id"));
+                vehicleBean.setTerminalNo(jb.getString("terminalType"));
+                //车辆平台状态
+                vehicleBean.setVehicleDeviceStatus(Integer.parseInt(jb.getString("vehicleStatus")));
+                //胎压信息
+                JSONArray tireArray = jb.getJSONArray("tirePressureInfo");
+                for (int j = 0; j < tireArray.size(); j++) {
+                    JSONObject tireObject = tireArray.getJSONObject(j);
+                    TireBean tireBean = new TireBean();
+                    tireBean.setAlarmStatus(tireObject.getString("alarmStatus"));
+                    tireBean.setTyrePemperature(tireObject.getString("tyreIdentifier"));
+                    tireBean.setTyrePressure(tireObject.getString("tyrePressure"));
+                    tireBean.setTyrePressure(tireObject.getString("tyrePemperature"));
+                    tireBean.setStatus(tireObject.getString("status"));
+                    tireBeanList.add(tireBean);
+                    vehicleBean.setTireBeans(tireBeanList);
+                }
+
+                vehicleBeanList.add(vehicleBean);
+            }
+        }
+        return vehicleBeanList;
+    }
+
+    /**
+     * 查询单个车辆里程数据
+     *
+     * @param id
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @Override
+    public List<MileBean> getMileageData(String id, Long startTime, Long endTime) {
+        List<MileBean> mileBeanList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>(5);
+        params.put("key", ThirdApiConfig.key);
+        params.put("type", "1");
+        params.put("id", id);
+        params.put("startTime", String.valueOf(System.currentTimeMillis()));
+        params.put("endTime", String.valueOf(System.currentTimeMillis()));
+        HttpUtils httpUtils = new HttpUtils();
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/mileage/mileageData.do", params);
+        System.out.println("返回结果==" + result);
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            String flag = jsonObject.getString("flag");
+            if (ApiStatusConfig.ok.equals(flag)) {
+                JSONArray jsonArray = jsonObject.getJSONArray("obj");
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    MileBean mileBean = new MileBean();
+                    JSONObject jb = jsonArray.getJSONObject(i);
+                    mileBean.setPlate(jb.getString("plate"));
+                    mileBean.setBeginTime(jb.getString("beginTime"));
+                    mileBean.setEndTime(jb.getString("endTime"));
+                    mileBean.setLatBegin(jb.getString("latBegin"));
+                    mileBean.setLatEnd(jb.getString("latEnd"));
+                    mileBean.setLonBegin(jb.getString("lonBegin"));
+                    mileBean.setLonEnd(jb.getString("lonEnd"));
+                    mileBean.setMileageBegin(jb.getString("mileageBegin"));
+                    mileBean.setMileageEnd(jb.getString("mileageEnd"));
+                    mileBean.setSpeed(jb.getString("speed"));
+                    mileBean.setThisMileage(jb.getString("thisMileage"));
+                    mileBean.setThisSecs(jb.getString("thisSecs"));
+                    mileBeanList.add(mileBean);
+                }
+            } else {
+                return null;
+            }
+        }
+        return mileBeanList;
+    }
+
+    @Test
+    public void test() {
+        long start = LocalDateTime.of(2020, 8, 1, 0, 0, 1).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        long end = LocalDateTime.of(2020, 8, 10, 0, 0, 1).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        System.err.println(queryTrackData(
+                "F6FA39393347F2B86E734D40396CDE93", start, end));
+    }
+
+    /**
+     * 根据时间查询单个车辆轨迹数据
+     *
+     * @param id
+     * @param startTime
+     * @param endTime
+     */
+    @Override
+    public List<TrackBean> queryTrackData(String id, Long startTime, Long endTime) {
+        List<TrackBean> trackBeanList = new ArrayList<>();
+        Map<String, Object> params = new HashMap<>(5);
+        params.put("key", ThirdApiConfig.key);
+        params.put("type", "1");
+        params.put("id", id);
+        params.put("startTime", String.valueOf(startTime));
+        params.put("endTime", String.valueOf(endTime));
+        HttpUtils httpUtils = new HttpUtils();
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/track/queryTrackData.do", params);
+        System.out.println("返回结果==" + result);
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            JSONArray jsonArray = jsonObject.getJSONArray("obj");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                TrackBean trackBean = new TrackBean();
+                JSONObject jb = jsonArray.getJSONObject(i);
+                trackBean.setDevTime(jb.getString("devTime"));
+                trackBean.setLon(Double.parseDouble(jb.getString("lon")));
+                trackBean.setLat(Double.parseDouble(jb.getString("lat")));
         /*trackBean.setAlarm(jb.getString("alarm"));
         trackBean.setIsRealTime(jb.getString("isRealTime"));
         trackBean.setMileage(jb.getString("mileage"));
@@ -252,112 +258,230 @@ public class VehicleApi implements IVehicle {
         extendBean.setHornSignal(extendJson.getString("hornSignal"));
         extendBean.setTurnDir(extendJson.getString("turnDir"));
         trackBean.setExtend(extendBean);*/
-        trackBeanList.add(trackBean);
-      }
-    }
-    return trackBeanList;
-  }
-
-  /**
-   * 根据车牌号查询车辆动态数据
-   *
-   * @param plate
-   */
-  @Override
-  public List<VehicleBean> getRealtimeDataByPlate(String plate) {
-    List<VehicleBean> vehicleBeanList = new ArrayList<>();
-    List<TireBean> tireBeanList = new ArrayList<>();
-    VehicleBean vehicleBean;
-    Map<String, Object> params = new HashMap<>(3);
-    params.put("key", ThirdApiConfig.key);
-    params.put("type", "1");
-    params.put("plate", plate);
-    HttpUtils httpUtils = new HttpUtils();
-    String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeDataByPlate.do", params);
-    System.out.println("返回结果==" + result);
-    if (result != null) {
-      JSONObject jsonObject = JSONObject.parseObject(result);
-      JSONArray jsonArray = jsonObject.getJSONArray("obj");
-      for (int i = 0; i < jsonArray.size(); i++) {
-        vehicleBean = new VehicleBean();
-        JSONObject jb = jsonArray.getJSONObject(i);
-        vehicleBean.setTerminalNo(jb.getString("devTime"));
-        vehicleBean.setTerminalNo(jb.getString("terminalNo"));
-        vehicleBean.setPlateNo(jb.getString("plate"));
-        vehicleBean.setVehicleDeviceId(jb.getString("id"));
-        vehicleBean.setTerminalNo(jb.getString("terminalType"));
-        vehicleBean.setIsPos(jb.getString("isPos"));
-        vehicleBean.setSensorSpeed(jb.getString("sensorSpeed"));
-        vehicleBean.setAcc(jb.getString("acc"));
-        vehicleBean.setTemperature(jb.getString("temperature"));
-        vehicleBean.setOil(jb.getString("oil"));
-        vehicleBean.setScale(jb.getString("scale"));
-        vehicleBean.setFormatTime(jb.getString("formatTime"));
-        vehicleBean.setDirect(jb.getString("direct"));
-        vehicleBean.setLon(jb.getString("lon"));
-        vehicleBean.setLat(jb.getString("lat"));
-        vehicleBean.setGpsTime(jb.getString("gpsTime"));
-        vehicleBean.setAlarmInfo(jb.getString("alarmInfo"));
-        vehicleBean.setSpeed(jb.getString("speed"));
-        vehicleBean.setMlileage(jb.getString("mlileage"));
-        vehicleBean.setVehicleDeviceStatus(Integer.parseInt(jb.getString("vehicleStatus")));
-        vehicleBean.setLbSignal(jb.getString("lbSignal"));
-        vehicleBean.setRtlSignal(jb.getString("rtlSignal"));
-        vehicleBean.setLtlSignal(jb.getString("ltlSignal"));
-        vehicleBean.setBrakeSignal(jb.getString("brakeSignal"));
-        vehicleBean.setRSignal(jb.getString("RSignal"));
-        vehicleBean.setHornSignal(jb.getString("hornSignal"));
-        vehicleBean.setAcSignal(jb.getString("acSignal"));
-        vehicleBean.setNetModel(jb.getString("netModel"));
-        vehicleBean.setTurnDir(jb.getString("turnDir"));
-        JSONArray tireArray = jb.getJSONArray("tirePressureInfo");
-        for (int j = 0; j < tireArray.size(); j++) {
-          TireBean tireBean = new TireBean();
-          JSONObject object = tireArray.getJSONObject(j);
-          tireBean.setStatus(object.getString("status"));
-          tireBean.setAlarmStatus(object.getString("alarmStatus"));
-          tireBean.setTyrePemperature(object.getString("tyrePemperature"));
-          tireBean.setTyrePressure(object.getString("tyrePressure"));
-          tireBean.setTyreIdentifier(object.getString("tyreIdentifier"));
-          tireBeanList.add(tireBean);
+                trackBeanList.add(trackBean);
+            }
         }
-        vehicleBean.setTireBeans(tireBeanList);
-        vehicleBeanList.add(vehicleBean);
-      }
+        return trackBeanList;
     }
 
-    return vehicleBeanList;
-  }
+    /**
+     * 根据车牌号查询车辆动态数据
+     *
+     * @param plates
+     */
+    @Override
+    public List<VehicleBean> getRealtimeDataByPlate(List<String> plates) {
+        List<VehicleBean> vehicleBeanList = new ArrayList<>();
+        List<TireBean> tireBeanList = new ArrayList<>();
+        VehicleBean vehicleBean;
+        Map<String, Object> params = new HashMap<>(3);
+        params.put("key", ThirdApiConfig.key);
+        params.put("type", "1");
+        params.put("plate", String.join(",", plates));
+        HttpUtils httpUtils = new HttpUtils();
+        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeDataByPlate.do", params);
+        System.out.println("返回结果==" + result);
+        if (result != null) {
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            JSONArray jsonArray = jsonObject.getJSONArray("obj");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                vehicleBean = new VehicleBean();
+                JSONObject jb = jsonArray.getJSONObject(i);
+                vehicleBean.setTerminalNo(jb.getString("devTime"));
+                vehicleBean.setTerminalNo(jb.getString("terminalNo"));
+                vehicleBean.setPlateNo(jb.getString("plate"));
+                vehicleBean.setVehicleDeviceId(jb.getString("id"));
+                vehicleBean.setTerminalNo(jb.getString("terminalType"));
+                vehicleBean.setIsPos(jb.getString("isPos"));
+                vehicleBean.setSensorSpeed(jb.getString("sensorSpeed"));
+                vehicleBean.setAcc(jb.getString("acc"));
+                vehicleBean.setTemperature(jb.getString("temperature"));
+                vehicleBean.setOil(jb.getString("oil"));
+                vehicleBean.setScale(jb.getString("scale"));
+                vehicleBean.setFormatTime(jb.getString("formatTime"));
+                vehicleBean.setDirect(jb.getString("direct"));
+                vehicleBean.setLon(jb.getString("lon"));
+                vehicleBean.setLat(jb.getString("lat"));
+                vehicleBean.setGpsTime(jb.getString("gpsTime"));
+                vehicleBean.setAlarmInfo(jb.getString("alarmInfo"));
+                vehicleBean.setSpeed(jb.getString("speed"));
+                vehicleBean.setMlileage(jb.getString("mlileage"));
+                vehicleBean.setVehicleDeviceStatus(Integer.parseInt(jb.getString("vehicleStatus")));
+                vehicleBean.setLbSignal(jb.getString("lbSignal"));
+                vehicleBean.setRtlSignal(jb.getString("rtlSignal"));
+                vehicleBean.setLtlSignal(jb.getString("ltlSignal"));
+                vehicleBean.setBrakeSignal(jb.getString("brakeSignal"));
+                vehicleBean.setRSignal(jb.getString("RSignal"));
+                vehicleBean.setHornSignal(jb.getString("hornSignal"));
+                vehicleBean.setAcSignal(jb.getString("acSignal"));
+                vehicleBean.setNetModel(jb.getString("netModel"));
+                vehicleBean.setTurnDir(jb.getString("turnDir"));
+                JSONArray tireArray = jb.getJSONArray("tirePressureInfo");
+                for (int j = 0; j < tireArray.size(); j++) {
+                    TireBean tireBean = new TireBean();
+                    JSONObject object = tireArray.getJSONObject(j);
+                    tireBean.setStatus(object.getString("status"));
+                    tireBean.setAlarmStatus(object.getString("alarmStatus"));
+                    tireBean.setTyrePemperature(object.getString("tyrePemperature"));
+                    tireBean.setTyrePressure(object.getString("tyrePressure"));
+                    tireBean.setTyreIdentifier(object.getString("tyreIdentifier"));
+                    tireBeanList.add(tireBean);
+                }
+                vehicleBean.setTireBeans(tireBeanList);
+                vehicleBeanList.add(vehicleBean);
+            }
+        }
 
-  /**
-   * 查询实时ADAS报警
-   */
-  @Override
-  public AsdsBean getRealTimeAdasAlarm(Long time, String type) {
-    return null;
-  }
+        return vehicleBeanList;
+    }
 
-  /**
-   * 查询ADAS报警历史记录
-   */
+    /**
+     * 根据车辆ids查询车辆动态数据
+     *
+     * @param ids 车俩 ids
+     * @return
+     */
+    @Override
+    public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByIds(List<String> ids) {
 
-  @Override
-  public AsdsBean getAdasAlarmReport(String adasType, Long startTime, Long endTime) {
-    return null;
-  }
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds->params:{}", ids);
 
-  @Override
-  public void getAdasAlarmDetail() {
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put(KEY, ThirdApiConfig.key);
+        paramsMap.put(IDS, String.join(",", ids));
 
-  }
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        log.info("vehicle api->ListVehicleRealtimeStatusByIds,response:{}", response);
 
-  @Override
-  public void getQueryImage() {
+        if (EptUtil.isEmpty(response)) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用无返回信息");
+            return new ArrayList<>();
+        }
 
-  }
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
 
-  @Override
-  public void getDownloadImage() {
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用返回失败消息，msg{}", resultDto.getMsg());
+        }
+        return resultDto.getObj();
+    }
 
-  }
+    /**
+     * 根据车牌号查询车辆动态数据
+     *
+     * @param plates 车牌号list
+     * @return
+     */
+    @Override
+    public List<VehicleRealtimeStatusAdasDto> ListVehicleRealtimeStatusByPlates(List<String> plates) {
+
+
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates->params:{}", plates);
+
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put("key", ThirdApiConfig.key);
+        paramsMap.put("plate", String.join(",", plates));
+
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        log.info("vehicle api->ListVehicleRealtimeStatusByPlates,response:{}", response);
+
+        if (EptUtil.isEmpty(response)) {
+            log.error("vehicle api->ListVehicleRealtimeStatusByPlates->api调用无返回信息,response:{}", response);
+            return new ArrayList<>();
+        }
+
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
+
+        checkResponse(response, resultDto);
+
+        return resultDto.getObj();
+    }
+
+    private void checkResponse(String response, AdasResultDto<?> resultDto) {
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error(
+                    "vehicle api->?->api调用返回失败消息，msg:{},response:{}",
+                    resultDto.getMsg(),
+                    response
+            );
+            //直接异常
+            throw new RuntimeException("调用来源云api失败");
+        }
+    }
+
+    public static void main(String[] args) {
+
+        //根据车牌号查询车辆动态数据
+        // ArrayList<String> plates = new ArrayList<String>() {{
+        //     add("13302690436");
+        // }};
+        // HashMap<String, Object> paramsMap = new HashMap<>();
+        // paramsMap.put(KEY, ThirdApiConfig.key);
+        // paramsMap.put("plate", String.join(",", plates));
+        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto1 = JSONObject.parseObject(
+        //         response,
+        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+        //         }
+        // );
+        // System.out.println(resultDto1);
+
+
+        //根据车辆ids查询车辆动态数据
+
+
+        ArrayList<String> list = new ArrayList<String>() {{
+            add("F6FA39393347F2B86E734D40396CDE93");
+        }};
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put(KEY, ThirdApiConfig.key);
+        paramsMap.put(IDS, String.join(",", list));
+        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto2 = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+                }
+        );
+        System.out.println(resultDto2);
+    }
+
+    /**
+     * 查询实时ADAS报警
+     */
+    @Override
+    public AsdsBean getRealTimeAdasAlarm(Long time, String type) {
+        return null;
+    }
+
+    /**
+     * 查询ADAS报警历史记录
+     */
+
+    @Override
+    public AsdsBean getAdasAlarmReport(String adasType, Long startTime, Long endTime) {
+        return null;
+    }
+
+    @Override
+    public void getAdasAlarmDetail() {
+
+    }
+
+    @Override
+    public void getQueryImage() {
+
+    }
+
+    @Override
+    public void getDownloadImage() {
+
+    }
 }

@@ -1,10 +1,14 @@
 package com.yuntun.sanitationkitchen.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.entity.Permission;
 import com.yuntun.sanitationkitchen.model.entity.Role;
 import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.model.dto.UserGetDto;
+import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.UserListVo;
 
 import java.util.List;
 
@@ -37,4 +41,11 @@ public interface IUserService extends IService<User> {
      * @return
      */
     User getDetailById(UserGetDto dto);
+
+    /**
+     * 分页查询用户
+     * @param dto
+     * @return
+     */
+    IPage<User> listPage(UserListDto dto);
 }

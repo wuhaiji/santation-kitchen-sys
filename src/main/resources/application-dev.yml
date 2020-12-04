@@ -16,6 +16,8 @@ spring:
   jackson:
     # springboot响应json null值过滤
     default-property-inclusion: non_null
+    generator:
+      write_numbers_as_strings: true
   # 数据库
   datasource:
     username: root

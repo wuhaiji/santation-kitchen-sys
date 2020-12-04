@@ -17,6 +17,6 @@ import lombok.experimental.Accessors;
 public class UserLoginVo {
     String username;
     String phone;
-    Long uid;
+    Long userId;
     AuthUtil.TokenInfo tokenInfo;
 }
