@@ -7,6 +7,8 @@ import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
 
+import java.util.List;
+
 /**
  * <p>
  * 小票机 服务类
@@ -27,5 +29,5 @@ public interface ITicketMachineService extends IService<TicketMachine> {
 
     Boolean updateTicketMachine(TicketMachineDto ticketMachineDto);
 
-    Boolean deleteTicketMachine(Long uid);
+    Boolean deleteTicketMachine(List<Long> uids);
 }

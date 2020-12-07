@@ -69,11 +69,12 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8")
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+
 //    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "GMT+8")
 //    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8", shape=JsonFormat.Shape.STRING)
 //    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
@@ -89,8 +90,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 禁用时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime disabledTime;
 
     /**
@@ -101,8 +103,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 修改时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updateTime;
 
     /**
@@ -118,8 +121,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 删除时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime deletedTime;
 
 

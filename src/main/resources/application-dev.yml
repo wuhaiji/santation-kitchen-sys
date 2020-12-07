@@ -18,6 +18,11 @@ spring:
     default-property-inclusion: non_null
     generator:
       write_numbers_as_strings: true
+    # 对前台传过来的json做日期处理
+#    date-format: yyyy-MM-dd HH:mm:ss
+#    local-date-time-format: yyyy-MM-dd HH:mm:ss
+#    local-date-format: yyyy-MM-dd
+#    local-time-format: HH:mm:ss
   # 数据库
   datasource:
     username: root

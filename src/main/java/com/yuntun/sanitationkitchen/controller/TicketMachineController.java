@@ -8,6 +8,8 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 小票机 前端控制器
@@ -69,7 +71,8 @@ public class TicketMachineController {
      */
     @RequestMapping("/save")
     @Limit("ticketMachine:save")
-    public Result save(TicketMachineDto ticketMachineDto) {
+    public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
+        System.out.println("ticketMachineDto:"+ticketMachineDto);
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
 
@@ -90,13 +93,13 @@ public class TicketMachineController {
     /**
      * 根据uid删除小票机
      * @author wujihong
-     * @param uid
+     * @param uids
      * @since 2020-12-02 12:12
      */
-    @RequestMapping("/delete/{uid}")
+    @RequestMapping("/delete")
     @Limit("ticketMachine:delete")
-    public Result delete(@PathVariable("uid") Long uid) {
-        ErrorUtil.isObjectNull(uid, "uid");
-        return Result.ok(iTicketMachineService.deleteTicketMachine(uid));
+    public Result delete(@RequestParam("uids[]") List<Long> uids) {
+        ErrorUtil.isObjectNull(uids, "uids");
+        return Result.ok(iTicketMachineService.deleteTicketMachine(uids));
     }
 }
