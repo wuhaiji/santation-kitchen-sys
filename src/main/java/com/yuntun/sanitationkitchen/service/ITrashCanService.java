@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
 import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 import com.yuntun.sanitationkitchen.model.vo.TrashCanVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,6 +19,8 @@ import com.yuntun.sanitationkitchen.model.vo.TrashCanVo;
  */
 public interface ITrashCanService extends IService<TrashCan> {
 
+    SelectOptionVo selectTrashCanOption();
+
     RowData<TrashCanVo> findTrashCanList(TrashCanDto trashCanDto);
 
     TrashCanVo findTrashCanByUid(Long uid);
@@ -24,5 +29,5 @@ public interface ITrashCanService extends IService<TrashCan> {
 
     Boolean updateTrashCan(TrashCanDto trashCanDto);
 
-    Boolean deleteTrashCan(Long uid);
+    Boolean deleteTrashCan(List<Long> uids);
 }

@@ -8,6 +8,8 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 垃圾桶表 前端控制器
@@ -24,13 +26,25 @@ public class TrashCanController {
     private ITrashCanService iTrashCanService;
 
     /**
+     * 垃圾桶 下拉框
+     *
+     * @author wujihong
+     * @since 2020-12-02 11:21
+     */
+    @Limit("trashCan:list")
+    @RequestMapping("/option")
+    public Result selectTrashCanOption() {
+        return Result.ok(iTrashCanService.selectTrashCanOption());
+    }
+
+    /**
      * 分页查询垃圾桶
      * @author wujihong
      * @param trashCanDto
      * @since 2020-12-02 11:21
      */
     @Limit("trashCan:list")
-    @GetMapping("/list")
+    @RequestMapping("/list")
     public Result list(TrashCanDto trashCanDto) {
         ErrorUtil.PageParamError(trashCanDto.getPageSize(), trashCanDto.getPageNo());
         return Result.ok(iTrashCanService.findTrashCanList(trashCanDto));
@@ -43,7 +57,7 @@ public class TrashCanController {
      * @since 2020-12-02 11:30
      */
     @Limit("trashCan:get")
-    @GetMapping("/get/{uid}")
+    @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iTrashCanService.findTrashCanByUid(uid));
@@ -55,9 +69,9 @@ public class TrashCanController {
      * @param trashCanDto
      * @since 2020-12-02 11:39
      */
-    @PostMapping("/save")
+    @RequestMapping("/save")
     @Limit("trashCan:save")
-    public Result save(TrashCanDto trashCanDto) {
+    public Result save(@RequestBody TrashCanDto trashCanDto) {
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
 
@@ -67,9 +81,9 @@ public class TrashCanController {
      * @param trashCanDto
      * @since 2020-12-02 11:39
      */
-    @PostMapping("/update")
+    @RequestMapping("/update")
     @Limit("trashCan:update")
-    public Result update(TrashCanDto trashCanDto) {
+    public Result update(@RequestBody TrashCanDto trashCanDto) {
         ErrorUtil.isObjectNull(trashCanDto.getUid(), "uid");
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
     }
@@ -77,14 +91,14 @@ public class TrashCanController {
     /**
      * 根据uid删除垃圾桶
      * @author wujihong
-     * @param uid
+     * @param uids
      * @since 2020-12-02 12:12
      */
-    @PostMapping("/delete/{uid}")
+    @RequestMapping("/delete")
     @Limit("trashCan:delete")
-    public Result delete(@PathVariable("uid") Long uid) {
-        ErrorUtil.isObjectNull(uid, "uid");
-        return Result.ok(iTrashCanService.deleteTrashCan(uid));
+    public Result delete(@RequestParam("uids[]") List<Long> uids) {
+        ErrorUtil.isObjectNull(uids, "uids");
+        return Result.ok(iTrashCanService.deleteTrashCan(uids));
     }
 
 }

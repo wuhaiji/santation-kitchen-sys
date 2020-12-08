@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.mapper.RestaurantMapper;
 import com.yuntun.sanitationkitchen.mapper.TrashCanMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
-import com.yuntun.sanitationkitchen.model.entity.TrashCan;
+import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 import com.yuntun.sanitationkitchen.model.vo.TrashCanVo;
 import com.yuntun.sanitationkitchen.service.ITrashCanService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
@@ -20,7 +22,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -36,18 +40,47 @@ public class TrashCanServiceImpl extends ServiceImpl<TrashCanMapper, TrashCan> i
     @Autowired
     private TrashCanMapper trashCanMapper;
 
+    @Autowired
+    private RestaurantMapper restaurantMapper;
+
+    @Override
+    public SelectOptionVo selectTrashCanOption() {
+        SelectOptionVo selectOptionVo = new SelectOptionVo();
+
+        // 餐馆uid、餐馆名
+        List<RestaurantValue> restaurantValueList = restaurantMapper.selectList(new QueryWrapper<Restaurant>().
+                select("uid", "name")).stream().map(restaurant -> {
+            RestaurantValue restaurantValue = new RestaurantValue();
+            restaurantValue.setRestaurantId(restaurant.getUid());
+            restaurantValue.setRestaurantName(restaurant.getName());
+            return restaurantValue;
+        }).collect(Collectors.toList());
+        selectOptionVo.setRestaurantList(restaurantValueList);
+        return selectOptionVo;
+    }
+
     @Override
     public RowData<TrashCanVo> findTrashCanList(TrashCanDto trashCanDto) {
+        List<TrashCanVo> trashCanVoList;
         IPage<TrashCan> iPage = trashCanMapper.selectPage(
                 new Page<TrashCan>()
                         .setSize(trashCanDto.getPageSize())
                         .setCurrent(trashCanDto.getPageNo()),
                 new QueryWrapper<TrashCan>()
+                        .like(EptUtil.isNotEmpty(trashCanDto.getFacilityCode()), "facility_code", trashCanDto.getFacilityCode())
                         .eq(EptUtil.isNotEmpty(trashCanDto.getFacilityType()), "facility_type", trashCanDto.getFacilityType())
+                        .like(EptUtil.isNotEmpty(trashCanDto.getAddress()), "address", trashCanDto.getAddress())
+                        .eq(EptUtil.isNotEmpty(trashCanDto.getRestaurantId()), "restaurant_id", trashCanDto.getRestaurantId())
                         .orderByDesc("create_time")
         );
-        List<TrashCanVo> trashCanVoList = ListUtil.listMap(TrashCanVo.class, iPage.getRecords());
 
+        trashCanVoList = iPage.getRecords().stream().map(trashCan -> {
+            TrashCanVo trashCanVo = new TrashCanVo();
+            BeanUtils.copyProperties(trashCan, trashCanVo);
+            double res = (double)trashCan.getReserve()/trashCan.getCapacity()*100;
+            trashCanVo.setPercent(Math.ceil(res)+"%");
+            return trashCanVo;
+        }).collect(Collectors.toList());
         RowData<TrashCanVo> trashCanVoRowData = new RowData<TrashCanVo>()
                 .setRows(trashCanVoList)
                 .setTotal(iPage.getTotal())
@@ -93,14 +126,16 @@ public class TrashCanServiceImpl extends ServiceImpl<TrashCanMapper, TrashCan> i
     }
 
     @Override
-    public Boolean deleteTrashCan(Long uid) {
-        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().eq("uid", uid));
-        if (trashCan == null) {
-            log.error("删除垃圾桶异常->uid不存在");
-            throw new ServiceException(VehicleCode.ID_NOT_EXIST);
-        }
+    public Boolean deleteTrashCan(List<Long> uids) {
+        uids.forEach(uid -> {
+            TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().eq("uid", uid));
+            if (trashCan == null) {
+                log.error("删除垃圾桶异常->uid不存在");
+                throw new ServiceException(VehicleCode.ID_NOT_EXIST);
+            }
+        });
 
-        Integer result = trashCanMapper.delete(new QueryWrapper<TrashCan>().eq("uid", uid));
+        Integer result = trashCanMapper.delete(new QueryWrapper<TrashCan>().in("uid", uids));
         if (result > 0)
             return true;
         else

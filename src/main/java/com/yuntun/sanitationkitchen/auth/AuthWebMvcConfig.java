@@ -1,7 +1,5 @@
 package com.yuntun.sanitationkitchen.auth;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -67,4 +65,5 @@ public class AuthWebMvcConfig implements WebMvcConfigurer {
                 .maxAge(3600)
                 .allowCredentials(true);
     }
+
 }

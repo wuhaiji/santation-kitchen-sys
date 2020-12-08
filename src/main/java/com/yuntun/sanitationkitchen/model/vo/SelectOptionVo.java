@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
+import com.yuntun.sanitationkitchen.model.entity.RestaurantValue;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOfficeValue;
 import com.yuntun.sanitationkitchen.model.entity.VehicleValue;
 import lombok.Data;
@@ -25,6 +26,11 @@ public class SelectOptionVo {
      * 车辆
      */
     private List<VehicleValue> vehicleList;
+
+    /**
+     * 餐馆
+     */
+    private List<RestaurantValue> restaurantList;
 
     /**
      * 环卫机构

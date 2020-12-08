@@ -48,6 +48,13 @@ public class TrashCanVo {
     private Integer reserve;
 
     /**
+     * double res1 = (double)reserve/capacity
+     * int res2 = reserve/capacity;
+     * percent = res1>res2?res2+1:res2
+     */
+    private String percent;
+
+    /**
      * 详细地址
      */
     private String address;

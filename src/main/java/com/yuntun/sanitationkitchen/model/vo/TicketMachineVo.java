@@ -78,7 +78,7 @@ public class TicketMachineVo {
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
 
     /**
@@ -94,7 +94,7 @@ public class TicketMachineVo {
     /**
      * 禁用时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime disabledTime;
 
     /**
@@ -105,7 +105,7 @@ public class TicketMachineVo {
     /**
      * 修改时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime updateTime;
 
     /**
@@ -121,7 +121,7 @@ public class TicketMachineVo {
     /**
      * 删除时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime deletedTime;
 
 

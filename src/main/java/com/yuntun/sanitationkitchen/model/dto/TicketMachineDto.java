@@ -42,6 +42,11 @@ public class TicketMachineDto extends BasePageDto {
     private Long sanitationOfficeId;
 
     /**
+     * 设备所属机构名
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 设备状态0.在线 1.离线
      */
     private Integer status;
@@ -55,6 +60,11 @@ public class TicketMachineDto extends BasePageDto {
      * 车辆id
      */
     private Long vehicleId;
+
+    /**
+     * 车牌号
+     */
+    private String vehicleNumber;
 
     /**
      * 品牌
