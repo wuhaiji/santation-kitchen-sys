@@ -6,6 +6,8 @@ import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.SanitationOfficeVo;
 
+import java.util.List;
+
 /**
  * <p>
  * 后台管理系统用户表 服务类
@@ -24,5 +26,5 @@ public interface ISanitationOfficeService extends IService<SanitationOffice> {
 
     Boolean updateSanitationOffice(SanitationOfficeDto sanitationOfficeDto);
 
-    Boolean deleteSanitationOffice(Long uid);
+    Boolean deleteSanitationOffice(List<Long> uids);
 }

@@ -1,8 +1,6 @@
 package com.yuntun.sanitationkitchen.model.vo;
 
-import com.yuntun.sanitationkitchen.model.entity.RestaurantValue;
-import com.yuntun.sanitationkitchen.model.entity.SanitationOfficeValue;
-import com.yuntun.sanitationkitchen.model.entity.VehicleValue;
+import com.yuntun.sanitationkitchen.model.entity.*;
 import lombok.Data;
 import java.util.List;
 
@@ -15,17 +13,22 @@ public class SelectOptionVo {
     /**
      * 设备品牌
      */
-    private List<String> brandList;
+//    private List<String> brandList;
 
     /**
      * 设备型号
      */
-    private List<String> modelList;
+//    private List<String> modelList;
 
     /**
      * 车辆
      */
     private List<VehicleValue> vehicleList;
+
+    /**
+     * 垃圾桶
+     */
+    private List<TrashCanValue> trashCanList;
 
     /**
      * 餐馆

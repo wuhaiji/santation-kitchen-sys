@@ -47,10 +47,10 @@ public class AuthWebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
         ;
 
-//        registry.addInterceptor(loginInterceptor)
-//                .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
-//                .addPathPatterns("/**")
-//        ;
+        registry.addInterceptor(loginInterceptor)
+                .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
+                .addPathPatterns("/**")
+        ;
 
         // registry.addInterceptor(permissionInterceptor)
         //         .excludePathPatterns(SYS_LOGIN_WHITE_LIST)

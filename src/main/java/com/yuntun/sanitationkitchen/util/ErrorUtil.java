@@ -29,6 +29,31 @@ public class ErrorUtil {
     }
 
     /**
+     * 参数检查， 目标对象内容不能为空
+     *
+     * @author wujihong
+     * @param t
+     * @param msg
+     * @since 2020-12-09 16:08
+     */
+    public static <T> void isObjectNullContent(T t, String msg) {
+        T instance;
+        if (t == null) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能为空");
+        } else {
+            try {
+               instance = (T)t.getClass().newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new ServiceException("参数错误");
+            }
+            if (t.equals(instance)) {
+                throw new ServiceException("PARAM_ERROR", msg + "内容不能为空");
+            }
+        }
+    }
+
+    /**
      * 参数检查， 目标不能为null
      *
      * @param collection 目标集合

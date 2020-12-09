@@ -1,32 +1,23 @@
-package com.yuntun.sanitationkitchen.model.entity;
+package com.yuntun.sanitationkitchen.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.yuntun.sanitationkitchen.model.dto.BasePageDto;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * <p>
- * 地磅表
+ * 地磅配置表
  * </p>
  *
  * @author whj
  * @since 2020-12-02
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_sk_weighbridge")
-public class Weighbridge implements Serializable {
+public class PoundBillVo extends BasePageDto {
 
-    private static final long serialVersionUID = 1L;
-
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
@@ -35,44 +26,49 @@ public class Weighbridge implements Serializable {
     private Long uid;
 
     /**
-     * 设备名称
+     * 流水号
      */
-    private String deviceName;
+    private String serialCode;
 
     /**
-     * 设备编号
-     */
-    private String deviceCode;
-
-    /**
-     * 所属环卫所id
+     * 环卫所id
      */
     private Long sanitationOfficeId;
 
     /**
-     * 品牌
+     * 车牌
      */
-    private String brand;
+    private String numberPlate;
 
     /**
-     * 型号
+     * 车辆id
      */
-    private String model;
+    private Long vehicleId;
 
     /**
-     * 最大称重，单位kg
+     * 垃圾箱
      */
-    private Integer maxWeighing;
+    private Long trashCanId;
 
     /**
-     * 地磅rfid
+     * 垃圾箱名称
      */
-    private String rfid;
+    private String trashCanCode;
 
     /**
-     * 设备状态0.在线 1.离线
+     * 毛重
      */
-    private Integer status;
+    private Double grossWeight;
+
+    /**
+     * 皮重
+     */
+    private Double tare;
+
+    /**
+     * 净重
+     */
+    private Double netWeight;
 
     /**
      * 创建人id

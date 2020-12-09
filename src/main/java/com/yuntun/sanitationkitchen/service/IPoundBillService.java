@@ -1,7 +1,11 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.entity.PoundBill;
+import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.PoundBillVo;
+import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 
 /**
  * <p>
@@ -13,4 +17,7 @@ import com.yuntun.sanitationkitchen.model.entity.PoundBill;
  */
 public interface IPoundBillService extends IService<PoundBill> {
 
+    SelectOptionVo selectPoundBillOption();
+
+    RowData<PoundBillVo> findPoundBillList(PoundBillDto poundBillDto);
 }
