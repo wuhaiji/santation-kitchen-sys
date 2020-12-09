@@ -1,7 +1,10 @@
 package com.yuntun.sanitationkitchen.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 /**
@@ -39,6 +42,11 @@ public class TicketMachineDto extends BasePageDto {
     private Long sanitationOfficeId;
 
     /**
+     * 设备所属机构名
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 设备状态0.在线 1.离线
      */
     private Integer status;
@@ -54,6 +62,11 @@ public class TicketMachineDto extends BasePageDto {
     private Long vehicleId;
 
     /**
+     * 车牌号
+     */
+    private String vehicleNumber;
+
+    /**
      * 品牌
      */
     private String brand;
@@ -66,6 +79,12 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 创建时间
      */
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "GMT+8")
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "GMT+8", shape=JsonFormat.Shape.STRING)
+//    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime createTime;
 
     /**
@@ -81,6 +100,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 禁用时间
      */
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime disabledTime;
 
     /**
@@ -91,6 +113,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 修改时间
      */
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updateTime;
 
     /**
@@ -106,6 +131,9 @@ public class TicketMachineDto extends BasePageDto {
     /**
      * 删除时间
      */
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime deletedTime;
 
 

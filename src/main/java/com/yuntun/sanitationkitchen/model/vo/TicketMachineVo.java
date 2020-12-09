@@ -41,6 +41,11 @@ public class TicketMachineVo {
     private Long sanitationOfficeId;
 
     /**
+     * 设备所属机构名字
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 设备状态0.在线 1.离线
      */
     private Integer status;
@@ -56,6 +61,11 @@ public class TicketMachineVo {
     private Long vehicleId;
 
     /**
+     * 车辆号码
+     */
+    private String vehicleNumber;
+
+    /**
      * 品牌
      */
     private String brand;
@@ -68,7 +78,7 @@ public class TicketMachineVo {
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
 
     /**
@@ -84,7 +94,7 @@ public class TicketMachineVo {
     /**
      * 禁用时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime disabledTime;
 
     /**
@@ -95,7 +105,7 @@ public class TicketMachineVo {
     /**
      * 修改时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime updateTime;
 
     /**
@@ -111,7 +121,7 @@ public class TicketMachineVo {
     /**
      * 删除时间
      */
-    @JsonFormat(pattern = DateConst.dateTimePattern)
+//    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime deletedTime;
 
 

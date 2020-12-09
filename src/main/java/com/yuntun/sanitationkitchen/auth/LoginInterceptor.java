@@ -65,6 +65,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         httpServletResponse.getWriter().write(JSON.toJSONString(Result.error(resultCode)));
     }
 
+
     @Override
     public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
     }

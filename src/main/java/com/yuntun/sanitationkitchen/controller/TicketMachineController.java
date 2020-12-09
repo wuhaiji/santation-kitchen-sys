@@ -8,6 +8,8 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * <p>
  * 小票机 前端控制器
@@ -24,13 +26,25 @@ public class TicketMachineController {
     private ITicketMachineService iTicketMachineService;
 
     /**
+     * 小票机 下拉框
+     *
+     * @author wujihong
+     * @since 2020-12-02 11:21
+     */
+    @Limit("ticketMachine:list")
+    @RequestMapping("/option")
+    public Result selectTicketMachineOption() {
+        return Result.ok(iTicketMachineService.selectTicketMachineOption());
+    }
+
+    /**
      * 分页查询小票机
      * @author wujihong
      * @param ticketMachineDto
      * @since 2020-12-02 11:21
      */
     @Limit("ticketMachine:list")
-    @GetMapping("/list")
+    @RequestMapping("/list")
     public Result list(TicketMachineDto ticketMachineDto) {
         ErrorUtil.PageParamError(ticketMachineDto.getPageSize(), ticketMachineDto.getPageNo());
         return Result.ok(iTicketMachineService.findTicketMachineList(ticketMachineDto));
@@ -43,7 +57,7 @@ public class TicketMachineController {
      * @since 2020-12-02 11:30
      */
     @Limit("ticketMachine:get")
-    @GetMapping("/get/{uid}")
+    @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iTicketMachineService.findTicketMachineByUid(uid));
@@ -55,9 +69,10 @@ public class TicketMachineController {
      * @param ticketMachineDto
      * @since 2020-12-02 11:39
      */
-    @PostMapping("/save")
+    @RequestMapping("/save")
     @Limit("ticketMachine:save")
-    public Result save(TicketMachineDto ticketMachineDto) {
+    public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
+        System.out.println("ticketMachineDto:"+ticketMachineDto);
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
 
@@ -67,9 +82,10 @@ public class TicketMachineController {
      * @param ticketMachineDto
      * @since 2020-12-02 11:39
      */
-    @PostMapping("/update")
+    @RequestMapping("/update")
     @Limit("ticketMachine:update")
-    public Result update(TicketMachineDto ticketMachineDto) {
+    public Result update(@RequestBody TicketMachineDto ticketMachineDto) {
+        System.out.println("ticketMachineDto:"+ticketMachineDto);
         ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));
     }
@@ -77,13 +93,13 @@ public class TicketMachineController {
     /**
      * 根据uid删除小票机
      * @author wujihong
-     * @param uid
+     * @param uids
      * @since 2020-12-02 12:12
      */
-    @PostMapping("/delete/{uid}")
+    @RequestMapping("/delete")
     @Limit("ticketMachine:delete")
-    public Result delete(@PathVariable("uid") Long uid) {
-        ErrorUtil.isObjectNull(uid, "uid");
-        return Result.ok(iTicketMachineService.deleteTicketMachine(uid));
+    public Result delete(@RequestParam("uids[]") List<Long> uids) {
+        ErrorUtil.isObjectNull(uids, "uids");
+        return Result.ok(iTicketMachineService.deleteTicketMachine(uids));
     }
 }

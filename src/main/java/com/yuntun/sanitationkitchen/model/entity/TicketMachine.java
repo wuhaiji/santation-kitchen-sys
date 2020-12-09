@@ -50,6 +50,11 @@ public class TicketMachine implements Serializable {
     private Long sanitationOfficeId;
 
     /**
+     * 设备所属机构名字
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 设备状态0.在线 1.离线
      */
     private Integer status;
@@ -63,6 +68,11 @@ public class TicketMachine implements Serializable {
      * 车辆id
      */
     private Long vehicleId;
+
+    /**
+     * 车辆号码
+     */
+    private String vehicleNumber;
 
     /**
      * 品牌

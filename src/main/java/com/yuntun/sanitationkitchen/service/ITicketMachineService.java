@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
 import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
 import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,6 +19,8 @@ import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
  */
 public interface ITicketMachineService extends IService<TicketMachine> {
 
+    SelectOptionVo selectTicketMachineOption();
+
     RowData<TicketMachineVo> findTicketMachineList(TicketMachineDto ticketMachineDto);
 
     TicketMachineVo findTicketMachineByUid(Long uid);
@@ -24,5 +29,5 @@ public interface ITicketMachineService extends IService<TicketMachine> {
 
     Boolean updateTicketMachine(TicketMachineDto ticketMachineDto);
 
-    Boolean deleteTicketMachine(Long uid);
+    Boolean deleteTicketMachine(List<Long> uids);
 }
