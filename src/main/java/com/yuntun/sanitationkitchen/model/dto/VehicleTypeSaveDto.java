@@ -25,6 +25,11 @@ public class VehicleTypeSaveDto {
     /**
      * 品牌
      */
+    private String model;
+
+    /**
+     * 品牌
+     */
     private String brand;
 
     /**

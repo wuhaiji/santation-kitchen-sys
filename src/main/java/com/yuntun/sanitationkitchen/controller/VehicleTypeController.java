@@ -10,17 +10,20 @@ import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleTypeCode;
-import com.yuntun.sanitationkitchen.model.dto.VehicleTypeListDto;
-import com.yuntun.sanitationkitchen.model.dto.VehicleTypeSaveDto;
-import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
+import com.yuntun.sanitationkitchen.model.dto.*;
+import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.entity.VehicleType;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
+import com.yuntun.sanitationkitchen.model.vo.VehicleTypeGetVo;
+import com.yuntun.sanitationkitchen.model.vo.VehicleTypeListVo;
 import com.yuntun.sanitationkitchen.service.IVehicleTypeService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
+import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -28,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -66,9 +70,9 @@ public class VehicleTypeController {
 
         );
 
-        List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, iPage.getRecords());
-        RowData<VehicleListVo> data = new RowData<VehicleListVo>()
-                .setRows(vehicleListVos)
+        List<VehicleTypeListVo> vehicleTypeListVos = ListUtil.listMap(VehicleTypeListVo.class, iPage.getRecords());
+        RowData<VehicleTypeListVo> data = new RowData<VehicleTypeListVo>()
+                .setRows(vehicleTypeListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
 
@@ -80,9 +84,11 @@ public class VehicleTypeController {
     @Limit("vehicleType:options")
     public Result<Object> options() {
         List<VehicleType> list = iVehicleTypeService.list();
-
-        List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, list);
-        return Result.ok(vehicleListVos);
+        List<OptionsVo> optionsVos = list
+                .parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getName()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(optionsVos);
     }
 
     @GetMapping("/get/{uid}")
@@ -90,12 +96,14 @@ public class VehicleTypeController {
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         VehicleType byId = iVehicleTypeService.getOne(new QueryWrapper<VehicleType>().eq("uid", uid));
-
         if (EptUtil.isEmpty(byId)) {
             log.error("vehicle->get->查询车辆类型详情失败,uid:{}", uid);
             return Result.error(VehicleTypeCode.ID_NOT_EXIST);
         }
-        return Result.ok(byId);
+        VehicleTypeGetVo vehicleTypeGetVo = new VehicleTypeGetVo();
+        BeanUtils.copyProperties(byId,vehicleTypeGetVo);
+
+        return Result.ok(vehicleTypeGetVo);
     }
 
     @PostMapping("/save")
@@ -106,7 +114,7 @@ public class VehicleTypeController {
         ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 16, "名称不能为空");
         ErrorUtil.isStringLengthOutOfRange(dto.getTrait(), 2, 100, "车辆特性");
 
-        VehicleType vehicleType = new VehicleType();
+        VehicleType vehicleType = new VehicleType().setCreator(UserIdHolder.get()).setUid(SnowflakeUtil.getUnionId());
         BeanUtils.copyProperties(dto, vehicleType);
 
         boolean save = iVehicleTypeService.save(vehicleType);
@@ -119,7 +127,7 @@ public class VehicleTypeController {
 
     @PostMapping("/update")
     @Limit("vehicleType:update")
-    public Result<Object> update(VehicleUpdateDto dto) {
+    public Result<Object> update(VehicleTypeUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
 
@@ -155,6 +163,17 @@ public class VehicleTypeController {
             return Result.error(VehicleTypeCode.DELETE_ERROR);
         }
         return Result.ok();
+
+    }
+
+    @PostMapping("/delete/batch")
+    @Limit("vehicle:delete")
+    public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
+        ErrorUtil.isCollectionEmpty(ids, "ids");
+        boolean b = iVehicleTypeService.remove(new QueryWrapper<VehicleType>().in("uid", ids));
+        if (b)
+            return Result.ok();
+        return Result.error(VehicleCode.DELETE_ERROR);
 
     }
 }

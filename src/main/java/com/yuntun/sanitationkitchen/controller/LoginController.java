@@ -19,6 +19,7 @@ import com.yuntun.sanitationkitchen.auth.AuthUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.RSAUtils;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
+import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -203,7 +204,10 @@ public class LoginController {
         RedisUtils.setValueExpireSeconds(UserConstant.CAPTCHA_ID_REDIS_KEY + captchaId, code, FIVE_MINUTE);
         return Result.ok(jsonObject);
     }
-
+    @GetMapping("/uid")
+    public Result<Object> uid() {
+        return Result.ok(SnowflakeUtil.getUnionId());
+    }
     /**
      * 通过redis解密密码
      *
@@ -227,5 +231,6 @@ public class LoginController {
         }
         return passwordDecrypt;
     }
+
 
 }

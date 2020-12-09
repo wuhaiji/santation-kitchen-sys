@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -59,8 +60,7 @@ public class VehicleListDto {
      * 购买日期
      */
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime purchaseDate;
+    private LocalDate purchaseDate;
 
     /**
      * 车辆rfid

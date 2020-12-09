@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -186,17 +187,21 @@ public class UserController {
                 throw new ServiceException(UserCode.PHONE_NUMBER_ALREADY_EXISTS);
             }
         } else {
-            if (listName.size() > 0) {
+            if (listPhone.size() > 0) {
                 throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
             }
         }
 
-
-        String passwordDecrypt = LoginController.getPasswordDecrypt(dto.getPassword(), publickey);
-
         User user = new User();
         BeanUtils.copyProperties(dto, user);
-        user.setPassword(BCrypt.hashpw(passwordDecrypt));
+        //如果密码为空就不修改密码
+        if (EptUtil.isNotEmpty(dto.getPassword())) {
+            String passwordDecrypt = LoginController.getPasswordDecrypt(dto.getPassword(), publickey);
+            user.setPassword(BCrypt.hashpw(passwordDecrypt));
+        } else {
+            user.setPassword(null);
+        }
+
         boolean save = iUserService.update(user, new QueryWrapper<User>().eq("uid", dto.getUid()));
         if (save)
             return Result.ok();
@@ -272,6 +277,17 @@ public class UserController {
 
     }
 
+    @PostMapping("/delete/batch")
+    @Limit("user:delete")
+    public Result<Object> delete(@RequestParam("ids") List<Long> ids) {
+        ErrorUtil.isCollectionEmpty(ids, "信息id");
+        boolean b = iUserService.remove(new QueryWrapper<User>().in("uid", ids));
+        if (b)
+            return Result.ok();
+        return Result.error(UserCode.DELETE_SYSUSER_FAILURE);
+
+    }
+
     @PostMapping("/disable/{uid}/{disabled}")
     @Limit("user:disable")
     public Result<Object> disable(@PathVariable("uid") Long uid, @PathVariable Integer disabled) {
@@ -304,5 +320,7 @@ public class UserController {
 
         return Result.ok(userPermissionList);
     }
+
+
 
 }

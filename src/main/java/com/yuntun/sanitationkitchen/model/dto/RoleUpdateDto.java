@@ -17,7 +17,7 @@ public class RoleUpdateDto {
     /**
      * uuid
      */
-    private Long roleId;
+    private Long uid;
 
     /**
      * 是否是超级管理员1.不是，0.是

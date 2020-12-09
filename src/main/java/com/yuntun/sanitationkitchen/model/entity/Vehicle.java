@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -43,6 +44,10 @@ public class Vehicle implements Serializable {
      * 所属环卫所id
      */
     private Long sanitationOfficeId;
+    /**
+     * 所属环卫所name
+     */
+    private String sanitationOfficeName;
 
     /**
      * 司机名称
@@ -67,7 +72,7 @@ public class Vehicle implements Serializable {
     /**
      * 购买日期
      */
-    private LocalDateTime purchaseDate;
+    private LocalDate purchaseDate;
 
     /**
      * 类型id
@@ -102,6 +107,7 @@ public class Vehicle implements Serializable {
     /**
      * 禁用时间
      */
+
     private LocalDateTime disabledTime;
 
     /**

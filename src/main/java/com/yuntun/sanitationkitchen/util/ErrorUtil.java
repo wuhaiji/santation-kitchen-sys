@@ -34,11 +34,26 @@ public class ErrorUtil {
      * @param collection 目标集合
      * @param msg        异常信息
      */
-    public static void isListEmpty(Collection collection, String msg) {
+    public static void isCollectionEmpty(Collection collection, String msg) {
         if (collection == null) {
             throw new ServiceException("PARAM_ERROR", msg + "不能为空");
         }
         if (collection.size() <= 0) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能为空");
+        }
+    }
+
+    /**
+     * 参数检查， 目标不能为null
+     *
+     * @param array 目标集合
+     * @param msg        异常信息
+     */
+    public static void isArrayEmpty(Object[] array, String msg) {
+        if (array == null) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能为空");
+        }
+        if (array.length <= 0) {
             throw new ServiceException("PARAM_ERROR", msg + "不能为空");
         }
     }
@@ -188,10 +203,11 @@ public class ErrorUtil {
 
     /**
      * 检查参数快捷方法
+     *
      * @param pageSize
      * @param pageNo
      */
-    public static void PageParamError(Integer pageSize,Integer pageNo){
+    public static void PageParamError(Integer pageSize, Integer pageNo) {
         ErrorUtil.isNumberOutOfRange(pageSize, 0, CommonConstant.PageSizeMax, "pageSize");
         ErrorUtil.isNumberValueLe(pageNo, 0, "pageNo");
     }

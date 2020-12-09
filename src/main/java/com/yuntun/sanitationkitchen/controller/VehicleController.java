@@ -3,7 +3,6 @@ package com.yuntun.sanitationkitchen.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
@@ -11,17 +10,20 @@ import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.VehicleGetVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
+import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
-import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -51,6 +53,9 @@ public class VehicleController {
     @Autowired
     IVehicle iVehicle;
 
+    @Autowired
+    ISanitationOfficeService iSanitationOfficeService;
+
     @Limit("vehicle:list")
     @GetMapping("/list")
     public Result<Object> list(VehicleListDto dto) {
@@ -61,28 +66,29 @@ public class VehicleController {
 
         List<Vehicle> records = iPage.getRecords();
         //获取车辆实时信息
-        List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
-        List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
-                .ListVehicleRealtimeStatusByPlates(plateNos);
+        // List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
+        // List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
+        //         .ListVehicleRealtimeStatusByPlates(plateNos);
+        //
+        // List<VehicleListVo> collect = records.parallelStream().map(i -> {
+        //     VehicleListVo vehicleListVo = new VehicleListVo();
+        //     BeanUtils.copyProperties(i, vehicleListVo);
+        //     //循环找出油量信息和在线离线信息
+        //     for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
+        //         if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
+        //             vehicleListVo.setStatus(status.getVehicleStatus());
+        //             String oil = status.getOil();
+        //             if (EptUtil.isEmpty(oil)) {
+        //                 vehicleListVo.setFuelRemaining(0.0);
+        //             }
+        //         }
+        //     }
+        //     return vehicleListVo;
+        // }).collect(Collectors.toList());
 
-        List<VehicleListVo> collect = records.parallelStream().map(i -> {
-            VehicleListVo vehicleListVo = new VehicleListVo();
-            BeanUtils.copyProperties(i, vehicleListVo);
-            //循环找出油量信息和在线离线信息
-            for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
-                if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
-                    vehicleListVo.setStatus(status.getVehicleStatus());
-                    String oil = status.getOil();
-                    if (EptUtil.isEmpty(oil)) {
-                        vehicleListVo.setFuelRemaining(0.0);
-                    }
-                }
-            }
-            return vehicleListVo;
-        }).collect(Collectors.toList());
-
+        List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, records);
         RowData<VehicleListVo> data = new RowData<VehicleListVo>()
-                .setRows(collect)
+                .setRows(vehicleListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
 
@@ -95,18 +101,26 @@ public class VehicleController {
     @GetMapping("/options")
     public Result<Object> options() {
         List<Vehicle> list = iVehicleService.list();
-        List<VehicleListVo> vehicleListVos = ListUtil.listMap(VehicleListVo.class, list);
-        return Result.ok(vehicleListVos);
+        List<OptionsVo> optionsVos = list
+                .parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getNumberPlate()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(optionsVos);
     }
 
     @GetMapping("/get/{uid}")
     @Limit("vehicle:get")
     public Result<Object> get(@PathVariable("uid") Long uid) {
+
         ErrorUtil.isObjectNull(uid, "参数");
         Vehicle byId = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
-        if (EptUtil.isNotEmpty(byId))
-            return Result.ok(byId);
-        return Result.error(VehicleCode.ID_NOT_EXIST);
+        if (EptUtil.isEmpty(byId))
+            return Result.error(VehicleCode.ID_NOT_EXIST);
+        VehicleGetVo vehicleGetVo = new VehicleGetVo();
+        BeanUtils.copyProperties(byId, vehicleGetVo);
+
+        return Result.ok(vehicleGetVo);
+
     }
 
     @PostMapping("/save")
@@ -122,6 +136,10 @@ public class VehicleController {
 
         checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
 
+        SanitationOffice sanitationOffice = iSanitationOfficeService.getOne(
+                new QueryWrapper<SanitationOffice>().eq("uid", dto.getSanitationOfficeId())
+        );
+
 
         Vehicle role = new Vehicle()
                 .setUid(SnowflakeUtil.getUnionId())
@@ -129,6 +147,7 @@ public class VehicleController {
                 .setPurchaseDate(dto.getPurchaseDate())
                 .setRfid(dto.getRfid())
                 .setSanitationOfficeId(dto.getSanitationOfficeId())
+                .setSanitationOfficeName(sanitationOffice.getName())
                 .setNumberPlate(dto.getNumberPlate())
                 .setDriverPhone(dto.getDriverPhone())
                 .setCreator(UserIdHolder.get());
@@ -141,14 +160,14 @@ public class VehicleController {
 
     private void checkRepeatedValue(String numberPlate, String rfid) {
         List<Vehicle> listNumberPlate = iVehicleService.list(
-                new QueryWrapper<Vehicle>().eq("username", numberPlate)
+                new QueryWrapper<Vehicle>().eq("number_plate", numberPlate)
         );
         if (listNumberPlate.size() > 0) {
             throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
         }
 
         List<Vehicle> listRfid = iVehicleService.list(
-                new QueryWrapper<Vehicle>().eq("username", rfid)
+                new QueryWrapper<Vehicle>().eq("rfid", rfid)
         );
         if (listRfid.size() > 0) {
             throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
@@ -161,9 +180,43 @@ public class VehicleController {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆uid不能为空");
 
-        checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
+        Vehicle older = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", dto.getUid()));
+
+        List<Vehicle> listNumberPlate = iVehicleService.list(
+                new QueryWrapper<Vehicle>().eq("number_plate", dto.getNumberPlate())
+        );
+
+        List<Vehicle> listRfid = iVehicleService.list(
+                new QueryWrapper<Vehicle>().eq("rfid", dto.getRfid())
+        );
+
+        if (older.getNumberPlate().equals(dto.getNumberPlate())) {
+            if (listNumberPlate.size() > 1) {
+                throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
+            }
+
+            if (listRfid.size() > 1) {
+                throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
+            }
+        } else {
+            if (listNumberPlate.size() > 0) {
+                throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
+            }
+            if (listRfid.size() > 0) {
+                throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
+            }
+        }
+
 
         Vehicle vehicle = new Vehicle().setUpdator(UserIdHolder.get());
+
+
+        if (EptUtil.isNotEmpty(dto.getSanitationOfficeId())) {
+            SanitationOffice sanitationOffice = iSanitationOfficeService.getOne(
+                    new QueryWrapper<SanitationOffice>().eq("uid", dto.getSanitationOfficeId())
+            );
+            vehicle.setSanitationOfficeName(sanitationOffice.getName());
+        }
 
         BeanUtils.copyProperties(dto, vehicle);
 
@@ -193,4 +246,14 @@ public class VehicleController {
         return Result.error(VehicleCode.DELETE_ERROR);
     }
 
+    @PostMapping("/delete/batch")
+    @Limit("vehicle:delete")
+    public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
+        ErrorUtil.isCollectionEmpty(ids, "ids");
+        boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().in("uid", ids));
+        if (b)
+            return Result.ok();
+        return Result.error(VehicleCode.DELETE_ERROR);
+
+    }
 }

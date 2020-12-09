@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -8,24 +9,29 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
-import com.yuntun.sanitationkitchen.model.dto.PermissionListPageDto;
-import com.yuntun.sanitationkitchen.model.dto.PermissionOptionsDto;
-import com.yuntun.sanitationkitchen.model.dto.PermissionSaveDto;
+import com.yuntun.sanitationkitchen.model.code.code40000.VehicleTypeCode;
+import com.yuntun.sanitationkitchen.model.dto.*;
 import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.VehicleType;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.PermissionListVo;
 import com.yuntun.sanitationkitchen.model.vo.PermissionOptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.TreeNodeVo;
 import com.yuntun.sanitationkitchen.service.IPermissionService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +52,7 @@ public class PermissionController {
     @Autowired
     IPermissionService iPermissionService;
 
-    @Limit("permission:list")
+    @Limit("permission:query")
     @GetMapping("/list")
     public Result<Object> list(PermissionListPageDto dto) {
 
@@ -62,22 +68,74 @@ public class PermissionController {
         );
 
         List<Permission> records = iPage.getRecords();
-        List<PermissionListVo> collect = records.parallelStream().map(
-                i -> new PermissionListVo()
-                        .setParentId(i.getParentId())
-                        .setCreateTime(i.getCreateTime())
-                        .setCreator(i.getCreator())
-                        .setPermissionName(i.getPermissionName())
-                        .setPermissionTag(i.getPermissionTag())
-        ).collect(Collectors.toList());
+        List<PermissionListVo> permissionListVos = ListUtil.listMap(PermissionListVo.class, records);
         RowData<PermissionListVo> data = new RowData<PermissionListVo>()
-                .setRows(collect)
+                .setRows(permissionListVos)
+                .setTotal(iPage.getTotal())
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
 
-    @Limit("permission:options")
+    @Limit("permission:query")
+    @GetMapping("/options/tree")
+    public Result<Object> listTree() {
+
+        //先查出目录
+        List<Permission> catalogs = iPermissionService.list(new QueryWrapper<Permission>().eq("permission_type", 0));
+        //再查出菜单
+        List<Permission> menus = iPermissionService.list(new QueryWrapper<Permission>().eq("permission_type", 1));
+        //再查出按钮
+        List<Permission> buttons = iPermissionService.list(new QueryWrapper<Permission>().eq("permission_type", 2));
+
+        //组装数据
+        Map<Long, List<TreeNodeVo>> buttonsMapGroup = buttons.parallelStream()
+                .map(
+                        i -> new TreeNodeVo()
+                                .setLabel(i.getPermissionName())
+                                .setValue(i.getUid())
+                                .setParentId(i.getParentId())
+                ).collect(Collectors.groupingBy(TreeNodeVo::getParentId));
+
+        Map<Long, List<TreeNodeVo>> menusMapGroup = menus.parallelStream()
+                .map(
+                        i -> {
+                            TreeNodeVo treeNodeVo = new TreeNodeVo()
+                                    .setLabel(i.getPermissionName())
+                                    .setValue(i.getUid())
+                                    .setParentId(i.getParentId());
+                            List<TreeNodeVo> treeNodeVos = buttonsMapGroup.get(i.getUid());
+                            if (treeNodeVos != null) {
+                                treeNodeVo.setChildren(treeNodeVos);
+                            }
+                            return treeNodeVo;
+                        }
+                )
+                .collect(Collectors.groupingBy(TreeNodeVo::getParentId));
+
+
+        ArrayList<TreeNodeVo> catalogNodes = new ArrayList<>();
+
+        for (Permission catalog : catalogs) {
+            TreeNodeVo catalogNode = new TreeNodeVo();
+            catalogNode.setLabel(catalog.getPermissionName());
+            catalogNode.setValue(catalog.getUid());
+            List<TreeNodeVo> menuNodes = menusMapGroup.get(catalog.getUid());
+            catalogNode.setChildren(menuNodes);
+            catalogNodes.add(catalogNode);
+        }
+
+        TreeNodeVo treeNodeVo = new TreeNodeVo();
+        treeNodeVo.setLabel("主目录");
+        treeNodeVo.setValue(0L);
+        treeNodeVo.setChildren(catalogNodes);
+        return Result.ok(new ArrayList<TreeNodeVo>() {{
+            add(treeNodeVo);
+        }});
+
+    }
+
+    @Limit("permission:query")
     @GetMapping("/options")
     public Result<Object> options(PermissionOptionsDto dto) {
 
@@ -101,8 +159,9 @@ public class PermissionController {
 
     }
 
+
     @GetMapping("/get/{uid}")
-    @Limit("Permission:get")
+    @Limit("Permission:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         Permission Permission = iPermissionService.getOne(new QueryWrapper<Permission>().eq("uid", uid));
@@ -126,6 +185,7 @@ public class PermissionController {
                 .setUid(SnowflakeUtil.getUnionId())
                 .setPermissionName(dto.getPermissionName())
                 .setPermissionTag(dto.getPermissionTag())
+                .setPermissionType(dto.getPermissionType())
                 .setParentId(dto.getParentId())
                 .setCreator(UserIdHolder.get());
 
@@ -135,13 +195,34 @@ public class PermissionController {
         return Result.error(PermissionCode.SAVE_ERROR);
 
     }
+    @PostMapping("/update")
+    @Limit("permission:update")
+    public Result<Object> update(PermissionUpdateDto dto) {
+
+        ErrorUtil.isObjectNull(dto.getUid(), "权限uid不能为空");
+
+        Permission permission = new Permission().setUpdator(UserIdHolder.get());
+
+        BeanUtils.copyProperties(dto, permission);
+        boolean save = iPermissionService.update(
+                permission,
+                new QueryWrapper<Permission>().eq("uid", dto.getUid())
+        );
+        if (!save) {
+            log.error("permission->update->修改权限失败,PermissionUpdateDto:{}", JSON.toJSONString(dto));
+            return Result.error(PermissionCode.UPDATE_ERROR);
+        }
+        return Result.ok();
+
+    }
+
 
     private void checkRepeatedValue(PermissionSaveDto dto) {
         //检查数据库是否存在同名权限
         List<Permission> permissionsOne = iPermissionService.list(
                 new QueryWrapper<Permission>().eq("permission_name", dto.getPermissionName())
         );
-        if(permissionsOne.size()>0){
+        if (permissionsOne.size() > 0) {
             throw new ServiceException(PermissionCode.NAME_ALREADY_EXISTS_ERROR);
         }
 
@@ -149,7 +230,7 @@ public class PermissionController {
         List<Permission> permissionsTag = iPermissionService.list(
                 new QueryWrapper<Permission>().eq("permission_tag", dto.getPermissionTag())
         );
-        if(permissionsTag.size()>0){
+        if (permissionsTag.size() > 0) {
             throw new ServiceException(PermissionCode.TAG_ALREADY_EXISTS_ERROR);
         }
     }

@@ -1,24 +1,30 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
+import com.yuntun.sanitationkitchen.model.code.code20000.PermissionCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
+import com.yuntun.sanitationkitchen.model.dto.RoleAllotPermissionDto;
 import com.yuntun.sanitationkitchen.model.dto.RoleListPageDto;
 import com.yuntun.sanitationkitchen.model.dto.RoleSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.RoleUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.RolePermission;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.RoleListVo;
+import com.yuntun.sanitationkitchen.service.IRolePermissionService;
 import com.yuntun.sanitationkitchen.service.IRoleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +51,10 @@ public class RoleController {
     @Autowired
     IRoleService iRoleService;
 
+    @Autowired
+    IRolePermissionService iRolePermissionService;
+
+
     @Limit("role:list")
     @GetMapping("/list")
     public Result<Object> list(RoleListPageDto dto) {
@@ -52,18 +62,21 @@ public class RoleController {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
         IPage<Role> iPage;
-            iPage = iRoleService.page(
-                    new Page<Role>()
-                            .setSize(dto.getPageSize())
-                            .setCurrent(dto.getPageNo()),
-                    new QueryWrapper<Role>()
-                            .eq(EptUtil.isNotEmpty(dto.getRoleName()), "role_name", dto.getRoleName())
-                            .orderByDesc("create_time")
+        iPage = iRoleService.page(
+                new Page<Role>()
+                        .setSize(dto.getPageSize())
+                        .setCurrent(dto.getPageNo()),
+                new QueryWrapper<Role>()
+                        .eq(EptUtil.isNotEmpty(dto.getRoleName()), "role_name", dto.getRoleName())
+                        .eq(EptUtil.isNotEmpty(dto.getDisabled()), "disabled", dto.getDisabled())
+                        .orderByDesc("create_time")
 
-            );
+        );
 
-        RowData<Role> data = new RowData<Role>()
-                .setRows(iPage.getRecords())
+        List<Role> records = iPage.getRecords();
+        List<RoleListVo> roleListVos = ListUtil.listMap(RoleListVo.class, records);
+        RowData<RoleListVo> data = new RowData<RoleListVo>()
+                .setRows(roleListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
 
@@ -80,12 +93,12 @@ public class RoleController {
         return Result.ok(collect);
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/get/{uid}")
     @Limit("role:get")
-    public Result<Object> get(@PathVariable("id") Long id) {
-        ErrorUtil.isObjectNull(id, "参数");
+    public Result<Object> get(@PathVariable("uid") Long uid) {
+        ErrorUtil.isObjectNull(uid, "参数");
         try {
-            Role byId = iRoleService.getById(id);
+            Role byId = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", uid));
             if (EptUtil.isNotEmpty(byId))
                 return Result.ok(byId);
             return Result.error(RoleCode.GET_ERROR);
@@ -126,7 +139,7 @@ public class RoleController {
     private void checkRepeatedValue(String roleName) {
         //检查数据库是否存在同名权限
         List<Role> listName = iRoleService.list(
-                new QueryWrapper<Role>().eq("permission_name", roleName)
+                new QueryWrapper<Role>().eq("role_name", roleName)
         );
         if (listName.size() > 0) {
             throw new ServiceException(RoleCode.NAME_ALREADY_EXISTS_ERROR);
@@ -137,15 +150,26 @@ public class RoleController {
     @Limit("role:update")
     public Result<Object> update(RoleUpdateDto dto) {
 
-        ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
+        ErrorUtil.isObjectNull(dto.getUid(), "角色id");
 
+        Role oldRole = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", dto.getUid()));
+
+        List<Role> listRoleName = iRoleService.list(new QueryWrapper<Role>().eq("role_name", dto.getRoleName()));
         //检查数据库是否存在同名权限
-        checkRepeatedValue(dto.getRoleName());
+        if (oldRole.getRoleName().equals(dto.getRoleName())) {
+            if (listRoleName.size() > 1) {
+                throw new ServiceException(RoleCode.NAME_ALREADY_EXISTS_ERROR);
+            }
+        } else {
+            if (listRoleName.size() > 0) {
+                throw new ServiceException(RoleCode.NAME_ALREADY_EXISTS_ERROR);
+            }
+        }
 
         Role role = new Role().setRoleName(dto.getRoleName()).setRoleType(true);
         try {
             boolean save = iRoleService.update(role,
-                    new QueryWrapper<Role>().eq("uid", dto.getRoleId())
+                    new QueryWrapper<Role>().eq("uid", dto.getUid())
             );
             if (save)
                 return Result.ok();
@@ -155,6 +179,44 @@ public class RoleController {
             throw new ServiceException(RoleCode.UPDATE_ERROR);
         }
 
+    }
+
+    @PostMapping("/allot/permission")
+    @Limit("role:update")
+    public Result<Object> update(RoleAllotPermissionDto dto) {
+
+        ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
+
+        ErrorUtil.isObjectNull(dto.getPermissionIds(), "权限");
+
+        new RolePermission();
+        List<RolePermission> collect = dto.getPermissionIds()
+                .parallelStream()
+                .map(
+                        i -> new RolePermission()
+                                .setPermissionId(i)
+                                .setRoleId(dto.getRoleId())
+                                .setUid(SnowflakeUtil.getUnionId()))
+                .collect(Collectors.toList());
+
+
+        boolean save = iRolePermissionService.saveBatch(collect, dto.getRoleId());
+        if (!save) {
+            log.error("permission->update->修改权限失败,PermissionUpdateDto:{}", JSON.toJSONString(dto));
+            return Result.error(PermissionCode.UPDATE_ERROR);
+        }
+        return Result.ok();
+
+    }
+
+    @GetMapping("/list/permission/{uid}")
+    @Limit("role:query")
+    public Result<Object> listPermission(@PathVariable String uid) {
+
+        ErrorUtil.isObjectNull(uid, "角色id");
+
+        List<RolePermission> list = iRolePermissionService.list(new QueryWrapper<RolePermission>().eq("role_id", uid));
+        return Result.ok(list);
     }
 
     @PostMapping("/delete/{id}")

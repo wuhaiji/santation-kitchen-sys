@@ -14,6 +14,8 @@ spring:
   application:
     name: calendar_sys
   jackson:
+#    time-zone: GMT+8
+#    date-format: yyyy-MM-dd HH:mm:ss
     # springboot响应json null值过滤
     default-property-inclusion: non_null
     generator:

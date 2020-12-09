@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -14,15 +15,15 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 车辆表
+ *
  * </p>
  *
  * @author whj
- * @since 2020-12-01
+ * @since 2020/12/8
  */
 @Data
 @Accessors(chain = true)
-public class VehicleListVo implements Serializable {
+public class VehicleTypeGetVo {
 
     /**
      * uuid
@@ -30,56 +31,34 @@ public class VehicleListVo implements Serializable {
     private Long uid;
 
     /**
-     * 车牌
+     * 名称
      */
-    private String numberPlate;
+    private String name;
 
     /**
-     * 所属环卫所id
+     * 品牌
      */
-    private Long sanitationOfficeId;
-
-
-    private String sanitationOfficeName;
+    private String brand;
+    /**
+     * 型号
+     */
+    private String model;
 
     /**
-     * 司机名称
+     * 车辆特性
      */
-    private String driverName;
+    private String trait;
 
     /**
-     * 司机手机号
+     * 创建人id
      */
-    private String driverPhone;
-
-    /**
-     * 燃油余量
-     */
-    private Double fuelRemaining;
-
-    /**
-     * 0：从未上线 1：行驶 2：停车 3：离线 4：服务到期
-     */
-    private Integer status;
-
-    /**
-     * 购买日期
-     */
-    private LocalDate purchaseDate;
-
-    /**
-     * 车辆rfid
-     */
-    private String rfid;
+    private Long creator;
 
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:ss:mm")
+    @JsonFormat(pattern = DateConst.dateTimePattern)
     private LocalDateTime createTime;
-
-
-
 
 
 }

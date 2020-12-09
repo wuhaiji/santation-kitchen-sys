@@ -3,19 +3,21 @@ package com.yuntun.sanitationkitchen.model.dto;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+
 /**
  * <p>
  *
  * </p>
  *
  * @author whj
- * @since 2020/11/30
+ * @since 2020/12/8
  */
 @Data
 @Accessors(chain = true)
-public class RoleListPageDto {
-    Integer pageSize;
-    Integer pageNo;
-    String roleName;
-    Integer disabled;
+public class RoleAllotPermissionDto {
+
+    Long RoleId;
+
+    List<Long> permissionIds;
 }

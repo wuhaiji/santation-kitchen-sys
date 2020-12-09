@@ -1,18 +1,10 @@
-package com.yuntun.sanitationkitchen.model.dto;
+package com.yuntun.sanitationkitchen.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * <p>
@@ -20,13 +12,19 @@ import java.time.format.DateTimeFormatter;
  * </p>
  *
  * @author whj
- * @since 2020-12-01
+ * @since 2020-12-02
  */
 @Data
 @Accessors(chain = true)
-public class VehicleSaveDto {
+public class VehicleGetVo {
+
     /**
-     * 车牌
+     * uuid
+     */
+    private Long uid;
+
+    /**
+     * 车牌号
      */
     private String numberPlate;
 
@@ -35,8 +33,7 @@ public class VehicleSaveDto {
      */
     private Long sanitationOfficeId;
 
-
-
+    private String sanitationOfficeName;
 
     /**
      * 司机名称
@@ -61,8 +58,12 @@ public class VehicleSaveDto {
     /**
      * 购买日期
      */
-    @DateTimeFormat(pattern = DateConst.datePattern)
     private LocalDate purchaseDate;
+
+    /**
+     * 类型id
+     */
+    private Long typeId;
 
     /**
      * 车辆rfid
@@ -70,8 +71,14 @@ public class VehicleSaveDto {
     private String rfid;
 
     /**
-     * 车辆类型id
+     * 创建时间
      */
-    private Long typeId;
+    private LocalDateTime createTime;
+
+    /**
+     * 禁用状态
+     */
+    private Integer disabled;
+
 
 }
