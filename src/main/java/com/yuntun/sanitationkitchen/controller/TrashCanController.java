@@ -72,6 +72,7 @@ public class TrashCanController {
     @RequestMapping("/save")
     @Limit("trashCan:save")
     public Result save(@RequestBody TrashCanDto trashCanDto) {
+        ErrorUtil.isObjectNullContent(trashCanDto, "垃圾桶信息");
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
 
@@ -96,8 +97,8 @@ public class TrashCanController {
      */
     @RequestMapping("/delete")
     @Limit("trashCan:delete")
-    public Result delete(@RequestParam("uids[]") List<Long> uids) {
-        ErrorUtil.isObjectNull(uids, "uids");
+    public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
+        ErrorUtil.isListEmpty(uids,"uid");
         return Result.ok(iTrashCanService.deleteTrashCan(uids));
     }
 

@@ -31,7 +31,7 @@ public class TicketMachineController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("ticketMachine:list")
+    @Limit("ticketMachine:option")
     @RequestMapping("/option")
     public Result selectTicketMachineOption() {
         return Result.ok(iTicketMachineService.selectTicketMachineOption());
@@ -72,7 +72,7 @@ public class TicketMachineController {
     @RequestMapping("/save")
     @Limit("ticketMachine:save")
     public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
-        System.out.println("ticketMachineDto:"+ticketMachineDto);
+        ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
 
@@ -85,7 +85,6 @@ public class TicketMachineController {
     @RequestMapping("/update")
     @Limit("ticketMachine:update")
     public Result update(@RequestBody TicketMachineDto ticketMachineDto) {
-        System.out.println("ticketMachineDto:"+ticketMachineDto);
         ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));
     }
@@ -98,8 +97,8 @@ public class TicketMachineController {
      */
     @RequestMapping("/delete")
     @Limit("ticketMachine:delete")
-    public Result delete(@RequestParam("uids[]") List<Long> uids) {
-        ErrorUtil.isObjectNull(uids, "uids");
+    public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
+        ErrorUtil.isListEmpty(uids,"uid");
         return Result.ok(iTicketMachineService.deleteTicketMachine(uids));
     }
 }

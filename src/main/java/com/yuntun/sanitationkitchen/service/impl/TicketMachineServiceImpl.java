@@ -50,14 +50,14 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
     public SelectOptionVo selectTicketMachineOption() {
         SelectOptionVo selectOptionVo = new SelectOptionVo();
         // 1.查询设备品牌
-        List<String> brandList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("brand")).stream()
-                .map(TicketMachine::getBrand).distinct().collect(Collectors.toList());
-        selectOptionVo.setBrandList(brandList);
+//        List<String> brandList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("brand")).stream()
+//                .map(TicketMachine::getBrand).distinct().collect(Collectors.toList());
+//        selectOptionVo.setBrandList(brandList);
 
         // 2.查询设备型号
-        List<String> modelList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("model")).stream().
-                map(TicketMachine::getModel).distinct().collect(Collectors.toList());
-        selectOptionVo.setModelList(modelList);
+//        List<String> modelList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().select("model")).stream().
+//                map(TicketMachine::getModel).distinct().collect(Collectors.toList());
+//        selectOptionVo.setModelList(modelList);
 
         // 3.车辆
         List<VehicleValue> vehicleList = vehicleMapper.selectList(new QueryWrapper<Vehicle>().
@@ -91,8 +91,8 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
                 new QueryWrapper<TicketMachine>()
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceCode()), "device_code", ticketMachineDto.getDeviceCode())
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceName()), "device_name", ticketMachineDto.getDeviceName())
-                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getBrand()), "brand", ticketMachineDto.getBrand())
-                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getModel()), "model", ticketMachineDto.getModel())
+                        .like(EptUtil.isNotEmpty(ticketMachineDto.getBrand()), "brand", ticketMachineDto.getBrand())
+                        .like(EptUtil.isNotEmpty(ticketMachineDto.getModel()), "model", ticketMachineDto.getModel())
                         .eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()), "sanitation_office_id", ticketMachineDto.getSanitationOfficeId())
                         .orderByDesc("create_time")
         );
@@ -118,7 +118,7 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
 
     @Override
     public Boolean insertTicketMachine(TicketMachineDto ticketMachineDto) {
-        TicketMachine ticketMachine = new TicketMachine();
+        TicketMachine ticketMachine = new TicketMachine().setCreator(UserIdHolder.get());
         BeanUtils.copyProperties(ticketMachineDto, ticketMachine);
         ticketMachine.setUid(SnowflakeUtil.getUnionId());
 
@@ -160,8 +160,10 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
             }
         });
 
-        Integer result = ticketMachineMapper.delete(new QueryWrapper<TicketMachine>().in("uid", uids));
-        if (result > 0)
+        TicketMachine ticketMachine = new TicketMachine().setDeletedBy(UserIdHolder.get());
+        Integer result = ticketMachineMapper.update(ticketMachine, new QueryWrapper<TicketMachine>().in("uid", uids));
+        Integer result2 = ticketMachineMapper.delete(new QueryWrapper<TicketMachine>().in("uid", uids));
+        if (result > 0 && result2 > 0)
             return true;
         else
             return false;

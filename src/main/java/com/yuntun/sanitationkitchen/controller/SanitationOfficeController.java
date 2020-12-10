@@ -30,6 +30,16 @@ public class SanitationOfficeController {
     @Autowired
     private ISanitationOfficeService iSanitationOfficeService;
 
+    @RequestMapping("/option")
+    @Limit("sanitationOffice:option")
+    public Result<Object> option() {
+        List<SanitationOffice> list = iSanitationOfficeService.list();
+        List<OptionsVo> collect = list.parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getName()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(collect);
+    }
+
     /**
      * 分页查询后台管理系统用户表
      *
@@ -37,6 +47,8 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
+    @Limit("sanitationOffice:list")
+    @RequestMapping("/list")
 
     @GetMapping("/list")
     @Limit("system:sanitationOffice:query")
@@ -55,6 +67,8 @@ public class SanitationOfficeController {
 
     @GetMapping("/get/{uid}")
     @Limit("system:sanitationOffice:query")
+    @Limit("sanitationOffice:get")
+    @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iSanitationOfficeService.findSanitationOfficeServiceByUid(uid));
@@ -77,15 +91,12 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:39
      */
-    @PostMapping("/save")
-    @Limit("system:sanitationOffice:save")
-    public Result save(SanitationOfficeDto sanitationOfficeDto) {
-        ErrorUtil.isObjectNull(sanitationOfficeDto.getName(), "用户名");
-        ErrorUtil.isObjectNull(sanitationOfficeDto.getManagerId(), "管理员id");
+    @RequestMapping("/save")
+    @Limit("sanitationOffice:save")
+    public Result save(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
+        ErrorUtil.isObjectNullContent(sanitationOfficeDto, "单位信息");
         return Result.ok(iSanitationOfficeService.insertSanitationOffice(sanitationOfficeDto));
     }
-
-
 
     /**
      * 根据uid修改后台管理系统用户表
@@ -94,6 +105,9 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:39
      */
+    @RequestMapping("/update")
+    @Limit("sanitationOffice:update")
+    public Result update(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
     @PostMapping("/update")
     @Limit("system:sanitationOffice:update")
     public Result update(SanitationOfficeDto sanitationOfficeDto) {
@@ -104,10 +118,15 @@ public class SanitationOfficeController {
     /**
      * 根据uid删除后台管理系统用户表
      *
-     * @param uid
+     * @param uids
      * @author wujihong
      * @since 2020-12-02 12:12
      */
+    @RequestMapping("/delete")
+    @Limit("sanitationOffice:delete")
+    public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
+        ErrorUtil.isListEmpty(uids,"uid");
+        return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
     @PostMapping("/delete/{uid}")
     @Limit("system:sanitationOffice:delete")
     public Result delete(@PathVariable("uid") Long uid) {

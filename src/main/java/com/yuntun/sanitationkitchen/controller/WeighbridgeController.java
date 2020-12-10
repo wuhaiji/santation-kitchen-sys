@@ -8,14 +8,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleTypeCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.WeighbridgeCode;
-import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
+import com.yuntun.sanitationkitchen.model.dto.WeighbridgeDto;
 import com.yuntun.sanitationkitchen.model.dto.WeighbridgeListDto;
 import com.yuntun.sanitationkitchen.model.dto.WeighbridgeSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.WeighbridgeUpdateDto;
-import com.yuntun.sanitationkitchen.model.entity.VehicleType;
 import com.yuntun.sanitationkitchen.model.entity.Weighbridge;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
@@ -31,6 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,65 +49,32 @@ public class WeighbridgeController {
     @Autowired
     IWeighbridgeService iWeighbridgeService;
 
-    
-    @GetMapping("/list")
+
+    @RequestMapping("/list")
     @Limit("weighbridge:list")
-    public Result<Object> list(WeighbridgeListDto dto) {
-
+    public Result<Object> list(WeighbridgeDto dto) {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
-
-        IPage<Weighbridge> iPage = iWeighbridgeService.page(
-                new Page<Weighbridge>()
-                        .setSize(dto.getPageSize())
-                        .setCurrent(dto.getPageNo()),
-                new QueryWrapper<Weighbridge>()
-                        .eq(EptUtil.isNotEmpty(dto.getBrand()), "brand", dto.getBrand())
-
-                        .orderByDesc("create_time")
-
-        );
-
-        List<WeighbridgeListVo> vehicleListVos = ListUtil.listMap(WeighbridgeListVo.class, iPage.getRecords());
-
-        RowData<WeighbridgeListVo> data = new RowData<WeighbridgeListVo>()
-                .setRows(vehicleListVos)
-                .setTotal(iPage.getTotal())
-                .setTotalPages(iPage.getTotal());
-
-        return Result.ok(data);
+        return Result.ok(iWeighbridgeService.findWeighbridgeList(dto));
     }
 
 
-    @GetMapping("/options")
-    @Limit("weighbridge:options")
+    @RequestMapping("/option")
+    @Limit("weighbridge:option")
     public Result<Object> options() {
-
-        List<Weighbridge> list = iWeighbridgeService.list();
-
-        List<WeighbridgeOptionsVo> vehicleListVos = ListUtil.listMap(WeighbridgeOptionsVo.class, list);
-
-        return Result.ok(vehicleListVos);
+        return Result.ok(iWeighbridgeService.selectWeighbridgeOption());
     }
 
-    @GetMapping("/get/{uid}")
+    @RequestMapping("/get/{uid}")
     @Limit("weighbridge:get")
     public Result<Object> get(@PathVariable("uid") Long uid) {
-
         ErrorUtil.isObjectNull(uid, "参数");
-
-        Weighbridge byId = iWeighbridgeService.getOne(new QueryWrapper<Weighbridge>().eq("uid", uid));
-
-        if (EptUtil.isEmpty(byId)) {
-            log.error("weighbridge->get->查询车辆类型详情失败,uid:{}", uid);
-            return Result.error(WeighbridgeCode.ID_NOT_EXIST);
-        }
-        return Result.ok(byId);
+        return Result.ok(iWeighbridgeService.findWeighbridgeByUid(uid));
     }
 
-    @PostMapping("/save")
+    @RequestMapping("/save")
     @Limit("weighbridge:save")
-    public Result<Object> save(WeighbridgeSaveDto dto) {
-
+    public Result<Object> save(@RequestBody WeighbridgeDto dto) {
+        ErrorUtil.isObjectNullContent(dto, "地磅信息");
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌不能为空");
         ErrorUtil.isStringLengthOutOfRange(dto.getDeviceCode(), 2, 30, "设备名称");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
@@ -116,56 +82,20 @@ public class WeighbridgeController {
         ErrorUtil.isObjectNull(dto.getMaxWeighing(), "最大称重量(kg)");
         ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构id");
 
-        Weighbridge entity = new Weighbridge();
-        BeanUtils.copyProperties(dto, entity);
-
-        boolean save = iWeighbridgeService.save(entity);
-        if (!save) {
-            log.error("weighbridge->save->保存地磅失败,WeighbridgeSaveDto:{}", JSON.toJSONString(dto));
-            return Result.error(WeighbridgeCode.SAVE_ERROR);
-        }
-        return Result.ok();
+        return Result.ok(iWeighbridgeService.insertWeighbridge(dto));
     }
 
-    @PostMapping("/update")
+    @RequestMapping("/update")
     @Limit("weighbridge:update")
-    public Result<Object> update(WeighbridgeUpdateDto dto) {
-
+    public Result<Object> update(@RequestBody WeighbridgeDto dto) {
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
-
-        Weighbridge entity = new Weighbridge().setUpdator(UserIdHolder.get());
-        BeanUtils.copyProperties(dto, entity);
-        boolean save = iWeighbridgeService.update(
-                entity,
-                new QueryWrapper<Weighbridge>().eq("uid", dto.getUid())
-        );
-        if (!save) {
-            log.error("vehicle->update->修改地磅失败,WeighbridgeUpdateDto:{}", JSON.toJSONString(dto));
-            return Result.error(VehicleTypeCode.UPDATE_ERROR);
-        }
-        return Result.ok();
-
+        return Result.ok(iWeighbridgeService.updateWeighbridge(dto));
     }
 
-    @PostMapping("/delete/{uid}")
+    @RequestMapping("/delete")
     @Limit("weighbridge:delete")
-    public Result<Object> delete(@PathVariable("uid") Long uid) {
-
-        ErrorUtil.isObjectNull(uid, "uid");
-
-        Weighbridge vehicleType = iWeighbridgeService.getOne(new QueryWrapper<Weighbridge>().eq("uid", uid));
-        if (vehicleType == null) {
-            log.error("weighbridge->delete->uid不存在,uid:{}", uid);
-            throw new ServiceException(WeighbridgeCode.ID_NOT_EXIST);
-        }
-
-        boolean b = iWeighbridgeService.remove(new QueryWrapper<Weighbridge>().eq("uid", uid));
-
-        if (!b) {
-            log.error("weighbridge->delete->删除地磅失败,uid:{}", uid);
-            return Result.error(WeighbridgeCode.DELETE_ERROR);
-        }
-        return Result.ok();
-
+    public Result<Object> delete(@RequestParam(value = "uids[]", required = false) List<Long> uids) {
+        ErrorUtil.isListEmpty(uids,"uid");
+        return Result.ok(iWeighbridgeService.deleteWeighbridge(uids));
     }
 }

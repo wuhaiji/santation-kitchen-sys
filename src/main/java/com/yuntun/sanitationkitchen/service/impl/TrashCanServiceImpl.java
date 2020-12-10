@@ -101,7 +101,7 @@ public class TrashCanServiceImpl extends ServiceImpl<TrashCanMapper, TrashCan> i
 
     @Override
     public Boolean insertTrashCan(TrashCanDto trashCanDto) {
-        TrashCan trashCan = new TrashCan();
+        TrashCan trashCan = new TrashCan().setCreator(UserIdHolder.get());
         BeanUtils.copyProperties(trashCanDto, trashCan);
         trashCan.setUid(SnowflakeUtil.getUnionId());
 
@@ -135,8 +135,10 @@ public class TrashCanServiceImpl extends ServiceImpl<TrashCanMapper, TrashCan> i
             }
         });
 
-        Integer result = trashCanMapper.delete(new QueryWrapper<TrashCan>().in("uid", uids));
-        if (result > 0)
+        TrashCan trashCan = new TrashCan().setDeletedBy(UserIdHolder.get()).setDeleted(1);
+        Integer result = trashCanMapper.update(trashCan, new QueryWrapper<TrashCan>().in("uid", uids));
+        Integer result2 = trashCanMapper.delete(new QueryWrapper<TrashCan>().in("uid", uids));
+        if (result > 0 && result2 > 0)
             return true;
         else
             return false;

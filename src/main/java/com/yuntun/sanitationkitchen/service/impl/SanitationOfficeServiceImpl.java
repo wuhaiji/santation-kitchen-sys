@@ -12,6 +12,9 @@ import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.entity.User;
+import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
+import com.yuntun.sanitationkitchen.model.entity.TrashCan;
+import com.yuntun.sanitationkitchen.model.entity.Weighbridge;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.SanitationOfficeVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
@@ -91,7 +94,7 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
 
     @Override
     public Boolean insertSanitationOffice(SanitationOfficeDto sanitationOfficeDto) {
-        SanitationOffice sanitationOffice = new SanitationOffice();
+        SanitationOffice sanitationOffice = new SanitationOffice().setCreator(UserIdHolder.get());
         BeanUtils.copyProperties(sanitationOfficeDto, sanitationOffice);
         sanitationOffice.setUid(SnowflakeUtil.getUnionId());
 
@@ -122,9 +125,21 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
             log.error("删除后台管理系统用户表异常->uid不存在");
             throw new ServiceException(VehicleCode.ID_NOT_EXIST);
         }
+    public Boolean deleteSanitationOffice(List<Long> uids) {
+        uids.forEach(uid -> {
+            SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().eq("uid", uid));
+            if (sanitationOffice == null) {
+                log.error("删除后台管理系统用户表异常->uid不存在");
+                throw new ServiceException(VehicleCode.ID_NOT_EXIST);
+            }
+        });
 
         Integer result = baseMapper.delete(new QueryWrapper<SanitationOffice>().eq("uid", uid));
         if (result > 0)
+        SanitationOffice sanitationOffice = new SanitationOffice().setDeletedBy(UserIdHolder.get());
+        Integer result = sanitationOfficeMapper.update(sanitationOffice, new QueryWrapper<SanitationOffice>().in("uid", uids));
+        Integer result2 = sanitationOfficeMapper.delete(new QueryWrapper<SanitationOffice>().in("uid", uids));
+        if (result > 0 && result2 > 0)
             return true;
         else
             return false;
