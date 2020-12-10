@@ -31,7 +31,7 @@ public class SanitationOfficeController {
     private ISanitationOfficeService iSanitationOfficeService;
 
     @RequestMapping("/option")
-    @Limit("sanitationOffice:option")
+    @Limit("sanitationOffice:query")
     public Result<Object> option() {
         List<SanitationOffice> list = iSanitationOfficeService.list();
         List<OptionsVo> collect = list.parallelStream()
@@ -61,8 +61,8 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:30
      */
-    @Limit("system:sanitationOffice:query")
     @RequestMapping("/get/{uid}")
+    @Limit("system:sanitationOffice:query")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iSanitationOfficeService.findSanitationOfficeServiceByUid(uid));
@@ -118,6 +118,21 @@ public class SanitationOfficeController {
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
         ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
+
+    }
+
+    /**
+     * 根据uid删除后台管理系统用户表
+     *
+     * @param ids
+     * @author wujihong
+     * @since 2020-12-02 12:12
+     */
+    @RequestMapping("/delete/batch")
+    @Limit("system:sanitationOffice:delete")
+    public Result deleteBatch(@RequestParam List<Long> ids) {
+        ErrorUtil.isCollectionEmpty(ids,"uid");
+        return Result.ok(iSanitationOfficeService.deleteSanitationOffice(ids));
 
     }
 

@@ -57,8 +57,9 @@ public class VehicleController {
     @Autowired
     ISanitationOfficeService iSanitationOfficeService;
 
-    @Limit("vehicle:list")
+
     @GetMapping("/list")
+    @Limit("vehicle:query")
     public Result<Object> list(VehicleListDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -98,8 +99,9 @@ public class VehicleController {
     }
 
 
-    @Limit("vehicle:options")
+
     @GetMapping("/options")
+    @Limit("vehicle:query")
     public Result<Object> options() {
         List<Vehicle> list = iVehicleService.list();
         List<OptionsVo> optionsVos = list
@@ -110,7 +112,7 @@ public class VehicleController {
     }
 
     @GetMapping("/get/{uid}")
-    @Limit("vehicle:get")
+    @Limit("vehicle:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
 
         ErrorUtil.isObjectNull(uid, "参数");

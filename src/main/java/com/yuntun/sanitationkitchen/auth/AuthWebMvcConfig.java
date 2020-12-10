@@ -53,11 +53,12 @@ public class AuthWebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
         ;
 
-        // registry.addInterceptor(permissionInterceptor)
-        //         .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
-        //         .addPathPatterns("/**")
-        // ;
+        registry.addInterceptor(permissionInterceptor)
+                .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
+                .addPathPatterns("/**")
+        ;
     }
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

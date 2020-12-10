@@ -52,7 +52,7 @@ public class VehicleTypeController {
 
 
     @GetMapping("/list")
-    @Limit("vehicleType:list")
+    @Limit("system:vehicleType:query")
     public Result<Object> list(VehicleTypeListDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -81,7 +81,7 @@ public class VehicleTypeController {
 
 
     @GetMapping("/options")
-    @Limit("vehicleType:options")
+    @Limit("system:vehicleType:query")
     public Result<Object> options() {
         List<VehicleType> list = iVehicleTypeService.list();
         List<OptionsVo> optionsVos = list
@@ -92,7 +92,7 @@ public class VehicleTypeController {
     }
 
     @GetMapping("/get/{uid}")
-    @Limit("vehicleType:get")
+    @Limit("system:vehicleType:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         VehicleType byId = iVehicleTypeService.getOne(new QueryWrapper<VehicleType>().eq("uid", uid));
@@ -107,7 +107,7 @@ public class VehicleTypeController {
     }
 
     @PostMapping("/save")
-    @Limit("vehicleType:save")
+    @Limit("system:vehicleType:save")
     public Result<Object> save(VehicleTypeSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 16, "品牌不能为空");
@@ -126,7 +126,7 @@ public class VehicleTypeController {
     }
 
     @PostMapping("/update")
-    @Limit("vehicleType:update")
+    @Limit("system:vehicleType:update")
     public Result<Object> update(VehicleTypeUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
@@ -145,7 +145,7 @@ public class VehicleTypeController {
     }
 
     @PostMapping("/delete/{uid}")
-    @Limit("vehicleType:delete")
+    @Limit("system:vehicleType:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
 
         ErrorUtil.isObjectNull(uid, "uid");
@@ -167,7 +167,7 @@ public class VehicleTypeController {
     }
 
     @PostMapping("/delete/batch")
-    @Limit("vehicle:delete")
+    @Limit("system:vehicleType:delete")
     public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iVehicleTypeService.remove(new QueryWrapper<VehicleType>().in("uid", ids));
