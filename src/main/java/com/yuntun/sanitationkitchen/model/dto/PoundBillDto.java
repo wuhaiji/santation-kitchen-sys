@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -84,6 +85,16 @@ public class PoundBillDto extends BasePageDto{
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    /**
+     * 开始时间
+     */
+    private LocalDate beginTime;
+
+    /**
+     * 结束时间
+     */
+    private LocalDate endTime;
 
     /**
      * 禁用状态
