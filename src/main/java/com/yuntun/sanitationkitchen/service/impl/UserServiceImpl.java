@@ -10,18 +10,13 @@ import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.UserGetDto;
 import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.entity.*;
-import com.yuntun.sanitationkitchen.model.response.RowData;
-import com.yuntun.sanitationkitchen.model.vo.UserListVo;
-import com.yuntun.sanitationkitchen.model.vo.UserRoleListVo;
 import com.yuntun.sanitationkitchen.service.*;
 import com.yuntun.sanitationkitchen.util.EptUtil;
-import com.yuntun.sanitationkitchen.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +35,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     IRoleService iRoleService;
+    @Autowired
+    IUserService iUserService;
 
     @Autowired
     IRolePermissionService iRolePermissionService;
@@ -49,26 +46,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public List<Permission> getUserPermissionList(Long userId) {
-        //查询用户角色关联表
-        List<UserRole> userRoleList;
-        try {
-            userRoleList = iUserRoleService.list(
-                    new QueryWrapper<UserRole>().eq("userId", userId)
-            );
-        } catch (Exception e) {
-            throw new ServiceException(UserCode.LIST_USER_PERMISSION_ERROR);
-        }
-        if (userRoleList.size() <= 0) {
-            return new ArrayList<>();
-        }
-        List<Long> roleIds = userRoleList.parallelStream()
-                .map(UserRole::getRoleId).collect(Collectors.toList());
+        //查询用户表
+        User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", userId));
 
         //查询角色权限关联表
         List<RolePermission> rolePermissionList;
         try {
             rolePermissionList = iRolePermissionService.list(
-                    new QueryWrapper<RolePermission>().in("role_id", roleIds)
+                    new QueryWrapper<RolePermission>().eq("role_id", user.getRoleId())
             );
         } catch (Exception e) {
             throw new ServiceException(UserCode.LIST_USER_PERMISSION_ERROR);
@@ -92,27 +77,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public List<Role> getUserRoleList(Long userId) {
+
         //查询用户角色关联表
-        List<UserRole> userRoleList;
-        try {
-            userRoleList = iUserRoleService.list(
-                    new QueryWrapper<UserRole>().eq("userId", userId)
-            );
-        } catch (Exception e) {
-            throw new ServiceException(UserCode.LIST_USER_ROLE_ERROR);
-        }
+
+        List<UserRole> userRoleList = iUserRoleService.list(new QueryWrapper<UserRole>().eq("user_id", userId));
         if (userRoleList.size() <= 0) {
             return new ArrayList<>();
         }
         List<Long> roleIds = userRoleList.parallelStream()
                 .map(UserRole::getRoleId).collect(Collectors.toList());
 
-        List<Role> roleList;
-        try {
-            roleList = iRoleService.list(new QueryWrapper<Role>().in("uid", roleIds));
-        } catch (Exception e) {
-            throw new ServiceException(UserCode.LIST_USER_ROLE_ERROR);
-        }
+        List<Role> roleList = iRoleService.list(new QueryWrapper<Role>().in("uid", roleIds));
+
         return roleList;
     }
 

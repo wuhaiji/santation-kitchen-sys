@@ -3,17 +3,21 @@ package com.yuntun.sanitationkitchen.model.vo;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.List;
+
 /**
  * <p>
- *  下拉框vo
+ *
  * </p>
  *
  * @author whj
- * @since 2020/12/4
+ * @since 2020/12/7
  */
 @Data
 @Accessors(chain = true)
-public class OptionsVo {
+public class TreeNodeVo {
     String label;
     Long value;
+    Long parentId;
+    List<TreeNodeVo> children;
 }

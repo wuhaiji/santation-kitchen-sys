@@ -44,6 +44,8 @@ public class Permission implements Serializable {
      */
     private String permissionTag;
 
+    private Integer permissionType;
+
     /**
      * 权限父级id  0:顶级菜单
      */

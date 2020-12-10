@@ -1,8 +1,11 @@
 package com.yuntun.sanitationkitchen.model.dto;
 
+import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -55,7 +58,8 @@ public class VehicleUpdateDto  {
     /**
      * 购买日期
      */
-    private LocalDateTime purchaseDate;
+    @DateTimeFormat(pattern = DateConst.datePattern)
+    private LocalDate purchaseDate;
 
     /**
      * 车辆rfid

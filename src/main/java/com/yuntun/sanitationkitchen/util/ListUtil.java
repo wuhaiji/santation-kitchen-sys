@@ -6,6 +6,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class ListUtil {
         if (tClass == null) {
             return new ArrayList<>();
         }
-        if(list.size()<=0){
+        if (list.size() <= 0) {
             return new ArrayList<>();
         }
         return list.parallelStream()
@@ -55,5 +56,14 @@ public class ListUtil {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 数组转集合
+     * @param array
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> arrayToList(T[] array) {
+        return new ArrayList<>(Arrays.asList(array));
+    }
 
 }

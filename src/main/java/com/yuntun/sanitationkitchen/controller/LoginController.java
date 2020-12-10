@@ -19,6 +19,7 @@ import com.yuntun.sanitationkitchen.auth.AuthUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.RSAUtils;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
+import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,23 +147,7 @@ public class LoginController {
         System.out.println(l);
     }
 
-    @PostMapping("/logout")
-    public Result<Object> logout(HttpServletRequest request) {
-        String token = request.getHeader(UserConstant.TOKEN_HEADER_KEY);
-        try {
-            boolean b = AuthUtil.removeToken(token);
-            if (!b) {
-                throw new ServiceException(UserCode.TOKEN_TIME_OUT);
-            }
-            return Result.ok();
-        } catch (ServiceException e) {
-            log.error("ServiceException", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Exception", e);
-            throw new ServiceException(UserCode.LOGIN_OUT_ERROR);
-        }
-    }
+
 
     /**
      * 获取public key
@@ -203,7 +188,10 @@ public class LoginController {
         RedisUtils.setValueExpireSeconds(UserConstant.CAPTCHA_ID_REDIS_KEY + captchaId, code, FIVE_MINUTE);
         return Result.ok(jsonObject);
     }
-
+    @GetMapping("/uid")
+    public Result<Object> uid() {
+        return Result.ok(SnowflakeUtil.getUnionId());
+    }
     /**
      * 通过redis解密密码
      *
@@ -227,5 +215,6 @@ public class LoginController {
         }
         return passwordDecrypt;
     }
+
 
 }

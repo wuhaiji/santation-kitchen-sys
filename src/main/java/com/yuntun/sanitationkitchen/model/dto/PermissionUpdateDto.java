@@ -13,7 +13,10 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class PermissionSaveDto {
+public class PermissionUpdateDto {
+
+
+    private Long uid;
     /**
      * 权限名称
      */
@@ -29,9 +32,6 @@ public class PermissionSaveDto {
      */
     private Long parentId;
 
-    /**
-     * 权限类型
-     */
     private Integer permissionType;
 
 

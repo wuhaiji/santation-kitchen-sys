@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yuntun.sanitationkitchen.model.entity.RolePermission;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
 * <p>
     * 用户角色表 Mapper 接口
@@ -15,4 +17,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 
+    Boolean insertBatch(List<RolePermission> list);
 }

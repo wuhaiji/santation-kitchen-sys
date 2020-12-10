@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/fuel/count")
 public class FuelCountController {
+
+
     @Autowired
     IVehicle iVehicle;
 
@@ -42,7 +44,7 @@ public class FuelCountController {
     @Autowired
     IVehicleService iVehicleService;
 
-    @Limit("fuelCount:list")
+    @Limit("data:fuelCount")
     @GetMapping("/list")
     public Result list(FuelDeviceDto dto) {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());

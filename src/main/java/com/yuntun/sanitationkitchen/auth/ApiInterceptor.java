@@ -25,6 +25,10 @@ public class ApiInterceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if("OPTIONS".equals(request.getMethod())){
+            return true;
+        }
+
         StringBuilder sb = new StringBuilder();
         sb
                 .append(" 请求IP:").append(getIpAddr(request))
@@ -94,8 +98,10 @@ public class ApiInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
                                 @Nullable Exception ex) throws Exception {
-
-        StringBuffer sb = new StringBuffer("调用完成:");
+        if("OPTIONS".equals(request.getMethod())){
+            return;
+        }
+        StringBuilder sb = new StringBuilder("调用完成:");
         sb.append(request.getServletPath());
         sb.append("; 方法类型:").append(request.getMethod());
         long respTime = System.currentTimeMillis();
@@ -103,7 +109,7 @@ public class ApiInterceptor extends HandlerInterceptorAdapter {
         if (reqTime != 0) {
             reqTime = Long.parseLong(request.getAttribute("reqTime").toString());
         }
-        sb.append("; 调用时间:" + (respTime - reqTime) + "ms");
+        sb.append("; 调用时间:").append(respTime - reqTime).append("ms");
 
         logger.info(sb.toString());
     }

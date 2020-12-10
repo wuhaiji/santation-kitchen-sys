@@ -1,15 +1,14 @@
 package com.yuntun.sanitationkitchen.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.auth.Limit;
+import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
-import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
-import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
-import com.yuntun.sanitationkitchen.util.ListUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,8 +47,8 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("sanitationOffice:list")
-    @RequestMapping("/list")
+    @GetMapping("/list")
+    @Limit("system:sanitationOffice:query")
     public Result list(SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.PageParamError(sanitationOfficeDto.getPageSize(), sanitationOfficeDto.getPageNo());
         return Result.ok(iSanitationOfficeService.findSanitationOfficeServiceList(sanitationOfficeDto));
@@ -62,11 +61,21 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:30
      */
-    @Limit("sanitationOffice:get")
+    @Limit("system:sanitationOffice:query")
     @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iSanitationOfficeService.findSanitationOfficeServiceByUid(uid));
+    }
+
+    @GetMapping("/options")
+    @Limit("system:sanitationOffice:query")
+    public Result<Object> options() {
+        List<SanitationOffice> list = iSanitationOfficeService.list();
+        List<OptionsVo> collect = list.parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getName()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(collect);
     }
 
     /**
@@ -91,7 +100,7 @@ public class SanitationOfficeController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/update")
-    @Limit("sanitationOffice:update")
+    @Limit("system:sanitationOffice:update")
     public Result update(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.isObjectNull(sanitationOfficeDto.getUid(), "uid");
         return Result.ok(iSanitationOfficeService.updateSanitationOffice(sanitationOfficeDto));
@@ -105,9 +114,11 @@ public class SanitationOfficeController {
      * @since 2020-12-02 12:12
      */
     @RequestMapping("/delete")
-    @Limit("sanitationOffice:delete")
+    @Limit("system:sanitationOffice:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isListEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
+
     }
+
 }

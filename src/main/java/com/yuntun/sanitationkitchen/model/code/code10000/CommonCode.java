@@ -15,6 +15,7 @@ public enum CommonCode implements ResultCode {
     FREQUENT_OPERATION("10005", "操作频繁,请稍后再试"),
     PERMISSION_OPERATION("10006", "权限不足"),
     PARAMS_ERROR("10007", "参数异常"),
+    PERMISSION_ERROR("10008", "权限异常"),
     SERVER_ERROR("99999", "系统异常");
 
 

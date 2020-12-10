@@ -27,6 +27,11 @@ public class VehicleTypeUpdateDto {
     private String brand;
 
     /**
+     * 品牌
+     */
+    private String model;
+
+    /**
      * 车辆特性
      */
     private String trait;

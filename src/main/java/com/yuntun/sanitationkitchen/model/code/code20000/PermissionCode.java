@@ -14,6 +14,7 @@ public enum PermissionCode implements ResultCode {
     LIST_PAGE_PERMISSION_BY_USERID_ERROR("20501", "分页查询权限列表异常"),
     GET_ERROR("20502", "分页查询权限列表异常"),
     SAVE_ERROR("20503", "保存权限异常"),
+    UPDATE_ERROR("20504", "修改权限异常"),
     OPTIONS_ERROR("20506", "查询选项列表异常"),
     NAME_ALREADY_EXISTS_ERROR("20507", "权限名称已存在"),
     TAG_ALREADY_EXISTS_ERROR("20508", "权限标识已存在"),

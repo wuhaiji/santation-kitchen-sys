@@ -37,7 +37,7 @@ public class RolePermissionController {
 
 
     @PostMapping("/save")
-    @Limit("rolePermission:save")
+    @Limit("system:rolePermission:save")
     public Result<Object> save(RolePermissionSaveDto dto) {
 
         ErrorUtil.isObjectNull(dto.getPermissionId(), "权限id");
@@ -59,7 +59,7 @@ public class RolePermissionController {
     }
 
     @PostMapping("/delete/{id}")
-    @Limit("role:delete")
+    @Limit("system:rolePermission:delete")
     public Result<Object> delete(@PathVariable("id") Long id) {
         ErrorUtil.isObjectNull(id, "id");
         try {
