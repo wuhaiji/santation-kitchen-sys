@@ -1,7 +1,6 @@
 package com.yuntun.sanitationkitchen.auth;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.entity.Permission;
 import com.yuntun.sanitationkitchen.model.entity.Role;
@@ -62,9 +61,9 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
 
         try {
             User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", userId));
-            if(user!=null){
-                Role role = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", userId));
-                if(role.getRoleType()){
+            if (user != null) {
+                Role role = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", user.getRoleId()));
+                if (role != null && role.getRoleType()) {
                     return true;
                 }
             }
@@ -94,8 +93,9 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
                 if (!b) {
                     ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_OPERATION);
                 }
+                return true;
 
-            }else{
+            } else {
                 //没有添加@Limit注解就表示该接口不用权限限制
                 return true;
             }
