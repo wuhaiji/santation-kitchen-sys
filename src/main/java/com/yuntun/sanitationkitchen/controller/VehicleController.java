@@ -59,7 +59,7 @@ public class VehicleController {
 
 
     @GetMapping("/list")
-    @Limit("system:vehicle:query")
+    @Limit("vehicle:query")
     public Result<Object> list(VehicleListDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -101,7 +101,7 @@ public class VehicleController {
 
 
     @GetMapping("/options")
-    @Limit("system:vehicle:query")
+    @Limit("vehicle:query")
     public Result<Object> options() {
         List<Vehicle> list = iVehicleService.list();
         List<OptionsVo> optionsVos = list
@@ -112,7 +112,7 @@ public class VehicleController {
     }
 
     @GetMapping("/get/{uid}")
-    @Limit("system:vehicle:query")
+    @Limit("vehicle:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
 
         ErrorUtil.isObjectNull(uid, "参数");
@@ -127,7 +127,7 @@ public class VehicleController {
     }
 
     @PostMapping("/save")
-    @Limit("system:vehicle:save")
+    @Limit("vehicle:save")
     public Result<Object> save(VehicleSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getDriverName(), 2, 16, "司机名称");
@@ -178,7 +178,7 @@ public class VehicleController {
     }
 
     @PostMapping("/update")
-    @Limit("system:vehicle:update")
+    @Limit("vehicle:update")
     public Result<Object> update(VehicleUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆uid不能为空");
@@ -234,7 +234,7 @@ public class VehicleController {
     }
 
     @PostMapping("/delete/{id}")
-    @Limit("system:vehicle:delete")
+    @Limit("vehicle:delete")
     public Result<Object> delete(@PathVariable("id") Long uid) {
         ErrorUtil.isObjectNull(uid, "id");
         Vehicle vehicle = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
@@ -250,7 +250,7 @@ public class VehicleController {
     }
 
     @PostMapping("/delete/batch")
-    @Limit("system:vehicle:delete")
+    @Limit("vehicle:delete")
     public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().in("uid", ids));

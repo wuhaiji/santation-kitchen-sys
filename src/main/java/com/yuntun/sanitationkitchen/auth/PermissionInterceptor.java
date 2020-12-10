@@ -91,6 +91,7 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
                     .parallelStream()
                     .map(Permission::getPermissionTag)
                     .collect(Collectors.toList());
+
             boolean b = permissionTagList.containsAll(Arrays.asList(value));
             if (!b) {
                 ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_OPERATION);
