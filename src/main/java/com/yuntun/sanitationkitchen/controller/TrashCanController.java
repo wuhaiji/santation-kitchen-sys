@@ -31,7 +31,7 @@ public class TrashCanController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("trashCan:list")
+    @Limit("facilitiesAndEquipment:trashCan:query")
     @RequestMapping("/option")
     public Result selectTrashCanOption() {
         return Result.ok(iTrashCanService.selectTrashCanOption());
@@ -43,7 +43,7 @@ public class TrashCanController {
      * @param trashCanDto
      * @since 2020-12-02 11:21
      */
-    @Limit("trashCan:list")
+    @Limit("facilitiesAndEquipment:trashCan:query")
     @RequestMapping("/list")
     public Result list(TrashCanDto trashCanDto) {
         ErrorUtil.PageParamError(trashCanDto.getPageSize(), trashCanDto.getPageNo());
@@ -56,7 +56,7 @@ public class TrashCanController {
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("trashCan:get")
+    @Limit("facilitiesAndEquipment:trashCan:query")
     @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -70,7 +70,7 @@ public class TrashCanController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/save")
-    @Limit("trashCan:save")
+    @Limit("facilitiesAndEquipment:trashCan:save")
     public Result save(@RequestBody TrashCanDto trashCanDto) {
         ErrorUtil.isObjectNullContent(trashCanDto, "垃圾桶信息");
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
@@ -83,7 +83,7 @@ public class TrashCanController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/update")
-    @Limit("trashCan:update")
+    @Limit("facilitiesAndEquipment:trashCan:update")
     public Result update(@RequestBody TrashCanDto trashCanDto) {
         ErrorUtil.isObjectNull(trashCanDto.getUid(), "uid");
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
@@ -96,7 +96,7 @@ public class TrashCanController {
      * @since 2020-12-02 12:12
      */
     @RequestMapping("/delete")
-    @Limit("trashCan:delete")
+    @Limit("facilitiesAndEquipment:trashCan:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
         ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iTrashCanService.deleteTrashCan(uids));

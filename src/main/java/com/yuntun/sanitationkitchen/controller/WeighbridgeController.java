@@ -1,35 +1,15 @@
 package com.yuntun.sanitationkitchen.controller;
 
-
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
-import com.yuntun.sanitationkitchen.auth.UserIdHolder;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code40000.VehicleTypeCode;
-import com.yuntun.sanitationkitchen.model.code.code40000.WeighbridgeCode;
 import com.yuntun.sanitationkitchen.model.dto.WeighbridgeDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeListDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeSaveDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeUpdateDto;
-import com.yuntun.sanitationkitchen.model.entity.Weighbridge;
 import com.yuntun.sanitationkitchen.model.response.Result;
-import com.yuntun.sanitationkitchen.model.response.RowData;
-import com.yuntun.sanitationkitchen.model.vo.WeighbridgeListVo;
-import com.yuntun.sanitationkitchen.model.vo.WeighbridgeOptionsVo;
 import com.yuntun.sanitationkitchen.service.IWeighbridgeService;
-import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
-import com.yuntun.sanitationkitchen.util.ListUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,7 +31,7 @@ public class WeighbridgeController {
 
 
     @RequestMapping("/list")
-    @Limit("weighbridge:list")
+    @Limit("facilitiesAndEquipment:weighbridge:query")
     public Result<Object> list(WeighbridgeDto dto) {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
         return Result.ok(iWeighbridgeService.findWeighbridgeList(dto));
@@ -59,20 +39,20 @@ public class WeighbridgeController {
 
 
     @RequestMapping("/option")
-    @Limit("weighbridge:option")
+    @Limit("facilitiesAndEquipment:weighbridge:query")
     public Result<Object> options() {
         return Result.ok(iWeighbridgeService.selectWeighbridgeOption());
     }
 
     @RequestMapping("/get/{uid}")
-    @Limit("weighbridge:get")
+    @Limit("facilitiesAndEquipment:weighbridge:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         return Result.ok(iWeighbridgeService.findWeighbridgeByUid(uid));
     }
 
     @RequestMapping("/save")
-    @Limit("weighbridge:save")
+    @Limit("facilitiesAndEquipment:weighbridge:save")
     public Result<Object> save(@RequestBody WeighbridgeDto dto) {
         ErrorUtil.isObjectNullContent(dto, "地磅信息");
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌不能为空");
@@ -86,14 +66,14 @@ public class WeighbridgeController {
     }
 
     @RequestMapping("/update")
-    @Limit("weighbridge:update")
+    @Limit("facilitiesAndEquipment:weighbridge:update")
     public Result<Object> update(@RequestBody WeighbridgeDto dto) {
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
         return Result.ok(iWeighbridgeService.updateWeighbridge(dto));
     }
 
     @RequestMapping("/delete")
-    @Limit("weighbridge:delete")
+    @Limit("facilitiesAndEquipment:weighbridge:delete")
     public Result<Object> delete(@RequestParam(value = "uids[]", required = false) List<Long> uids) {
         ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iWeighbridgeService.deleteWeighbridge(uids));

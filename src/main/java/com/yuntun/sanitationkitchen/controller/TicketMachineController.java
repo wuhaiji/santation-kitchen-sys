@@ -31,7 +31,7 @@ public class TicketMachineController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("ticketMachine:option")
+    @Limit("facilitiesAndEquipment:ticketMachine:query")
     @RequestMapping("/option")
     public Result selectTicketMachineOption() {
         return Result.ok(iTicketMachineService.selectTicketMachineOption());
@@ -43,7 +43,7 @@ public class TicketMachineController {
      * @param ticketMachineDto
      * @since 2020-12-02 11:21
      */
-    @Limit("ticketMachine:list")
+    @Limit("facilitiesAndEquipment:ticketMachine:query")
     @RequestMapping("/list")
     public Result list(TicketMachineDto ticketMachineDto) {
         ErrorUtil.PageParamError(ticketMachineDto.getPageSize(), ticketMachineDto.getPageNo());
@@ -56,7 +56,7 @@ public class TicketMachineController {
      * @param uid
      * @since 2020-12-02 11:30
      */
-    @Limit("ticketMachine:get")
+    @Limit("facilitiesAndEquipment:ticketMachine:query")
     @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -70,7 +70,7 @@ public class TicketMachineController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/save")
-    @Limit("ticketMachine:save")
+    @Limit("facilitiesAndEquipment:ticketMachine:save")
     public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
         ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
@@ -83,7 +83,7 @@ public class TicketMachineController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/update")
-    @Limit("ticketMachine:update")
+    @Limit("facilitiesAndEquipment:ticketMachine:update")
     public Result update(@RequestBody TicketMachineDto ticketMachineDto) {
         ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));
@@ -96,7 +96,7 @@ public class TicketMachineController {
      * @since 2020-12-02 12:12
      */
     @RequestMapping("/delete")
-    @Limit("ticketMachine:delete")
+    @Limit("facilitiesAndEquipment:ticketMachine:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
         ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iTicketMachineService.deleteTicketMachine(uids));
