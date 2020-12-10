@@ -17,9 +17,11 @@ import com.yuntun.sanitationkitchen.service.IPoundBillService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
+import com.yuntun.sanitationkitchen.util.excel.ExportExcelWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,5 +102,28 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getPages());
         return poundBillVoRowData;
+    }
+
+    @Override
+    public void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response) {
+        List<PoundBill> poundBillList = poundBillMapper.selectList(new QueryWrapper<PoundBill>()
+                .like(EptUtil.isNotEmpty(poundBillDto.getSerialCode()), "serial_code", poundBillDto.getSerialCode())
+                .like(EptUtil.isNotEmpty(poundBillDto.getNumberPlate()), "number_plate", poundBillDto.getNumberPlate())
+                // 净重
+                .like(EptUtil.isNotEmpty(poundBillDto.getNetWeight()), "net_weight", poundBillDto.getNetWeight())
+                // 毛重
+                .like(EptUtil.isNotEmpty(poundBillDto.getGrossWeight()), "gross_weight", poundBillDto.getGrossWeight())
+                // 皮重
+                .like(EptUtil.isNotEmpty(poundBillDto.getTare()), "tare", poundBillDto.getTare())
+                .eq(EptUtil.isNotEmpty(poundBillDto.getSanitationOfficeId()), "sanitation_office_id", poundBillDto.getSanitationOfficeId())
+                .orderByDesc("create_time"));
+
+        List<PoundBillVo> poundBillVoList = ListUtil.listMap(PoundBillVo.class, poundBillList);
+
+        String[] headers = {"ID", "唯一ID", "流水号", "环卫ID", "车牌号", "车辆ID", "垃圾箱ID", "垃圾箱编号", "毛重", "皮重", "净重", "创建人", "创建时间", "禁用状态", "禁用人", "禁用时间",
+        "修改人", "修改时间", "删除状态", "删除人" , "删除时间"};
+
+        // excel导出
+        ExportExcelWrapper.exportExcel(poundBillDto.getFileName(), poundBillDto.getTitle(), headers, poundBillVoList, response, poundBillDto.getVersion());
     }
 }

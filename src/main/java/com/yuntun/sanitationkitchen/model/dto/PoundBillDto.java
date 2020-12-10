@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -123,6 +124,27 @@ public class PoundBillDto extends BasePageDto{
      * 删除时间
      */
     private LocalDateTime deletedTime;
+
+    /**
+     * excel 文件名
+     */
+    private String fileName;
+
+    /**
+     * excel 头部标题
+     */
+    private String title;
+
+    /**
+     * excel 头部标题
+     */
+    private List<String> headers;
+
+    /**
+     * excel版本
+     * 2003  2007及以上
+     */
+    private String version;
 
 
 }
