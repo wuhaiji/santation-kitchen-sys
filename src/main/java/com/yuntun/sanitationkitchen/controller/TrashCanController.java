@@ -98,7 +98,7 @@ public class TrashCanController {
     @RequestMapping("/delete")
     @Limit("trashCan:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isListEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iTrashCanService.deleteTrashCan(uids));
     }
 

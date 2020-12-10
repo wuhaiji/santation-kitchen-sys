@@ -98,7 +98,7 @@ public class TicketMachineController {
     @RequestMapping("/delete")
     @Limit("ticketMachine:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isListEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iTicketMachineService.deleteTicketMachine(uids));
     }
 }

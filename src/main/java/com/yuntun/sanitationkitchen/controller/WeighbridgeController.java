@@ -95,7 +95,7 @@ public class WeighbridgeController {
     @RequestMapping("/delete")
     @Limit("weighbridge:delete")
     public Result<Object> delete(@RequestParam(value = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isListEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iWeighbridgeService.deleteWeighbridge(uids));
     }
 }

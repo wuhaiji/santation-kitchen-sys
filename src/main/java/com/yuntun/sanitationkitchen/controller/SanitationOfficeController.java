@@ -47,9 +47,6 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("sanitationOffice:list")
-    @RequestMapping("/list")
-
     @GetMapping("/list")
     @Limit("system:sanitationOffice:query")
     public Result list(SanitationOfficeDto sanitationOfficeDto) {
@@ -64,10 +61,7 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:30
      */
-
-    @GetMapping("/get/{uid}")
     @Limit("system:sanitationOffice:query")
-    @Limit("sanitationOffice:get")
     @RequestMapping("/get/{uid}")
     public Result get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
@@ -106,11 +100,8 @@ public class SanitationOfficeController {
      * @since 2020-12-02 11:39
      */
     @RequestMapping("/update")
-    @Limit("sanitationOffice:update")
-    public Result update(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
-    @PostMapping("/update")
     @Limit("system:sanitationOffice:update")
-    public Result update(SanitationOfficeDto sanitationOfficeDto) {
+    public Result update(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.isObjectNull(sanitationOfficeDto.getUid(), "uid");
         return Result.ok(iSanitationOfficeService.updateSanitationOffice(sanitationOfficeDto));
     }
@@ -123,25 +114,11 @@ public class SanitationOfficeController {
      * @since 2020-12-02 12:12
      */
     @RequestMapping("/delete")
-    @Limit("sanitationOffice:delete")
+    @Limit("system:sanitationOffice:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isListEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids,"uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
-    @PostMapping("/delete/{uid}")
-    @Limit("system:sanitationOffice:delete")
-    public Result delete(@PathVariable("uid") Long uid) {
-        ErrorUtil.isObjectNull(uid, "uid");
-        return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uid));
-    }
-
-    @PostMapping("/delete/batch")
-    @Limit("system:sanitationOffice:delete")
-    public Result<Object> delete(@RequestParam("ids") List<Long> ids) {
-        ErrorUtil.isCollectionEmpty(ids, "id");
-        boolean b = iSanitationOfficeService.remove(new QueryWrapper<SanitationOffice>().in("uid", ids));
-        if (b)
-            return Result.ok();
-        return Result.error(UserCode.DELETE_SYSUSER_FAILURE);
 
     }
+
 }
