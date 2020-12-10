@@ -54,9 +54,8 @@ public class RoleController {
     @Autowired
     IRolePermissionService iRolePermissionService;
 
-
-    @Limit("role:list")
     @GetMapping("/list")
+    @Limit("system:role:query")
     public Result<Object> list(RoleListPageDto dto) {
 
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -84,7 +83,7 @@ public class RoleController {
     }
 
     @GetMapping("/options")
-    @Limit("sanitationOffice:options")
+    @Limit("system:role:query")
     public Result<Object> options() {
         List<Role> list = iRoleService.list();
         List<OptionsVo> collect = list.parallelStream()
@@ -94,7 +93,7 @@ public class RoleController {
     }
 
     @GetMapping("/get/{uid}")
-    @Limit("role:get")
+    @Limit("system:role:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         try {
@@ -110,7 +109,7 @@ public class RoleController {
     }
 
     @PostMapping("/save")
-    @Limit("role:save")
+    @Limit("system:role:save")
     public Result<Object> save(RoleSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getRoleName(), 2, 30, "角色名称");
@@ -147,7 +146,7 @@ public class RoleController {
     }
 
     @PostMapping("/update")
-    @Limit("role:update")
+    @Limit("system:role:update")
     public Result<Object> update(RoleUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "角色id");
@@ -166,23 +165,19 @@ public class RoleController {
             }
         }
 
-        Role role = new Role().setRoleName(dto.getRoleName()).setRoleType(true);
-        try {
-            boolean save = iRoleService.update(role,
-                    new QueryWrapper<Role>().eq("uid", dto.getUid())
-            );
-            if (save)
-                return Result.ok();
-            return Result.error(RoleCode.UPDATE_ERROR);
-        } catch (Exception e) {
-            log.error("异常:", e);
-            throw new ServiceException(RoleCode.UPDATE_ERROR);
-        }
+        Role role = new Role().setRoleName(dto.getRoleName()).setRoleType(dto.getRoleType());
+        boolean save = iRoleService.update(role,
+                new QueryWrapper<Role>().eq("uid", dto.getUid())
+        );
+        if (save)
+            Result.error(RoleCode.UPDATE_ERROR);
+
+        return Result.ok();
 
     }
 
     @PostMapping("/allot/permission")
-    @Limit("role:update")
+    @Limit("system:role:update")
     public Result<Object> update(RoleAllotPermissionDto dto) {
 
         ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
@@ -210,7 +205,7 @@ public class RoleController {
     }
 
     @GetMapping("/list/permission/{uid}")
-    @Limit("role:query")
+    @Limit("system:role:query")
     public Result<Object> listPermission(@PathVariable String uid) {
 
         ErrorUtil.isObjectNull(uid, "角色id");
@@ -235,7 +230,7 @@ public class RoleController {
     }
 
     @PostMapping("/disable/{uid}/{disabled}")
-    @Limit("role:disable")
+    @Limit("system:role:disable")
     public Result<Object> disable(@PathVariable("uid") Long uid, @PathVariable Integer disabled) {
 
         ErrorUtil.isObjectNull(uid, "角色id");

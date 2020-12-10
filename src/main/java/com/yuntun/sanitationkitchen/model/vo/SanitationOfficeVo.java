@@ -37,6 +37,16 @@ public class SanitationOfficeVo {
     private Long managerId;
 
     /**
+     * 管理员名称
+     */
+    private String managerName;
+
+    /**
+     * 管理员手机号
+     */
+    private String managerPhone;
+
+    /**
      * 创建人id
      */
     private Long creator;

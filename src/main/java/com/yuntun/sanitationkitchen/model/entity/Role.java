@@ -35,7 +35,7 @@ public class Role implements Serializable {
     private Long uid;
 
     /**
-     * 是否是超级管理员1.不是，0.是
+     * 是否是超级管理员
      */
     private Boolean roleType;
 

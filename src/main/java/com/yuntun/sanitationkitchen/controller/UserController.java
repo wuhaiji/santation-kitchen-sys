@@ -5,8 +5,10 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.yuntun.sanitationkitchen.auth.AuthUtil;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
+import com.yuntun.sanitationkitchen.constant.UserConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
@@ -14,12 +16,10 @@ import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.dto.UserSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
-import com.yuntun.sanitationkitchen.model.entity.Permission;
-import com.yuntun.sanitationkitchen.model.entity.Role;
-import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
-import com.yuntun.sanitationkitchen.model.entity.User;
+import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
+import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
 import com.yuntun.sanitationkitchen.model.vo.UserGetVo;
 import com.yuntun.sanitationkitchen.model.vo.UserListVo;
 import com.yuntun.sanitationkitchen.service.IRoleService;
@@ -35,7 +35,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -68,10 +70,11 @@ public class UserController {
     @Autowired
     ISanitationOfficeService iSanitationOfficeService;
 
-    @Limit("user:list")
-    @GetMapping("/list")
-    public Result<Object> list(UserListDto dto) {
 
+    @GetMapping("/list")
+    @Limit("system:user:query")
+    public Result<Object> list(UserListDto dto) {
+        long l = System.currentTimeMillis();
         ErrorUtil.isNumberValueLt(dto.getPageSize(), 0, "pageSize");
         ErrorUtil.isNumberValueLt(dto.getPageNo(), 0, "pageNo");
 
@@ -84,12 +87,23 @@ public class UserController {
                 .setRows(userListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
-
+        System.out.println("用户列表查询时间："+(System.currentTimeMillis()-l)+"ms");
         return Result.ok(data);
     }
 
+    @GetMapping("/options")
+    @Limit("system:user:query")
+    public Result<Object> options() {
+        List<User> list = iUserService.list();
+        List<OptionsVo> optionsVos = list
+                .parallelStream()
+                .map(i -> new OptionsVo().setLabel(i.getUsername()).setValue(i.getUid()))
+                .collect(Collectors.toList());
+        return Result.ok(optionsVos);
+    }
+
     @GetMapping("/get/{uid}")
-    @Limit("user:get")
+    @Limit("system:user:query")
     public Result<Object> detail(@PathVariable("uid") String uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
@@ -100,9 +114,18 @@ public class UserController {
         BeanUtils.copyProperties(user, userGetVo);
         return Result.ok(userGetVo);
     }
+    @GetMapping("/list/permission/{uid}")
+    @Limit("system:user:query")
+    public Result<Object> listPermission(@PathVariable Long uid) {
 
+        ErrorUtil.isObjectNull(uid, "用户id");
+
+        List<Permission> userPermissionList = iUserService.getUserPermissionList(uid);
+
+        return Result.ok(userPermissionList);
+    }
     @PostMapping("/save")
-    @Limit("user:save")
+    @Limit("system:user:save")
     public Result<Object> save(UserSaveDto dto) {
 
         ErrorUtil.isStringEmpty(dto.getPhone(), "电话");
@@ -151,7 +174,7 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    @Limit("user:update")
+    @Limit("system:user:update")
     public Result<Object> update(UserUpdateDto dto, String publickey) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "角色id");
@@ -191,8 +214,14 @@ public class UserController {
                 throw new ServiceException(UserCode.USERNAME_ALREADY_EXISTS);
             }
         }
+        User user = new User().setUpdator(UserIdHolder.get());
+        if(dto.getRoleId()!=null){
+            Role role = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", dto.getRoleId()));
+            if(role!=null){
+                user.setRoleName(role.getRoleName());
+            }
+        }
 
-        User user = new User();
         BeanUtils.copyProperties(dto, user);
         //如果密码为空就不修改密码
         if (EptUtil.isNotEmpty(dto.getPassword())) {
@@ -228,7 +257,7 @@ public class UserController {
     }
 
     @PostMapping("/password/update")
-    @Limit("user:update")
+    @Limit("system:user:update")
     public Result<Object> update(String username, String oldPassword, String newPassword, String publickey) {
 
         ErrorUtil.isStringEmpty(username, "用户名");
@@ -262,7 +291,7 @@ public class UserController {
     }
 
     @PostMapping("/delete/{uid}")
-    @Limit("user:delete")
+    @Limit("system:user:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "信息id");
         User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", uid));
@@ -278,7 +307,7 @@ public class UserController {
     }
 
     @PostMapping("/delete/batch")
-    @Limit("user:delete")
+    @Limit("system:user:delete")
     public Result<Object> delete(@RequestParam("ids") List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "信息id");
         boolean b = iUserService.remove(new QueryWrapper<User>().in("uid", ids));
@@ -289,7 +318,7 @@ public class UserController {
     }
 
     @PostMapping("/disable/{uid}/{disabled}")
-    @Limit("user:disable")
+    @Limit("system:user:disable")
     public Result<Object> disable(@PathVariable("uid") Long uid, @PathVariable Integer disabled) {
 
         ErrorUtil.isObjectNull(uid, "角色id");
@@ -310,17 +339,24 @@ public class UserController {
 
     }
 
-    @GetMapping("/list/permission/{uid}")
-    @Limit("user:listPermission")
-    public Result<Object> listPermission(@PathVariable Long uid) {
 
-        ErrorUtil.isObjectNull(uid, "用户id");
-
-        List<Permission> userPermissionList = iUserService.getUserPermissionList(uid);
-
-        return Result.ok(userPermissionList);
+    @PostMapping("/logout")
+    public Result<Object> logout(HttpServletRequest request) {
+        String token = request.getHeader(UserConstant.TOKEN_HEADER_KEY);
+        try {
+            boolean b = AuthUtil.removeToken(token);
+            if (!b) {
+                throw new ServiceException(UserCode.TOKEN_TIME_OUT);
+            }
+            return Result.ok();
+        } catch (ServiceException e) {
+            log.error("ServiceException", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Exception", e);
+            throw new ServiceException(UserCode.LOGIN_OUT_ERROR);
+        }
     }
-
 
 
 }

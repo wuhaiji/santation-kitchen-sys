@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- *  选择框vo
+ *  下拉框vo
  * </p>
  *
  * @author whj

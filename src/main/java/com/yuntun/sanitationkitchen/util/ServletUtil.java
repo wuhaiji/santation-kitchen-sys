@@ -1,5 +1,8 @@
 package com.yuntun.sanitationkitchen.util;
 
+import com.alibaba.fastjson.JSON;
+import com.yuntun.sanitationkitchen.model.code.ResultCode;
+import com.yuntun.sanitationkitchen.model.response.Result;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -8,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.util.Objects;
 
@@ -64,35 +68,43 @@ public class ServletUtil {
     //获取客户端IP地址
     private String getIpAddress() {
         String ip = request.getHeader("x-forwarded-for");
-        if(ip == null || ip.length() == 0 || "unknow".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.length() == 0 || "unknow".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if (ip == null || ip.length () == 0 || "unknown".equalsIgnoreCase (ip)) {
-            ip = request.getHeader ("WL-Proxy-Client-IP");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if (ip == null || ip.length () == 0 || "unknown".equalsIgnoreCase (ip)) {
-            ip = request.getRemoteAddr ();
-            if (ip.equals ("127.0.0.1")) {
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+            if (ip.equals("127.0.0.1")) {
                 //根据网卡取本机配置的IP
                 InetAddress inet = null;
                 try {
-                    inet = InetAddress.getLocalHost ();
+                    inet = InetAddress.getLocalHost();
                 } catch (Exception e) {
-                    e.printStackTrace ();
+                    e.printStackTrace();
                 }
-                ip = inet.getHostAddress ();
+                ip = inet.getHostAddress();
             }
         }
         // 多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
-        if (ip != null && ip.length () > 15) {
-            if (ip.indexOf (",") > 0) {
-                ip = ip.substring (0, ip.indexOf (","));
+        if (ip != null && ip.length() > 15) {
+            if (ip.indexOf(",") > 0) {
+                ip = ip.substring(0, ip.indexOf(","));
             }
         }
         return ip;
 
 
-
     }
 
+    public static void returnJSON(HttpServletResponse httpServletResponse, ResultCode resultCode) throws IOException {
+        PrintWriter out;
+        httpServletResponse.setCharacterEncoding("utf-8");
+        httpServletResponse.setContentType("application/json; charset=utf-8");
+        out = httpServletResponse.getWriter();
+        out.println(JSON.toJSONString(Result.error(resultCode)));
+
+
+    }
 }

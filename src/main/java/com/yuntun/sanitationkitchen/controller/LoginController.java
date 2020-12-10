@@ -147,23 +147,7 @@ public class LoginController {
         System.out.println(l);
     }
 
-    @PostMapping("/logout")
-    public Result<Object> logout(HttpServletRequest request) {
-        String token = request.getHeader(UserConstant.TOKEN_HEADER_KEY);
-        try {
-            boolean b = AuthUtil.removeToken(token);
-            if (!b) {
-                throw new ServiceException(UserCode.TOKEN_TIME_OUT);
-            }
-            return Result.ok();
-        } catch (ServiceException e) {
-            log.error("ServiceException", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Exception", e);
-            throw new ServiceException(UserCode.LOGIN_OUT_ERROR);
-        }
-    }
+
 
     /**
      * 获取public key

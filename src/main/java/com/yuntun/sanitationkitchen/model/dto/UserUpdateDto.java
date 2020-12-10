@@ -43,4 +43,7 @@ public class UserUpdateDto {
      * 禁用时间
      */
     private Integer disabled;
+
+
+    private Long roleId;
 }

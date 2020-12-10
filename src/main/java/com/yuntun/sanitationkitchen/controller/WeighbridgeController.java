@@ -50,7 +50,7 @@ public class WeighbridgeController {
     @Autowired
     IWeighbridgeService iWeighbridgeService;
 
-
+    
     @GetMapping("/list")
     @Limit("weighbridge:list")
     public Result<Object> list(WeighbridgeListDto dto) {

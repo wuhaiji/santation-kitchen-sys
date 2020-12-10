@@ -20,7 +20,7 @@ public class RoleUpdateDto {
     private Long uid;
 
     /**
-     * 是否是超级管理员1.不是，0.是
+     * 是否是超级管理员0.不是，1.是
      */
     private Boolean roleType;
 

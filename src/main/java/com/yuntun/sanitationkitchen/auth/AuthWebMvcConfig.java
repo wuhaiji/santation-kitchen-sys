@@ -26,11 +26,8 @@ public class AuthWebMvcConfig implements WebMvcConfigurer {
     @Autowired
     LoginInterceptor loginInterceptor;
 
-    // @Autowired
-    // PermissionInterceptor permissionInterceptor;
-    //
-    // @Autowired
-    // WechatLoginInterceptor wechatLoginInterceptor;
+    @Autowired
+    PermissionInterceptor permissionInterceptor;
 
     public static final List<String> SYS_LOGIN_WHITE_LIST = new ArrayList<>();
 
@@ -47,10 +44,10 @@ public class AuthWebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
         ;
 
-//        registry.addInterceptor(loginInterceptor)
-//                .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
-//                .addPathPatterns("/**")
-//        ;
+       registry.addInterceptor(loginInterceptor)
+               .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
+               .addPathPatterns("/**")
+       ;
 
         // registry.addInterceptor(permissionInterceptor)
         //         .excludePathPatterns(SYS_LOGIN_WHITE_LIST)
