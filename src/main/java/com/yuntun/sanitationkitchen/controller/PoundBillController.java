@@ -35,20 +35,20 @@ public class PoundBillController {
      * @author wujihong
      * @since 2020-12-02 11:21
      */
-    @Limit("count:poundBill:query")
+    @Limit("data:poundBill:query")
     @RequestMapping("/option")
     public Result selectPoundBillOption() {
         return Result.ok(iPoundBillService.selectPoundBillOption());
     }
 
-    @Limit("count:poundBill:query")
+    @Limit("data:poundBill:query")
     @RequestMapping("/list")
     public Result list(PoundBillDto poundBillDto) {
         ErrorUtil.isObjectNullContent(poundBillDto, "地磅榜单查询信息");
         return Result.ok(iPoundBillService.findPoundBillList(poundBillDto));
     }
 
-    @Limit("count:poundBill:export")
+    @Limit("data:poundBill:export")
     @RequestMapping("/export")
     public void export(PoundBillDto poundBillDto, HttpServletResponse response) {
         iPoundBillService.exportPoundBill(poundBillDto, response);
