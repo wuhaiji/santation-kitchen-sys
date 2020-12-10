@@ -75,31 +75,28 @@ public class PermissionInterceptor extends HandlerInterceptorAdapter {
 
         if (handler.getClass().isAssignableFrom(HandlerMethod.class)) {
             Limit limit = ((HandlerMethod) handler).getMethodAnnotation(Limit.class);
-            if (limit != null) {
-                List<Permission> permissionList = new ArrayList<>();
-                String[] value = limit.value();
-                try {
-                    permissionList = iUserService.getUserPermissionList(userId);
-                } catch (Exception e) {
-                    log.error("Exception:", e);
-                    ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_ERROR);
-                }
-
-                List<String> permissionTagList = permissionList
-                        .parallelStream()
-                        .map(Permission::getPermissionTag)
-                        .collect(Collectors.toList());
-                boolean b = permissionTagList.containsAll(Arrays.asList(value));
-                if (!b) {
-                    ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_OPERATION);
-                }
-                return true;
-
-            } else {
+            if (limit == null) {
                 //没有添加@Limit注解就表示该接口不用权限限制
                 return true;
             }
-
+            List<Permission> permissionList = new ArrayList<>();
+            String[] value = limit.value();
+            try {
+                permissionList = iUserService.getUserPermissionList(userId);
+            } catch (Exception e) {
+                log.error("Exception:", e);
+                ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_ERROR);
+            }
+            List<String> permissionTagList = permissionList
+                    .parallelStream()
+                    .map(Permission::getPermissionTag)
+                    .collect(Collectors.toList());
+            boolean b = permissionTagList.containsAll(Arrays.asList(value));
+            if (!b) {
+                ServletUtil.returnJSON(httpServletResponse, CommonCode.PERMISSION_OPERATION);
+                return false;
+            }
+            return true;
         }
         return false;
     }
