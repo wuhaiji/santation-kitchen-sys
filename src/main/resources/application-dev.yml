@@ -104,8 +104,9 @@ pound-bill:
     - 毛重
     - 创建时间
   columns:
+    - number
     - serialCode
-    - sanitationOfficeId
+    - sanitationOfficeName
     - numberPlate
     - trashCanCode
     - netWeight

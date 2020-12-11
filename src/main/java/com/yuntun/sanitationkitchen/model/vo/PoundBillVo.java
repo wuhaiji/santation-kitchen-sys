@@ -36,6 +36,11 @@ public class PoundBillVo extends BasePageDto {
     private Long sanitationOfficeId;
 
     /**
+     * 环卫所name
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 车牌
      */
     private String numberPlate;

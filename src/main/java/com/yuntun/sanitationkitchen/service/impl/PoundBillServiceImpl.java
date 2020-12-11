@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -127,10 +128,16 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
                 .orderByDesc("create_time"));
 
         List<PoundBillVo> poundBillVoList = ListUtil.listMap(PoundBillVo.class, poundBillList);
+        poundBillVoList = poundBillVoList.stream().map(poundBillVo -> {
+            SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("name").eq("uid", poundBillVo.getSanitationOfficeId()));
+            poundBillVo.setSanitationOfficeName(sanitationOffice.getName());
+            return poundBillVo;
+        }).collect(Collectors.toList());
 
 //        String[] headers = {"ID", "唯一ID", "流水号", "环卫ID", "车牌号", "车辆ID", "垃圾箱ID", "垃圾箱编号", "毛重", "皮重", "净重", "创建人", "创建时间", "禁用状态", "禁用人", "禁用时间",
 //        "修改人", "修改时间", "删除状态", "删除人" , "删除时间"};
 //        ExportExcelWrapper.exportExcel(poundBillDto.getFileName(), poundBillDto.getTitle(), headers, poundBillVoList, response, poundBillDto.getVersion());
+
         try {
             ExcelUtil.excelExport(response, poundBillProperties.getFileName(), poundBillProperties.getSheetName(), poundBillVoList, poundBillProperties.getHeaders(), poundBillProperties.getColumns());
         } catch (Exception e) {

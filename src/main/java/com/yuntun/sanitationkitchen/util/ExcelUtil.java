@@ -35,7 +35,7 @@ public class ExcelUtil {
         for (int row = 0; row < data.size(); row++) {
             Map<String, Object> map = new HashMap<String, Object>(16);
             for (String key : keyList) {
-                if ("序号".equals(key)) {
+                if ("number".equals(key)) {
                     //序号
                     map.put(key, row + 1);
                 } else {
