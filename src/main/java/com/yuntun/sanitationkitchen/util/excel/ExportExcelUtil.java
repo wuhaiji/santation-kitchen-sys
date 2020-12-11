@@ -152,7 +152,8 @@ public class ExportExcelUtil<T>{
         for (int i = 0; i < headers.length; i++) {
             cellHeader = row.createCell(i);
             cellHeader.setCellStyle(style);
-            cellHeader.setCellValue(new XSSFRichTextString(headers[i]));
+//            cellHeader.setCellValue(new XSSFRichTextString(headers[i]));
+            cellHeader.setCellValue(headers[i]);
         }
 
         // 遍历集合数据，产生数据行
@@ -246,6 +247,8 @@ public class ExportExcelUtil<T>{
         }
         try {
             workbook.write(out);
+            String stringCellValue = workbook.getSheet(title).getRow(1).getCell(1).getStringCellValue();
+            System.out.println("stringCellValue:"+stringCellValue);
         } catch (IOException e) {
             e.printStackTrace();
         }
