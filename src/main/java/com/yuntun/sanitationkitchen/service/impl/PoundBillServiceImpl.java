@@ -85,14 +85,16 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
                         .setCurrent(poundBillDto.getPageNo()),
                 new QueryWrapper<PoundBill>()
                         .like(EptUtil.isNotEmpty(poundBillDto.getSerialCode()), "serial_code", poundBillDto.getSerialCode())
-                        .like(EptUtil.isNotEmpty(poundBillDto.getNumberPlate()), "number_plate", poundBillDto.getNumberPlate())
-                        // 净重
-                        .like(EptUtil.isNotEmpty(poundBillDto.getNetWeight()), "net_weight", poundBillDto.getNetWeight())
-                        // 毛重
-                        .like(EptUtil.isNotEmpty(poundBillDto.getGrossWeight()), "gross_weight", poundBillDto.getGrossWeight())
-                        // 皮重
-                        .like(EptUtil.isNotEmpty(poundBillDto.getTare()), "tare", poundBillDto.getTare())
+                        .like(EptUtil.isNotEmpty(poundBillDto.getVehicleId()), "vehicle_id", poundBillDto.getVehicleId())
+//                        // 净重
+//                        .like(EptUtil.isNotEmpty(poundBillDto.getNetWeight()), "net_weight", poundBillDto.getNetWeight())
+//                        // 毛重
+//                        .like(EptUtil.isNotEmpty(poundBillDto.getGrossWeight()), "gross_weight", poundBillDto.getGrossWeight())
+//                        // 皮重
+//                        .like(EptUtil.isNotEmpty(poundBillDto.getTare()), "tare", poundBillDto.getTare())
                         .eq(EptUtil.isNotEmpty(poundBillDto.getSanitationOfficeId()), "sanitation_office_id", poundBillDto.getSanitationOfficeId())
+                        .gt(EptUtil.isNotEmpty(poundBillDto.getBeginTime()), "create_time", poundBillDto.getBeginTime())
+                        .le(EptUtil.isNotEmpty(poundBillDto.getEndTime()), "create_time", poundBillDto.getEndTime())
                         .orderByDesc("create_time")
         );
         List<PoundBillVo> poundBillVoList = ListUtil.listMap(PoundBillVo.class, iPage.getRecords());
