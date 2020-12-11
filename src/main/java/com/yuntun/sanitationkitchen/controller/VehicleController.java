@@ -93,12 +93,46 @@ public class VehicleController {
                 .setRows(collect)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
-
-
         return Result.ok(data);
     }
-
-
+    // @GetMapping("/list/video")
+    // @Limit("vehicle:query")
+    // public Result<Object> list(VehicleListDto dto) {
+    //
+    //     ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
+    //
+    //     IPage<Vehicle> iPage = iVehicleService.listPage(dto);
+    //
+    //     List<Vehicle> records = iPage.getRecords();
+    //     // 获取车辆实时信息
+    //     List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
+    //     List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
+    //             .ListVehicleRealtimeStatusByPlates(plateNos);
+    //     log.info("车辆实时状态列表：{}",vehicleRealtimeStatusAdasDtoList);
+    //
+    //     List<VehicleListVo> collect = records.parallelStream().map(i -> {
+    //         VehicleListVo vehicleListVo = new VehicleListVo();
+    //         BeanUtils.copyProperties(i, vehicleListVo);
+    //         //循环找出油量信息和在线离线信息
+    //         for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
+    //             if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
+    //                 vehicleListVo.setStatus(status.getVehicleStatus());
+    //                 String oil = status.getOil();
+    //                 if (EptUtil.isEmpty(oil)) {
+    //                     vehicleListVo.setFuelRemaining(0.0);
+    //                 }
+    //             }
+    //         }
+    //         return vehicleListVo;
+    //     }).collect(Collectors.toList());
+    //
+    //     RowData<VehicleListVo> data = new RowData<VehicleListVo>()
+    //             .setRows(collect)
+    //             .setTotal(iPage.getTotal())
+    //             .setTotalPages(iPage.getTotal());
+    //     return Result.ok(data);
+    // }
+    //
 
     @GetMapping("/options")
     @Limit("vehicle:query")

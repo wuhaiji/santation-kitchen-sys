@@ -22,7 +22,7 @@ public class FuelCountListVo {
     /**
      * 车牌号
      */
-    private String plateNo;
+    private String numberPlate;
     /**
      * 更新时间
      */
