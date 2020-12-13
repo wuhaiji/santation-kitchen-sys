@@ -8,16 +8,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * @author tangcx
  */
 @Slf4j
 public class ExcelUtil {
+
+    public static final String pattern = "yyyy-MM-dd HH:mm:ss";
+
     /**
      * @param response  返回
      * @param data      数据
@@ -40,6 +43,7 @@ public class ExcelUtil {
                     map.put(key, row + 1);
                 } else {
                     Object fieldValueByName = getFieldValueByName(key, data.get(row));
+
                     map.put(key, fieldValueByName);
                 }
             }
@@ -49,11 +53,19 @@ public class ExcelUtil {
     }
 
     private static Object getFieldValueByName(String fieldName, Object o) throws Exception {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(pattern);
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
         try {
             String firstLetter = fieldName.substring(0, 1).toUpperCase();
             String getter = "get" + firstLetter + fieldName.substring(1);
             Method method = o.getClass().getMethod(getter);
             Object invoke = method.invoke(o);
+            if (invoke instanceof LocalDateTime) {
+                return dtf.format((LocalDateTime) invoke);
+            }
+            if (invoke instanceof Date) {
+                return sdf.format((Date) invoke);
+            }
             //当数据库中返回null的话 转成空串
             return invoke==null?"":invoke;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

@@ -5,6 +5,7 @@ import com.yuntun.sanitationkitchen.constant.CommonConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -15,6 +16,32 @@ import java.util.Collection;
  * @since 2020/11/5
  */
 public class ErrorUtil {
+
+
+    /**
+     *
+     * Latitude:纬度
+     * Longitude:经度
+     */
+    public static void verifyLatitudeAndLongitude(Double longitude, Double latitude) {
+        if (longitude != null && latitude != null) {
+            String longitudePattern = "^-?(([1-9]\\d?)|(1[1-7]\\d)|180)(\\.\\d{1,6})?$";
+            String latitudePattern = "^-?(([1-8]\\d?)|([1-8]\\d)|90)(\\.\\d{1,6})?$";
+            boolean isLongitudeMatches = Pattern.matches(longitudePattern, longitude.toString());
+            boolean isLatitudeMatches = Pattern.matches(latitudePattern, latitude.toString());
+            System.out.println("经度："+longitude.toString()+" 纬度："+latitude.toString());
+            System.out.println("经度Matches："+isLongitudeMatches+" 纬度Matches："+isLatitudeMatches);
+            if (!isLongitudeMatches) {
+                throw new ServiceException("PARAM_ERROR", "经度整数部分为0-180,小数部分为0到6位!");
+            }
+            if (!isLatitudeMatches) {
+                throw new ServiceException("PARAM_ERROR", "纬度整数部分为0-90,小数部分为0到6位!");
+            }
+        } else {
+            throw new ServiceException("PARAM_ERROR", "经纬度不能为空");
+        }
+
+    }
 
     /**
      * 参数检查， 目标不能为null
@@ -44,8 +71,8 @@ public class ErrorUtil {
             try {
                instance = (T)t.getClass().newInstance();
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new ServiceException("参数错误");
+                // 对象不存在无参构造函数,所以通过反射获取象失败！（因此，不存在对象内容为空）
+                return;
             }
             if (t.equals(instance)) {
                 throw new ServiceException("PARAM_ERROR", msg + "内容不能为空");

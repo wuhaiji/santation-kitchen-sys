@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.weight.adapter;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
@@ -74,6 +75,14 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ByteBuf bytebuf = (ByteBuf) msg;
+        byte[] bytes = new byte[bytebuf.readableBytes()];
+        bytebuf.readBytes(bytes);
+
+        System.out.println("msg:" +bytes);
+        for (byte b:bytes) {
+            System.out.println("byte:"+b);
+        }
     }
 
     /**

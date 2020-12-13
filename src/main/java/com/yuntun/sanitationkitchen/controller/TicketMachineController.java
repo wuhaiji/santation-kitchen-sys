@@ -73,6 +73,13 @@ public class TicketMachineController {
     @Limit("facilitiesAndEquipment:ticketMachine:save")
     public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
         ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceCode(), 2, 30, "设备编号");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceName(), 2, 30, "设备名称");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");
+        ErrorUtil.isObjectNull(ticketMachineDto.getSanitationOfficeId(), "所属机构");
+        ErrorUtil.isObjectNull(ticketMachineDto.getVehicleId(), "所在车辆");
+        ErrorUtil.isObjectNull(ticketMachineDto.getStatus(), "状态");
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
 
@@ -85,7 +92,16 @@ public class TicketMachineController {
     @RequestMapping("/update")
     @Limit("facilitiesAndEquipment:ticketMachine:update")
     public Result update(@RequestBody TicketMachineDto ticketMachineDto) {
+        ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
         ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceCode(), 2, 30, "设备编号");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceName(), 2, 30, "设备名称");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
+        ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");
+        ErrorUtil.isObjectNull(ticketMachineDto.getSanitationOfficeId(), "所属机构");
+        ErrorUtil.isObjectNull(ticketMachineDto.getVehicleId(), "所在车辆");
+        ErrorUtil.isObjectNull(ticketMachineDto.getStatus(), "状态");
+        ErrorUtil.isObjectNull(ticketMachineDto.getCreateTime(), "创建时间");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));
     }
 
