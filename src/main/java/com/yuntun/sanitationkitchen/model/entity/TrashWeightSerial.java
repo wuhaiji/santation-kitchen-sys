@@ -51,6 +51,6 @@ public class TrashWeightSerial implements Serializable {
 
     @Override
     public String toString(){
-        return facilityCode+"/"+trashCanRfid+"/"+weight;
+        return trashCanRfid+" - "+weight+"kg";
     }
 }
