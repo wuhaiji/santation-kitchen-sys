@@ -1,8 +1,6 @@
 package com.yuntun.sanitationkitchen.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.auth.Limit;
-import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.response.Result;
@@ -85,9 +83,9 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:39
      */
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @Limit("sanitationOffice:save")
-    public Result save(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
+    public Result save(SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.isObjectNullContent(sanitationOfficeDto, "单位信息");
         return Result.ok(iSanitationOfficeService.insertSanitationOffice(sanitationOfficeDto));
     }
@@ -99,9 +97,9 @@ public class SanitationOfficeController {
      * @author wujihong
      * @since 2020-12-02 11:39
      */
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @Limit("system:sanitationOffice:update")
-    public Result update(@RequestBody SanitationOfficeDto sanitationOfficeDto) {
+    public Result update(SanitationOfficeDto sanitationOfficeDto) {
         ErrorUtil.isObjectNull(sanitationOfficeDto.getUid(), "uid");
         return Result.ok(iSanitationOfficeService.updateSanitationOffice(sanitationOfficeDto));
     }
@@ -116,7 +114,7 @@ public class SanitationOfficeController {
     @RequestMapping("/delete")
     @Limit("system:sanitationOffice:delete")
     public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isCollectionEmpty(uids,"uid");
+        ErrorUtil.isCollectionEmpty(uids, "uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
 
     }
@@ -131,7 +129,7 @@ public class SanitationOfficeController {
     @RequestMapping("/delete/batch")
     @Limit("system:sanitationOffice:delete")
     public Result deleteBatch(@RequestParam List<Long> ids) {
-        ErrorUtil.isCollectionEmpty(ids,"uid");
+        ErrorUtil.isCollectionEmpty(ids, "uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(ids));
 
     }

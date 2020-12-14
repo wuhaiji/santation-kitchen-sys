@@ -129,7 +129,7 @@ public class UserController {
     public Result<Object> save(UserSaveDto dto) {
 
         ErrorUtil.isStringEmpty(dto.getPhone(), "电话");
-        ErrorUtil.isStringLengthOutOfRange(dto.getUsername(), 2, 10, "用户名");
+        ErrorUtil.isStringLengthOutOfRange(dto.getUsername(), 2, 16, "用户名");
         ErrorUtil.isStringLengthOutOfRange(dto.getPassword(), 6, 16, "密码");
         ErrorUtil.isObjectNull(dto.getRoleId(), "角色id");
 

@@ -6,11 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
+import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.FuelCountListVo;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
-import com.yuntun.sanitationkitchen.util.excel.ExportExcelWrapper;
 import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
 import lombok.Data;
@@ -25,7 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -64,17 +66,38 @@ public class FuelCountController {
         List<String> plates = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
 
         List<VehicleRealtimeStatusAdasDto> list = iVehicle.ListVehicleRealtimeStatusByPlates(plates);
+        Map<String, VehicleRealtimeStatusAdasDto> realtimeStatusAdasDtoMap = list.parallelStream().collect(Collectors.toMap(VehicleRealtimeStatusAdasDto::getPlate, i -> i));
 
-        List<FuelCountListVo> collect = list.parallelStream()
-                .map(i ->
-                        new FuelCountListVo()
-                                .setFuelRemaining(EptUtil.isEmpty(i.getOil()) ? String.valueOf(0) : i.getOil())
-                                .setNumberPlate(i.getPlate())
-                                .setUpdateTime(LocalDateTime.now())
-                )
+        // List<FuelCountListVo> collect = list.parallelStream()
+        //         .map(i ->
+        //                 new FuelCountListVo()
+        //                         .setFuelRemaining(EptUtil.isEmpty(i.getOil()) ? String.valueOf(0) : i.getOil())
+        //                         .setNumberPlate(i.getPlate())
+        //                         .setUpdateTime(LocalDateTime.now())
+        //         )
+        //         .collect(Collectors.toList());
+        List<FuelCountListVo> collect = records
+                .parallelStream()
+                .map(i -> {
+                    FuelCountListVo fuelCountListVo1 = new FuelCountListVo();
+                    VehicleRealtimeStatusAdasDto vehicleRealtimeStatusAdasDto = realtimeStatusAdasDtoMap.get(i.getNumberPlate());
+                    if (vehicleRealtimeStatusAdasDto != null) {
+                        fuelCountListVo1
+                                .setFuelRemaining(EptUtil.isEmpty(vehicleRealtimeStatusAdasDto.getOil()) ? String.valueOf(0) : vehicleRealtimeStatusAdasDto.getOil())
+                                .setNumberPlate(vehicleRealtimeStatusAdasDto.getPlate())
+                                .setUpdateTime(LocalDateTime.now());
+                    }else{
+                        fuelCountListVo1.setNumberPlate(i.getNumberPlate()).setFuelRemaining(String.valueOf(0)).setUpdateTime(LocalDateTime.now());
+                    }
+                    return fuelCountListVo1;
+                })
                 .collect(Collectors.toList());
 
-        return Result.ok(collect);
+        RowData<FuelCountListVo> rowData = new RowData<FuelCountListVo>()
+                .setRows(collect)
+                .setTotal(vehicleIPage.getTotal())
+                .setTotalPages(vehicleIPage.getTotal());
+        return Result.ok(rowData);
     }
 
 
