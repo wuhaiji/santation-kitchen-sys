@@ -131,7 +131,6 @@ public class SanitationOfficeController {
     public Result deleteBatch(@RequestParam List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "uid");
         return Result.ok(iSanitationOfficeService.deleteSanitationOffice(ids));
-
     }
 
 }
