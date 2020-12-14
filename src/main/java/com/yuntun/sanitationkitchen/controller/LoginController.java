@@ -7,6 +7,7 @@ import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
 import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
@@ -192,6 +193,40 @@ public class LoginController {
     public Result<Object> uid() {
         return Result.ok(SnowflakeUtil.getUnionId());
     }
+
+    @PostMapping("/password/update")
+    public Result<Object> update(String username, String oldPassword, String newPassword, String publickey) {
+
+        ErrorUtil.isStringEmpty(username, "用户名");
+
+        ErrorUtil.isStringEmpty(publickey, "公钥");
+
+        //先查询用户是否存在
+        User targetUser = iUserService.getOne(new QueryWrapper<User>().eq("username", username));
+        if (targetUser == null) {
+            log.error("用户不存在");
+            throw new ServiceException(UserCode.LOGIN_FAILED_USERNAME_INCORRECT);
+        }
+
+        //判断旧密码是否正确
+        String passwordDecrypt = LoginController.getPasswordDecrypt(oldPassword, publickey);
+        if (!BCrypt.checkpw(passwordDecrypt, targetUser.getPassword())) {
+            log.error("密码不正确");
+            throw new ServiceException(UserCode.LOGIN_FAILED_PASSWORD_INCORRECT);
+        }
+
+        //解密新密码
+        String newPasswordDecrypt = LoginController.getPasswordDecrypt(newPassword, publickey);
+        ErrorUtil.isStringLengthOutOfRange(newPasswordDecrypt, 6, 16, "新密码");
+        String newPasswordMd5 = BCrypt.hashpw(newPasswordDecrypt);
+        targetUser.setPassword(newPasswordMd5);
+        boolean save = iUserService.update(targetUser, new QueryWrapper<User>().eq("uid", targetUser.getUid()));
+        if (save)
+            return Result.ok();
+        return Result.error(UserCode.PASSWORD_UPDATE_ERROR);
+
+    }
+
     /**
      * 通过redis解密密码
      *

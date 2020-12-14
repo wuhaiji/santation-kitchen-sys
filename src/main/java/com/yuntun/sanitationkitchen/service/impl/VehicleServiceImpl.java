@@ -11,6 +11,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -31,10 +33,10 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
                         .setSize(dto.getPageSize())
                         .setCurrent(dto.getPageNo()),
                 new QueryWrapper<Vehicle>()
-                        .likeRight(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
-                        .likeRight(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
+                        .like(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
+                        .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
                         .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
-                        .likeRight(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", dto.getPurchaseDate())
+                        .between(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", LocalDateTime.of(dto.getPurchaseDate(), LocalTime.MIN),LocalDateTime.of(dto.getPurchaseDate(), LocalTime.MAX))
                         .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
                         .orderByDesc("create_time")
         );
