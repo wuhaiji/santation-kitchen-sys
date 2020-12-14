@@ -61,7 +61,8 @@ public class FuelCountController {
                 new Page<Vehicle>()
                         .setSize(dto.getPageSize())
                         .setCurrent(dto.getPageNo()),
-                new QueryWrapper<Vehicle>().eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
+                new QueryWrapper<Vehicle>()
+                        .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
         );
 
         List<Vehicle> records = vehicleIPage.getRecords();
@@ -157,7 +158,7 @@ public class FuelCountController {
         //先从数据库查询所有车辆牌号
         List<Vehicle> vehicles = iVehicleService.list(
                 new QueryWrapper<Vehicle>()
-                        .eq(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
+                        .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
         );
 
         List<String> plates = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
