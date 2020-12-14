@@ -170,6 +170,7 @@ public class VehicleController {
         ErrorUtil.isObjectNull(dto.getPurchaseDate(), "购买日期");
         ErrorUtil.isObjectNull(dto.getRfid(), "RFID");
         ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构id");
+        ErrorUtil.isObjectNull(dto.getTypeId(), "车辆类型");
 
         checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
 
@@ -187,6 +188,7 @@ public class VehicleController {
                 .setSanitationOfficeName(sanitationOffice.getName())
                 .setNumberPlate(dto.getNumberPlate())
                 .setDriverPhone(dto.getDriverPhone())
+                .setTypeId(dto.getTypeId())
                 .setCreator(UserIdHolder.get());
 
         boolean save = iVehicleService.save(role);
@@ -223,6 +225,7 @@ public class VehicleController {
                 new QueryWrapper<Vehicle>().eq("number_plate", dto.getNumberPlate())
         );
 
+
         List<Vehicle> listRfid = iVehicleService.list(
                 new QueryWrapper<Vehicle>().eq("rfid", dto.getRfid())
         );
@@ -231,14 +234,17 @@ public class VehicleController {
             if (listNumberPlate.size() > 1) {
                 throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
             }
-
-            if (listRfid.size() > 1) {
-                throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
-            }
         } else {
             if (listNumberPlate.size() > 0) {
                 throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
             }
+        }
+
+        if (older.getRfid().equals(dto.getRfid())) {
+            if (listRfid.size() > 1) {
+                throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
+            }
+        } else {
             if (listRfid.size() > 0) {
                 throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
             }

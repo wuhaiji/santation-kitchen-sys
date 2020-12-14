@@ -35,9 +35,6 @@ public class VehicleSaveDto {
      */
     private Long sanitationOfficeId;
 
-
-
-
     /**
      * 司机名称
      */
