@@ -15,6 +15,7 @@ public enum RestaurantCode implements ResultCode {
     ID_NOT_EXIST("40702", "数据不存在"),
     UPDATE_ERROR("40705", "修改异常"),
     DELETE_ERROR("40706", "删除异常"),
+    DELETE_BIND_ERROR("40707", "不能删除，已绑定了垃圾桶的餐馆"),
 
     ;
 

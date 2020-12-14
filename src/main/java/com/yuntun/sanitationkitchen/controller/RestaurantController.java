@@ -8,11 +8,15 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.RestaurantCode;
+import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
 import com.yuntun.sanitationkitchen.model.entity.Restaurant;
+import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.TrashCanVo;
 import com.yuntun.sanitationkitchen.service.IRestaurantService;
+import com.yuntun.sanitationkitchen.service.ITrashCanService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
@@ -43,6 +47,9 @@ public class RestaurantController {
 
     @Autowired
     IRestaurantService iRestaurantService;
+
+    @Autowired
+    ITrashCanService iTrashCanService;
 
 
     @GetMapping("/list")
@@ -131,13 +138,20 @@ public class RestaurantController {
     @PostMapping("/delete/{uid}")
     @Limit("restaurant:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
-
         ErrorUtil.isObjectNull(uid, "uid");
 
+        // 1.判断餐馆是否存在
         Restaurant entity = iRestaurantService.getOne(new QueryWrapper<Restaurant>().eq("uid", uid));
         if (entity == null) {
             log.error("Restaurant->delete->uid不存在,uid:{}", uid);
             throw new ServiceException(RestaurantCode.ID_NOT_EXIST);
+        }
+
+        // 2.判断餐馆是否可以删除（有无绑定垃圾桶设备）
+        RowData<TrashCanVo> trashCanList = iTrashCanService.findTrashCanList(new TrashCanDto().setRestaurantId(uid));
+        if (trashCanList.getRows() != null) {
+            log.error("不能删除，已绑定了垃圾桶的餐馆");
+            throw new ServiceException(RestaurantCode.DELETE_BIND_ERROR);
         }
 
         boolean b = iRestaurantService.remove(new QueryWrapper<Restaurant>().eq("uid", uid));

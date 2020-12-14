@@ -6,18 +6,24 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.model.code.code40000.RestaurantCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
+import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
+import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
+import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleGetVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
+import com.yuntun.sanitationkitchen.service.ITicketMachineService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
@@ -56,6 +62,9 @@ public class VehicleController {
 
     @Autowired
     ISanitationOfficeService iSanitationOfficeService;
+
+    @Autowired
+    ITicketMachineService iTicketMachineService;
 
 
     @GetMapping("/list")
@@ -273,10 +282,19 @@ public class VehicleController {
         ErrorUtil.isObjectNull(uid, "id");
         Vehicle vehicle = iVehicleService.getOne(new QueryWrapper<Vehicle>().eq("uid", uid));
 
+        // 1.判断车辆是否存在
         if (vehicle == null) {
             log.error("删除车辆异常->uid不存在");
             throw new ServiceException(VehicleCode.ID_NOT_EXIST);
         }
+
+        // 2.判断车辆是否可以删除（有无绑定小票机设备）
+        RowData<TicketMachineVo> ticketMachineList = iTicketMachineService.findTicketMachineList(new TicketMachineDto().setVehicleId(uid));
+        if (ticketMachineList.getRows() != null) {
+            log.error("不能删除，已绑定了小票机的车辆");
+            throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);
+        }
+
         boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().eq("uid", uid));
         if (b)
             return Result.ok();
