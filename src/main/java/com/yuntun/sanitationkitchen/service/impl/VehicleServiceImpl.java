@@ -35,8 +35,8 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
                 new QueryWrapper<Vehicle>()
                         .like(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
                         .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-                        .eq(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
-                        .between(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date", LocalDateTime.of(dto.getPurchaseDate(), LocalTime.MIN),LocalDateTime.of(dto.getPurchaseDate(), LocalTime.MAX))
+                        .like(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
+                        .likeRight(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date",dto.getPurchaseDate())
                         .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
                         .orderByDesc("create_time")
         );

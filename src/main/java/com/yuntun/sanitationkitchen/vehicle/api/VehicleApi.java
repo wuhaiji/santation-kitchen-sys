@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
 import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -33,6 +34,48 @@ public class VehicleApi implements IVehicle {
     public static final String realtimeDataByIdsUrl = "/deviceData/realtimeData.do";
     public static final String KEY = "key";
     public static final String IDS = "ids";
+
+
+    public static void main(String[] args) {
+
+        // 根据车牌号查询车辆动态数据
+        // ArrayList<String> plates = new ArrayList<String>() {{
+        //     add("13302690436");
+        // }};
+        // HashMap<String, Object> paramsMap = new HashMap<>();
+        // paramsMap.put(KEY, ThirdApiConfig.key);
+        // paramsMap.put("plate", String.join(",", plates));
+        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto1 = JSONObject.parseObject(
+        //         response,
+        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+        //         }
+        // );
+        // System.out.println(resultDto1.getObj());
+        //
+
+        //根据车辆ids查询车辆动态数据
+
+
+        // ArrayList<String> list = new ArrayList<String>() {{
+        //     add("F6FA39393347F2B86E734D40396CDE93");
+        // }};
+        // HashMap<String, Object> paramsMap = new HashMap<>();
+        // paramsMap.put(KEY, ThirdApiConfig.key);
+        // paramsMap.put(IDS, String.join(",", list));
+        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto2 = JSONObject.parseObject(
+        //         response,
+        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
+        //         }
+        // );
+        // System.out.println(resultDto2);
+
+
+        List<VehicleBean> list = new VehicleApi().list();
+        System.out.println("结果："+JSON.toJSONString(list));
+    }
+
 
     /**
      * 查询车辆信息
@@ -422,41 +465,6 @@ public class VehicleApi implements IVehicle {
         return true;
     }
 
-    public static void main(String[] args) {
-
-        // 根据车牌号查询车辆动态数据
-        ArrayList<String> plates = new ArrayList<String>() {{
-            add("13302690436");
-        }};
-        HashMap<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put(KEY, ThirdApiConfig.key);
-        paramsMap.put("plate", String.join(",", plates));
-        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
-        AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto1 = JSONObject.parseObject(
-                response,
-                new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
-                }
-        );
-        System.out.println(resultDto1.getObj());
-
-
-        //根据车辆ids查询车辆动态数据
-
-
-        // ArrayList<String> list = new ArrayList<String>() {{
-        //     add("F6FA39393347F2B86E734D40396CDE93");
-        // }};
-        // HashMap<String, Object> paramsMap = new HashMap<>();
-        // paramsMap.put(KEY, ThirdApiConfig.key);
-        // paramsMap.put(IDS, String.join(",", list));
-        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
-        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto2 = JSONObject.parseObject(
-        //         response,
-        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
-        //         }
-        // );
-        // System.out.println(resultDto2);
-    }
 
     /**
      * 查询实时ADAS报警

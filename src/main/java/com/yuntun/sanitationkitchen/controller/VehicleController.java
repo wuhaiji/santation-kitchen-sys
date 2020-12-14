@@ -84,15 +84,16 @@ public class VehicleController {
         Map<String, Vehicle> vehicleMap = records.parallelStream().collect(Collectors.toMap(i -> i.getNumberPlate(), i -> i));
 
 
-        // //查询来源云的车辆集合
-        // List<VehicleBean> vehicleBeans = iVehicle.list();
-        // // 找出本系统中对应的车辆
-        // vehicleBeans.parallelStream().map(i -> {
-        //     Vehicle vehicle = vehicleMap.get(i.getPlateNo());
-        //     if(vehicle!=null){
-        //         return i;
-        //     }
-        // }).collect(Collectors.toList());
+        //查询来源云的车辆集合
+        List<VehicleBean> vehicleBeans = iVehicle.list();
+        // 找出本系统中对应的车辆
+        vehicleBeans.parallelStream().map(i -> {
+            Vehicle vehicle = vehicleMap.get(i.getPlateNo());
+            if(vehicle!=null){
+                return i;
+            }
+            return null;
+        }).collect(Collectors.toList());
 
 
         List<VehicleListVo> collect = records.parallelStream().map(i -> {

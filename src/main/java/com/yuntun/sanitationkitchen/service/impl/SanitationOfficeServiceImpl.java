@@ -21,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +47,7 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
                         .setSize(sanitationOfficeDto.getPageSize())
                         .setCurrent(sanitationOfficeDto.getPageNo()),
                 new QueryWrapper<SanitationOffice>()
-                        .eq(EptUtil.isNotEmpty(sanitationOfficeDto.getName()), "name", sanitationOfficeDto.getName())
+                        .like(EptUtil.isNotEmpty(sanitationOfficeDto.getName()), "name", sanitationOfficeDto.getName())
                         .eq(EptUtil.isNotEmpty(sanitationOfficeDto.getManagerId()), "manager_id", sanitationOfficeDto.getManagerId())
                         .orderByDesc("create_time")
         );
@@ -55,7 +56,14 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
 
 
         List<Long> userIds = records.parallelStream().map(SanitationOffice::getManagerId).collect(Collectors.toList());
-        List<User> users = userMapper.selectList(new QueryWrapper<User>().in("uid", userIds));
+
+        List<User> users;
+        if(EptUtil.isNotEmpty(userIds)){
+            users = userMapper.selectList(new QueryWrapper<User>().in(EptUtil.isNotEmpty(userIds),"uid", userIds));
+        }else{
+            users=new ArrayList<>();
+        }
+
         Map<Long, User> userMap = users.parallelStream().collect(Collectors.toMap(User::getUid, i -> i));
         List<SanitationOfficeVo> sanitationOfficeVoList = records.parallelStream()
                 .map(i -> {
