@@ -73,6 +73,13 @@ public class TrashCanController {
     @Limit("facilitiesAndEquipment:trashCan:save")
     public Result save(@RequestBody TrashCanDto trashCanDto) {
         ErrorUtil.isObjectNullContent(trashCanDto, "垃圾桶信息");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getFacilityCode(), 2, 30, "设备编号");
+        ErrorUtil.isObjectNull(trashCanDto.getFacilityType(), "设备类型");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getRfid(), 2, 30, "RFID");
+        ErrorUtil.isObjectNull(trashCanDto.getRestaurantId(), "所属机构");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getAddress(), 2, 30, "地址");
+        ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
+        ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
 
@@ -85,7 +92,16 @@ public class TrashCanController {
     @RequestMapping("/update")
     @Limit("facilitiesAndEquipment:trashCan:update")
     public Result update(@RequestBody TrashCanDto trashCanDto) {
+        ErrorUtil.isObjectNullContent(trashCanDto, "垃圾桶信息");
         ErrorUtil.isObjectNull(trashCanDto.getUid(), "uid");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getFacilityCode(), 2, 30, "设备编号");
+        ErrorUtil.isObjectNull(trashCanDto.getFacilityType(), "设备类型");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getRfid(), 2, 30, "RFID");
+        ErrorUtil.isObjectNull(trashCanDto.getRestaurantId(), "所属机构");
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getAddress(), 2, 30, "地址");
+        ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
+        ErrorUtil.isObjectNull(trashCanDto.getCreateTime(), "创建时间");
+        ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
     }
 

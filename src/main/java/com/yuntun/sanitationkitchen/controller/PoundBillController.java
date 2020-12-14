@@ -9,6 +9,7 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
@@ -41,14 +42,26 @@ public class PoundBillController {
         return Result.ok(iPoundBillService.selectPoundBillOption());
     }
 
+    /**
+     * 分页查询地磅磅单
+     *
+     * @param poundBillDto
+     * @return
+     */
     @Limit("data:poundBill:query")
     @RequestMapping("/list")
     public Result list(PoundBillDto poundBillDto) {
         return Result.ok(iPoundBillService.findPoundBillList(poundBillDto));
     }
 
+    /**
+     * 用excel的形式导出榜单
+     *
+     * @param poundBillDto
+     * @param response
+     */
     @Limit("data:poundBill:export")
-    @RequestMapping("/export")
+    @RequestMapping(value = "/export")
     public void export(PoundBillDto poundBillDto, HttpServletResponse response) {
         System.out.println("poundBillDto:"+poundBillDto);
         iPoundBillService.exportPoundBill(poundBillDto, response);
