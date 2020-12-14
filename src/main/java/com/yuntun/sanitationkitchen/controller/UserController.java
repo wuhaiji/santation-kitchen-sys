@@ -122,7 +122,7 @@ public class UserController {
     @Limit("system:user:query")
     public Result<Object> options(Long sanitationOfficeId) {
         List<User> list = iUserService.list(new QueryWrapper<User>().lambda()
-                .eq(User::getSanitationOfficeId, sanitationOfficeId));
+                .eq(sanitationOfficeId != null, User::getSanitationOfficeId, sanitationOfficeId));
         List<OptionsVo> optionsVos = list
                 .parallelStream()
                 .map(i -> new OptionsVo().setLabel(i.getUsername()).setValue(i.getUid()))
