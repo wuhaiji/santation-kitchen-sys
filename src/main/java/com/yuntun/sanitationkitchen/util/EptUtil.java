@@ -30,7 +30,7 @@ public class EptUtil {
         }
         T instance;
         try {
-           instance = (T) t.getClass().newInstance();
+            instance = (T) t.getClass().newInstance();
         } catch (Exception e) {
             // 对象不存在无参构造函数,所以通过反射获取象失败！（因此，不存在对象内容为空）
             return false;
@@ -47,6 +47,18 @@ public class EptUtil {
      */
     public static <T> boolean isNotEmpty(T t) {
         return !isEmpty(t);
+    }
+
+    /**
+     * 判断对象和内容是否不为空
+     *
+     * @param t
+     * @param <T>
+     * @return
+     */
+    public static <T> boolean stringIsNotEmpty(String t) {
+
+        return t != null && !"".equals(t.trim());
     }
 
 }

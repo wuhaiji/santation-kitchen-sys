@@ -41,7 +41,7 @@ public class ErrorUtil {
      */
     public static void verifyLatitudeAndLongitude(Double longitude, Double latitude) {
         if (longitude != null && latitude != null) {
-            String longitudePattern = "^-?(([1-9]\\d?)|(1[1-7]\\d)|180)(\\.\\d{1,6})?$";
+            String longitudePattern = "^-?(([1-9]\\d?)|(1[0-7]\\d)|180)(\\.\\d{1,6})?$";
             String latitudePattern = "^-?(([1-8]\\d?)|([1-8]\\d)|90)(\\.\\d{1,6})?$";
             boolean isLongitudeMatches = Pattern.matches(longitudePattern, longitude.toString());
             boolean isLatitudeMatches = Pattern.matches(latitudePattern, latitude.toString());

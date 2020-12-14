@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -49,7 +50,7 @@ public class User implements Serializable {
      */
     private Long roleId;
 
-     /**
+    /**
      * 角色名称
      */
     private String roleName;
@@ -60,9 +61,10 @@ public class User implements Serializable {
      */
     private Long sanitationOfficeId;
 
-     /**
+    /**
      * 角色名称
      */
+    @TableField(exist = false)
     private String sanitationOfficeName;
 
 
