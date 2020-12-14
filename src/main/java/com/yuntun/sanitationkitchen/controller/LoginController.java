@@ -9,12 +9,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
+import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.vo.UserLoginVo;
+import com.yuntun.sanitationkitchen.service.IPoundBillService;
 import com.yuntun.sanitationkitchen.service.IUserService;
 import com.yuntun.sanitationkitchen.auth.AuthUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
@@ -52,6 +54,10 @@ public class LoginController {
 
     @Autowired
     IUserService iUserService;
+
+
+    @Autowired
+    private IPoundBillService poundBillService;
 
 
     @PostMapping("/login")

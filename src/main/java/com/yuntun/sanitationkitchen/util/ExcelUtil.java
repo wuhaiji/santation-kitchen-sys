@@ -66,9 +66,18 @@ public class ExcelUtil {
             if (invoke instanceof Date) {
                 return sdf.format((Date) invoke);
             }
+            if (invoke instanceof Collection){
+                StringBuilder str=new StringBuilder();
+                for(Object ele:(Collection) invoke){
+                    str.append(ele.toString()).append(" \r\n");
+                }
+                return str;
+            }
             //当数据库中返回null的话 转成空串
             return invoke==null?"":invoke;
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            log.info("----fileName{}",fieldName);
+            e.printStackTrace();
             throw new Exception("属性名错误");
         }
     }
