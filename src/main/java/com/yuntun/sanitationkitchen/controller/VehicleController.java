@@ -5,13 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
+import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.RestaurantCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
-import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
-import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
-import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
-import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
+import com.yuntun.sanitationkitchen.model.dto.*;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
 import com.yuntun.sanitationkitchen.model.entity.TrashCan;
@@ -38,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -80,7 +79,22 @@ public class VehicleController {
         List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
         List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
                 .ListVehicleRealtimeStatusByPlates(plateNos);
-        log.info("车辆实时状态列表：{}",vehicleRealtimeStatusAdasDtoList);
+        log.info("车辆实时状态列表：{}", vehicleRealtimeStatusAdasDtoList);
+
+        Map<String, Vehicle> vehicleMap = records.parallelStream().collect(Collectors.toMap(i -> i.getNumberPlate(), i -> i));
+
+
+        //查询来源云的车辆集合
+        List<VehicleBean> vehicleBeans = iVehicle.list();
+        // 找出本系统中对应的车辆
+        vehicleBeans.parallelStream().map(i -> {
+            Vehicle vehicle = vehicleMap.get(i.getPlateNo());
+            if(vehicle!=null){
+                return i;
+            }
+            return null;
+        }).collect(Collectors.toList());
+
 
         List<VehicleListVo> collect = records.parallelStream().map(i -> {
             VehicleListVo vehicleListVo = new VehicleListVo();
@@ -98,50 +112,16 @@ public class VehicleController {
             return vehicleListVo;
         }).collect(Collectors.toList());
 
+
+
+
+
         RowData<VehicleListVo> data = new RowData<VehicleListVo>()
                 .setRows(collect)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
-    // @GetMapping("/list/video")
-    // @Limit("vehicle:query")
-    // public Result<Object> list(VehicleListDto dto) {
-    //
-    //     ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
-    //
-    //     IPage<Vehicle> iPage = iVehicleService.listPage(dto);
-    //
-    //     List<Vehicle> records = iPage.getRecords();
-    //     // 获取车辆实时信息
-    //     List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
-    //     List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
-    //             .ListVehicleRealtimeStatusByPlates(plateNos);
-    //     log.info("车辆实时状态列表：{}",vehicleRealtimeStatusAdasDtoList);
-    //
-    //     List<VehicleListVo> collect = records.parallelStream().map(i -> {
-    //         VehicleListVo vehicleListVo = new VehicleListVo();
-    //         BeanUtils.copyProperties(i, vehicleListVo);
-    //         //循环找出油量信息和在线离线信息
-    //         for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
-    //             if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
-    //                 vehicleListVo.setStatus(status.getVehicleStatus());
-    //                 String oil = status.getOil();
-    //                 if (EptUtil.isEmpty(oil)) {
-    //                     vehicleListVo.setFuelRemaining(0.0);
-    //                 }
-    //             }
-    //         }
-    //         return vehicleListVo;
-    //     }).collect(Collectors.toList());
-    //
-    //     RowData<VehicleListVo> data = new RowData<VehicleListVo>()
-    //             .setRows(collect)
-    //             .setTotal(iPage.getTotal())
-    //             .setTotalPages(iPage.getTotal());
-    //     return Result.ok(data);
-    // }
-    //
 
     @GetMapping("/options")
     @Limit("vehicle:query")
@@ -317,4 +297,5 @@ public class VehicleController {
         return Result.error(VehicleCode.DELETE_ERROR);
 
     }
+
 }

@@ -1,11 +1,13 @@
 package com.yuntun.sanitationkitchen.model.dto;
 
+import com.yuntun.sanitationkitchen.constant.DateConst;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -59,7 +61,6 @@ public class VehicleListDto {
     /**
      * 购买日期
      */
-
     private LocalDate purchaseDate;
 
     /**

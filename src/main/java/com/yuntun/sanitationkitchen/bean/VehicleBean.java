@@ -14,7 +14,7 @@ import lombok.ToString;
 @Data
 @ToString
 public class VehicleBean {
-  private Long id;
+  private String id;
 
   private Long carId;
 

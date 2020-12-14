@@ -61,9 +61,10 @@ public class VehicleTypeController {
                         .setSize(dto.getPageSize())
                         .setCurrent(dto.getPageNo()),
                 new QueryWrapper<VehicleType>()
-                        .eq(EptUtil.isNotEmpty(dto.getName()), "name", dto.getName())
-                        .eq(EptUtil.isNotEmpty(dto.getBrand()), "brand", dto.getBrand())
-                        .eq(EptUtil.isNotEmpty(dto.getTrait()), "trait", dto.getTrait())
+                        .like(EptUtil.isNotEmpty(dto.getName()), "name", dto.getName())
+                        .like(EptUtil.isNotEmpty(dto.getBrand()), "brand", dto.getBrand())
+                        .eq(EptUtil.isNotEmpty(dto.getModel()), "model", dto.getModel())
+                        .likeRight(EptUtil.isNotEmpty(dto.getCreateTime()), "create_time", dto.getCreateTime())
                         .orderByDesc("create_time")
 
         );

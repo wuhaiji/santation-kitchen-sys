@@ -36,5 +36,15 @@ public class VehicleTypeListDto {
      */
     private String trait;
 
+    /**
+     * 品牌
+     */
+    private String model;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
+
 
 }
