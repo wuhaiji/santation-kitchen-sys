@@ -80,6 +80,9 @@ public class TrashCanController {
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getAddress(), 2, 30, "地址");
         ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
         ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getManufacturer(), 2, 30, "生产厂家");
+        ErrorUtil.isObjectNull(trashCanDto.getManufacturer(), "联系人");
+        ErrorUtil.notIllegalPhone(trashCanDto.getContactPersonPhone());
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
 
@@ -102,6 +105,9 @@ public class TrashCanController {
         ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
         ErrorUtil.isObjectNull(trashCanDto.getCreateTime(), "创建时间");
         ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
+        ErrorUtil.isStringLengthOutOfRange(trashCanDto.getManufacturer(), 2, 30, "生产厂家");
+        ErrorUtil.isObjectNull(trashCanDto.getManufacturer(), "联系人");
+        ErrorUtil.notIllegalPhone(trashCanDto.getContactPersonPhone());
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
     }
 

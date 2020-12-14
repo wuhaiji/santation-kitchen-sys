@@ -19,6 +19,22 @@ public class ErrorUtil {
 
 
     /**
+     * 手机号格式
+     */
+    private static final String PHONE_REGEX="^1[0-9]{10}$";
+
+    /**
+     * 验证手机号是否合法
+     * 长度在2-16之间
+     * @param obj   目标字符串
+     */
+    public static void notIllegalPhone(String obj) {
+        if (!obj.matches(PHONE_REGEX) ){
+            throw new ServiceException("PARAM_ERROR", "输入的手机号不合法!");
+        }
+    }
+
+    /**
      *
      * Latitude:纬度
      * Longitude:经度

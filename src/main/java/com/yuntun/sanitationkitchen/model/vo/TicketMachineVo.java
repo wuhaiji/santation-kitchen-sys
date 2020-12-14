@@ -43,7 +43,7 @@ public class TicketMachineVo {
     /**
      * 设备所属机构名字
      */
-    private String sanitationOfficeName;
+//    private String sanitationOfficeName;
 
     /**
      * 设备状态0.在线 1.离线
@@ -63,7 +63,7 @@ public class TicketMachineVo {
     /**
      * 车辆号码
      */
-    private String vehicleNumber;
+//    private String vehicleNumber;
 
     /**
      * 品牌

@@ -93,6 +93,7 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceName()), "device_name", ticketMachineDto.getDeviceName())
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getBrand()), "brand", ticketMachineDto.getBrand())
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getModel()), "model", ticketMachineDto.getModel())
+                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getVehicleId()), "vehicle_id", ticketMachineDto.getVehicleId())
                         .eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()), "sanitation_office_id", ticketMachineDto.getSanitationOfficeId())
                         .orderByDesc("create_time")
         );
@@ -122,14 +123,14 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
         BeanUtils.copyProperties(ticketMachineDto, ticketMachine);
         ticketMachine.setUid(SnowflakeUtil.getUnionId());
 
-        String sanitationOfficeName = sanitationOfficeMapper.selectOne(
-                new QueryWrapper<SanitationOffice>().select("name").eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()),
-                        "uid", ticketMachineDto.getSanitationOfficeId())).getName();
-        ticketMachine.setSanitationOfficeName(sanitationOfficeName);
+//        String sanitationOfficeName = sanitationOfficeMapper.selectOne(
+//                new QueryWrapper<SanitationOffice>().select("name").eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()),
+//                        "uid", ticketMachineDto.getSanitationOfficeId())).getName();
+//        ticketMachine.setSanitationOfficeName(sanitationOfficeName);
 
-        String numberPlate = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().select("number_plate").eq(EptUtil.isNotEmpty(ticketMachineDto.getVehicleId()),
-                "uid", ticketMachineDto.getVehicleId())).getNumberPlate();
-        ticketMachine.setVehicleNumber(numberPlate);
+//        String numberPlate = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().select("number_plate").eq(EptUtil.isNotEmpty(ticketMachineDto.getVehicleId()),
+//                "uid", ticketMachineDto.getVehicleId())).getNumberPlate();
+//        ticketMachine.setVehicleNumber(numberPlate);
         int save = ticketMachineMapper.insert(ticketMachine);
         if (save > 0)
             return true;

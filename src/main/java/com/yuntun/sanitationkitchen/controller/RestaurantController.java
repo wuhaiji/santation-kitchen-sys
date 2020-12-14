@@ -8,11 +8,15 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.RestaurantCode;
+import com.yuntun.sanitationkitchen.model.dto.TrashCanDto;
 import com.yuntun.sanitationkitchen.model.entity.Restaurant;
+import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
+import com.yuntun.sanitationkitchen.model.vo.TrashCanVo;
 import com.yuntun.sanitationkitchen.service.IRestaurantService;
+import com.yuntun.sanitationkitchen.service.ITrashCanService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
@@ -36,32 +40,38 @@ import java.util.stream.Collectors;
  * @author whj
  * @since 2020-12-10
  */
+@Slf4j
 @RestController
 @RequestMapping("/restaurant")
-@Slf4j
 public class RestaurantController {
 
     @Autowired
     IRestaurantService iRestaurantService;
+
+    @Autowired
+    ITrashCanService iTrashCanService;
 
 
     @GetMapping("/list")
     @Limit("restaurant:query")
     public Result<Object> list(RestaurantListDto dto) {
 
+        log.error("dto:{}", dto);
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
 
         IPage<Restaurant> iPage = iRestaurantService.page(
                 new Page<Restaurant>().setSize(dto.getPageSize()).setCurrent(dto.getPageNo()),
                 new QueryWrapper<Restaurant>()
-                        .likeRight(EptUtil.isNotEmpty(dto.getName()),"name",dto.getName())
-                        .orderByDesc("create_time")
+                        .lambda()
+                        .like(EptUtil.isNotEmpty(dto.getAddress()), Restaurant::getAddress, dto.getAddress())
+                        .likeRight(EptUtil.isNotEmpty(dto.getName()), Restaurant::getName, dto.getName())
+                        .eq(EptUtil.isNotEmpty(dto.getPhone()), Restaurant::getPhone, dto.getPhone())
+                        .eq(EptUtil.isNotEmpty(dto.getManagerName()), Restaurant::getManagerName, dto.getManagerName())
+                        .orderByDesc(Restaurant::getCreateTime)
 
         );
-
         List<RestaurantListVo> vos = ListUtil.listMap(RestaurantListVo.class, iPage.getRecords());
         RowData<RestaurantListVo> data = new RowData<RestaurantListVo>().setRows(vos).setTotal(iPage.getTotal()).setTotalPages(iPage.getTotal());
-
         return Result.ok(data);
     }
 
@@ -97,9 +107,15 @@ public class RestaurantController {
     public Result<Object> save(RestaurantSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 16, "名称不能为空");
+        ErrorUtil.isStringLengthOutOfRange(dto.getAddress(), 2, 30, "地址不能为空");
+        ErrorUtil.isStringEmpty(dto.getManagerName(), "负责人姓名不能为空");
+        ErrorUtil.notIllegalPhone(dto.getPhone());
+        Long unionId = SnowflakeUtil.getUnionId();
+        log.error("unid:{}", unionId);
 
-        Restaurant restaurant = new Restaurant().setCreator(UserIdHolder.get()).setUid(SnowflakeUtil.getUnionId());
+        Restaurant restaurant = new Restaurant();
         BeanUtils.copyProperties(dto, restaurant);
+        restaurant.setCreator(UserIdHolder.get()).setUid(unionId);
 
         boolean save = iRestaurantService.save(restaurant);
         if (!save) {
@@ -131,13 +147,20 @@ public class RestaurantController {
     @PostMapping("/delete/{uid}")
     @Limit("restaurant:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
-
         ErrorUtil.isObjectNull(uid, "uid");
 
+        // 1.判断餐馆是否存在
         Restaurant entity = iRestaurantService.getOne(new QueryWrapper<Restaurant>().eq("uid", uid));
         if (entity == null) {
             log.error("Restaurant->delete->uid不存在,uid:{}", uid);
             throw new ServiceException(RestaurantCode.ID_NOT_EXIST);
+        }
+
+        // 2.判断餐馆是否可以删除（有无绑定垃圾桶设备）
+        RowData<TrashCanVo> trashCanList = iTrashCanService.findTrashCanList(new TrashCanDto().setRestaurantId(uid));
+        if (trashCanList.getRows() != null && trashCanList.getRows().size() != 0) {
+            log.error("不能删除，已绑定了垃圾桶的餐馆");
+            throw new ServiceException(RestaurantCode.DELETE_BIND_ERROR);
         }
 
         boolean b = iRestaurantService.remove(new QueryWrapper<Restaurant>().eq("uid", uid));
@@ -188,46 +211,7 @@ public class RestaurantController {
          * 餐馆地址
          */
         private String address;
-        /**
-         * 创建人id
-         */
-        private Long creator;
-        /**
-         * 创建时间
-         */
-        private LocalDateTime createTime;
-        /**
-         * 禁用状态
-         */
-        private Integer disabled;
-        /**
-         * 禁用人id
-         */
-        private Long disabledBy;
-        /**
-         * 禁用时间
-         */
-        private LocalDateTime disabledTime;
-        /**
-         * 修改者id
-         */
-        private Long updator;
-        /**
-         * 修改时间
-         */
-        private LocalDateTime updateTime;
-        /**
-         * 删除状态
-         */
-        private Integer deleted;
-        /**
-         * 删除人
-         */
-        private Long deletedBy;
-        /**
-         * 删除时间
-         */
-        private LocalDateTime deletedTime;
+
     }
 
 
