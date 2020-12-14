@@ -8,7 +8,7 @@
                 and t.serial_code = #{dto.serialCode}
             </if>
             <if test="dto.vehicleId != null ">
-                and t.vehicleId = #{dto.vehicleId}
+                and t.vehicle_id = #{dto.vehicleId}
             </if>
             <if test="dto.sanitationOfficeId != null">
                 and t.sanitation_office_id = #{dto.sanitationOfficeId}
@@ -68,7 +68,7 @@
         d.weight d_weight
         from
         (
-            select * from tb_sk_pound_bill
+            select * from tb_sk_pound_bill t
             where 1
             <include refid="query"/>
             order by create_time desc
