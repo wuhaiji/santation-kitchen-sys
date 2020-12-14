@@ -153,7 +153,7 @@ public class VehicleTypeController {
         //查询车辆类型下面是否有车辆
         List<Vehicle> vehicles = iVehicleService.list(new QueryWrapper<Vehicle>().eq("sanitation_office_id", uid));
         if(EptUtil.isNotEmpty(vehicles)){
-            throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
+            throw new ServiceException(VehicleCode.HAS_VEHICLE_LIST);
         }
         ErrorUtil.isObjectNull(uid, "uid");
 
