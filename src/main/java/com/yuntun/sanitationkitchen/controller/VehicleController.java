@@ -7,12 +7,12 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.code.code40000.RestaurantCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
-import com.yuntun.sanitationkitchen.model.dto.*;
+import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
+import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
+import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
+import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
-import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
-import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
@@ -25,7 +25,6 @@ import com.yuntun.sanitationkitchen.service.ITicketMachineService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
-import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
@@ -35,6 +34,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -89,11 +89,23 @@ public class VehicleController {
         // 找出本系统中对应的车辆
         vehicleBeans.parallelStream().map(i -> {
             Vehicle vehicle = vehicleMap.get(i.getPlateNo());
-            if(vehicle!=null){
+            if (vehicle != null) {
                 return i;
             }
             return null;
         }).collect(Collectors.toList());
+
+        //查询所属单位名称
+        List<Long> sanitationOfficeIds = records.parallelStream().map(Vehicle::getSanitationOfficeId).collect(Collectors.toList());
+
+        List<SanitationOffice> sanitationOffices;
+
+        if (EptUtil.isNotEmpty(sanitationOfficeIds)) {
+            sanitationOffices = iSanitationOfficeService.list(new QueryWrapper<SanitationOffice>().in("uid", sanitationOfficeIds));
+        } else {
+            sanitationOffices = new ArrayList<>();
+        }
+        Map<Long, SanitationOffice> sanitationOfficeMap = sanitationOffices.parallelStream().collect(Collectors.toMap(SanitationOffice::getUid, i -> i));
 
 
         List<VehicleListVo> collect = records.parallelStream().map(i -> {
@@ -109,11 +121,12 @@ public class VehicleController {
                     }
                 }
             }
+            SanitationOffice sanitationOffice = sanitationOfficeMap.get(i.getSanitationOfficeId());
+            if (sanitationOffice != null) {
+                vehicleListVo.setSanitationOfficeName(sanitationOffice.getName());
+            }
             return vehicleListVo;
         }).collect(Collectors.toList());
-
-
-
 
 
         RowData<VehicleListVo> data = new RowData<VehicleListVo>()

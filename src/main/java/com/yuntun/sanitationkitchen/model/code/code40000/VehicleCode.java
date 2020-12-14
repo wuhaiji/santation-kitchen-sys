@@ -21,6 +21,7 @@ public enum VehicleCode implements ResultCode {
     ID_NOT_EXIST("40108", "数据不存在"),
     NUMBER_PLATE_ALREADY_EXISTS("40109", "车牌号已存在"),
     RFID_PLATE_ALREADY_EXISTS("40110", "RFID号已存在"),
+    HAS_VEHICLE_LIST("40111", "请删除下属车辆"),
 
     ;
 

@@ -19,6 +19,7 @@ import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleTypeGetVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleTypeListVo;
+import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.service.IVehicleTypeService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
@@ -49,6 +50,8 @@ public class VehicleTypeController {
 
     @Autowired
     IVehicleTypeService iVehicleTypeService;
+    @Autowired
+    IVehicleService iVehicleService;
 
 
     @GetMapping("/list")
@@ -63,7 +66,7 @@ public class VehicleTypeController {
                 new QueryWrapper<VehicleType>()
                         .like(EptUtil.isNotEmpty(dto.getName()), "name", dto.getName())
                         .like(EptUtil.isNotEmpty(dto.getBrand()), "brand", dto.getBrand())
-                        .eq(EptUtil.isNotEmpty(dto.getModel()), "model", dto.getModel())
+                        .like(EptUtil.isNotEmpty(dto.getModel()), "model", dto.getModel())
                         .likeRight(EptUtil.isNotEmpty(dto.getCreateTime()), "create_time", dto.getCreateTime())
                         .orderByDesc("create_time")
 
@@ -147,6 +150,11 @@ public class VehicleTypeController {
     @Limit("system:vehicleType:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
 
+        //查询车辆类型下面是否有车辆
+        List<Vehicle> vehicles = iVehicleService.list(new QueryWrapper<Vehicle>().eq("sanitation_office_id", uid));
+        if(EptUtil.isNotEmpty(vehicles)){
+            throw new ServiceException(VehicleCode.NUMBER_PLATE_ALREADY_EXISTS);
+        }
         ErrorUtil.isObjectNull(uid, "uid");
 
         VehicleType vehicleType = iVehicleTypeService.getOne(new QueryWrapper<VehicleType>().eq("uid", uid));

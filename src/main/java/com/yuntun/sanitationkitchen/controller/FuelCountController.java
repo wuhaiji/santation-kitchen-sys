@@ -11,6 +11,8 @@ import com.yuntun.sanitationkitchen.model.vo.FuelCountListVo;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import com.yuntun.sanitationkitchen.util.ExcelUtil;
+import com.yuntun.sanitationkitchen.util.excel.ExportExcelWrapper;
 import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
 import lombok.Data;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -86,7 +89,7 @@ public class FuelCountController {
                                 .setFuelRemaining(EptUtil.isEmpty(vehicleRealtimeStatusAdasDto.getOil()) ? String.valueOf(0) : vehicleRealtimeStatusAdasDto.getOil())
                                 .setNumberPlate(vehicleRealtimeStatusAdasDto.getPlate())
                                 .setUpdateTime(LocalDateTime.now());
-                    }else{
+                    } else {
                         fuelCountListVo1.setNumberPlate(i.getNumberPlate()).setFuelRemaining(String.valueOf(0)).setUpdateTime(LocalDateTime.now());
                     }
                     return fuelCountListVo1;
@@ -149,7 +152,7 @@ public class FuelCountController {
 
     @Limit("data:fuelCount")
     @PostMapping("/export")
-    public void export(FuelCountListDto dto, HttpServletResponse response) throws IOException {
+    public void export(FuelCountListDto dto, HttpServletResponse response) throws Exception {
 
         //先从数据库查询所有车辆牌号
         List<Vehicle> vehicles = iVehicleService.list(
@@ -159,22 +162,28 @@ public class FuelCountController {
 
         List<String> plates = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
 
-        List<VehicleRealtimeStatusAdasDto> list = iVehicle.ListVehicleRealtimeStatusByPlates(plates);
+        List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtos = iVehicle.ListVehicleRealtimeStatusByPlates(plates);
+        Map<String, VehicleRealtimeStatusAdasDto> vehicleMap = vehicleRealtimeStatusAdasDtos.parallelStream().collect(Collectors.toMap(i -> i.getPlate(), i -> i));
+        List<FuelCountListVo> fuelCountListVos = vehicles.parallelStream().map(i -> {
+            VehicleRealtimeStatusAdasDto vehicleRealtimeStatusAdasDto = vehicleMap.get(i.getNumberPlate());
+            FuelCountListVo fuelCountListVo = new FuelCountListVo();
+            if (vehicleRealtimeStatusAdasDto != null) {
+                String oil = vehicleRealtimeStatusAdasDto.getOil();
+                fuelCountListVo.setFuelRemaining(EptUtil.isEmpty(oil) ? String.valueOf(0) : oil)
+                        .setNumberPlate(i.getNumberPlate())
+                ;
+            }else{
+                fuelCountListVo.setFuelRemaining("0");
+            }
+            fuelCountListVo.setNumberPlate(i.getNumberPlate()).setUpdateTime(LocalDateTime.now());
+            return fuelCountListVo;
+        }).collect(Collectors.toList());
 
-        List<FuelCountListVo> fuelCountListVos = list.parallelStream()
-                .map(i ->
-                        new FuelCountListVo()
-                                .setFuelRemaining(EptUtil.isEmpty(i.getOil()) ? String.valueOf(0) : i.getOil())
-                                .setNumberPlate(i.getPlate())
-                                .setUpdateTime(LocalDateTime.now())
-                )
-                .collect(Collectors.toList());
 
+        String[] headers = {"序号", "车牌号", "更新时间", "油耗余量(单位L)"};
+        String[] keys = {"number","numberPlate", "updateTime", "fuelRemaining"};
 
-        String[] headers = {"车牌号", "更新时间", "油耗余量"};
-
-        // excel导出
-
+        ExcelUtil.excelExport(response, "油耗统计.xlsx", "油耗统计", fuelCountListVos, Arrays.asList(headers), Arrays.asList(keys));
     }
 
     @Data

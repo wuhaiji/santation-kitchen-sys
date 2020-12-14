@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.util;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -61,4 +62,8 @@ public class EptUtil {
         return t != null && !"".equals(t.trim());
     }
 
+    public static void main(String[] args) {
+        boolean notEmpty = isEmpty(new ArrayList<>());
+        System.out.println(notEmpty);
+    }
 }

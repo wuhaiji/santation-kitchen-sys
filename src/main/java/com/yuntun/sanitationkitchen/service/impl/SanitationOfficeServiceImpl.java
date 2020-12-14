@@ -8,15 +8,18 @@ import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
 import com.yuntun.sanitationkitchen.mapper.UserMapper;
+import com.yuntun.sanitationkitchen.mapper.VehicleMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
 import com.yuntun.sanitationkitchen.model.entity.User;
+import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.SanitationOfficeVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
+import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +42,9 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private VehicleMapper vehicleMapper;
 
     @Override
     public RowData<SanitationOfficeVo> findSanitationOfficeServiceList(SanitationOfficeDto sanitationOfficeDto) {
