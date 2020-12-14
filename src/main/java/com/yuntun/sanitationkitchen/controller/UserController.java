@@ -85,14 +85,19 @@ public class UserController {
         IPage<User> iPage = iUserService.listPage(dto);
 
         List<User> records = iPage.getRecords();
-        if (records != null && records.size() != 0) {
+        if (EptUtil.isNotEmpty(records)) {
             //封装环卫名字
-            Map<Long, SanitationOffice> map = toMap(iSanitationOfficeService.list(new LambdaQueryWrapper<SanitationOffice>()
+            Map<Long, SanitationOffice> map = iSanitationOfficeService.list(new LambdaQueryWrapper<SanitationOffice>()
                     .in(SanitationOffice::getUid, records.stream()
-                            .map(User::getSanitationOfficeId).collect(Collectors.toList()))));
+                            .map(User::getSanitationOfficeId).collect(Collectors.toList())))
+                    .stream().collect(Collectors.toMap(
+                                    SanitationOffice::getUid,i->i));
             records.forEach(
                     user -> {
-                        user.setSanitationOfficeName(map.get(user.getSanitationOfficeId()).getName());
+                        log.error("user:{}",user);
+                        if (map.get(user.getSanitationOfficeId())!=null){
+                            user.setSanitationOfficeName(map.get(user.getSanitationOfficeId()).getName());
+                        }
                     }
             );
         }
@@ -191,8 +196,7 @@ public class UserController {
                 .setCreator(UserIdHolder.get())
                 .setRoleName(role.getRoleName())
                 .setRoleId(role.getUid())
-                .setSanitationOfficeId(sanitationOffice.getUid())
-                .setSanitationOfficeName(sanitationOffice.getName());
+                .setSanitationOfficeId(sanitationOffice.getUid());
 
         BeanUtils.copyProperties(dto, user);
 

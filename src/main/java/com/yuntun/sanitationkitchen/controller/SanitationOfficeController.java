@@ -7,9 +7,11 @@ import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.ErrorUtil;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -107,15 +109,17 @@ public class SanitationOfficeController {
     /**
      * 根据uid删除后台管理系统用户表
      *
-     * @param uids
+     * @param uid
      * @author wujihong
      * @since 2020-12-02 12:12
      */
-    @RequestMapping("/delete")
+    @RequestMapping("/delete/{uid}")
     @Limit("system:sanitationOffice:delete")
-    public Result delete(@RequestParam(name = "uids[]", required = false) List<Long> uids) {
-        ErrorUtil.isCollectionEmpty(uids, "uid");
-        return Result.ok(iSanitationOfficeService.deleteSanitationOffice(uids));
+    public Result delete(@PathVariable("uid") Long uid) {
+        ErrorUtil.isObjectNull(uid,"id");
+        List<Long> ids=new ArrayList<>();
+        ids.add(uid);
+        return Result.ok(iSanitationOfficeService.deleteSanitationOffice(ids));
 
     }
 

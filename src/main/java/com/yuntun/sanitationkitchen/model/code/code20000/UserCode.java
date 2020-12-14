@@ -35,7 +35,10 @@ public enum UserCode implements ResultCode {
     LIST_USER_PERMISSION_ERROR("20121", "查询用户权限列表异常"),
     LIST_USER_ROLE_ERROR("20122", "查询用户角色列表异常"),
     USER_OFFICE_ERROR("20123", "该用户还是环卫所管理员,不能更改其所属单位"),
-
+    USER_NOT_NULL_ERROR("20124", "还有用户属于该单位,不能删除"),
+    WIGHT_BRIGHT_NOT_NULL_ERROR("20125", "还有地磅属于该单位,不能删除"),
+    VEHICLE_NOT_NULL_ERROR("20126", "还有车辆属于该单位,不能删除"),
+    TICKET_MACHINE_NOT_NULL_ERROR("20127", "还有小票机属于该单位,不能删除")
     ;
     /**
      * 错误码

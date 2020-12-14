@@ -1,25 +1,22 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
-import com.yuntun.sanitationkitchen.mapper.UserMapper;
-import com.yuntun.sanitationkitchen.mapper.VehicleMapper;
+import com.yuntun.sanitationkitchen.mapper.*;
+import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.SanitationOfficeDto;
-import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
-import com.yuntun.sanitationkitchen.model.entity.User;
-import com.yuntun.sanitationkitchen.model.entity.Vehicle;
+import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.SanitationOfficeVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
-import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +41,15 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
     private UserMapper userMapper;
 
     @Autowired
+    private WeighbridgeMapper weighbridgeMapper;
+
+    @Autowired
     private VehicleMapper vehicleMapper;
+
+    @Autowired
+    private TicketMachineMapper ticketMachineMapper;
+
+
 
     @Override
     public RowData<SanitationOfficeVo> findSanitationOfficeServiceList(SanitationOfficeDto sanitationOfficeDto) {
@@ -131,6 +136,37 @@ public class SanitationOfficeServiceImpl extends ServiceImpl<SanitationOfficeMap
     @Override
 
     public Boolean deleteSanitationOffice(List<Long> uids) {
+        if (uids!=null &&uids.size()!=0){
+            for (Long officeId : uids) {
+                //是否还有用户
+                List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>()
+                        .eq(User::getSanitationOfficeId, officeId));
+                if (EptUtil.isNotEmpty(users)){
+                    log.error("还有用户是属于该单位，删除异常");
+                    throw new ServiceException(UserCode.USER_NOT_NULL_ERROR);
+                }
+                //地磅 车辆 小票机  摄像头
+                List<Weighbridge> weighbridges = weighbridgeMapper.selectList(new LambdaQueryWrapper<Weighbridge>()
+                        .eq(Weighbridge::getSanitationOfficeId, officeId));
+                if (EptUtil.isNotEmpty(weighbridges)){
+                    log.error("还有地磅是属于该单位，删除异常");
+                    throw new ServiceException(UserCode.WIGHT_BRIGHT_NOT_NULL_ERROR);
+                }
+                List<Vehicle> vehicles = vehicleMapper.selectList(new LambdaQueryWrapper<Vehicle>()
+                        .eq(Vehicle::getSanitationOfficeId, officeId));
+                if (EptUtil.isNotEmpty(vehicles)){
+                    log.error("还有车辆是属于该单位，删除异常");
+                    throw new ServiceException(UserCode. VEHICLE_NOT_NULL_ERROR);
+                }
+                List<TicketMachine> ticketMachines = ticketMachineMapper.selectList(new LambdaQueryWrapper<TicketMachine>()
+                        .eq(TicketMachine::getSanitationOfficeId, officeId));
+                if (EptUtil.isNotEmpty(ticketMachines)){
+                    log.error("还有小票机是属于该单位，删除异常");
+                    throw new ServiceException(UserCode. TICKET_MACHINE_NOT_NULL_ERROR);
+                }
+            }
+        }
+
 
         int result2 = baseMapper.delete(new QueryWrapper<SanitationOffice>().in("uid", uids));
         if (result2 > 0)
