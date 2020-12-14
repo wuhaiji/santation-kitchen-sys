@@ -19,11 +19,13 @@ import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -64,8 +66,8 @@ public class TrashCanServiceImpl extends ServiceImpl<TrashCanMapper, TrashCan> i
         List<TrashCanVo> trashCanVoList;
         IPage<TrashCan> iPage = trashCanMapper.selectPage(
                 new Page<TrashCan>()
-                        .setSize(trashCanDto.getPageSize())
-                        .setCurrent(trashCanDto.getPageNo()),
+                        .setSize(Optional.ofNullable(trashCanDto.getPageSize()).orElse(10))
+                        .setCurrent(Optional.ofNullable(trashCanDto.getPageNo()).orElse(1)),
                 new QueryWrapper<TrashCan>()
                         .like(EptUtil.isNotEmpty(trashCanDto.getFacilityCode()), "facility_code", trashCanDto.getFacilityCode())
                         .eq(EptUtil.isNotEmpty(trashCanDto.getFacilityType()), "facility_type", trashCanDto.getFacilityType())
