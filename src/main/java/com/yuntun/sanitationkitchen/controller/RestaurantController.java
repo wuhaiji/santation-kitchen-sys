@@ -175,7 +175,7 @@ public class RestaurantController {
 
     @PostMapping("/delete/batch")
     @Limit("restaurant:delete")
-    public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
+    public Result<Object> deleteBatch(@RequestParam(value = "ids",required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iRestaurantService.remove(new QueryWrapper<Restaurant>().in("uid", ids));
         if (b)

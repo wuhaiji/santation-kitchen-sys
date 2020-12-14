@@ -302,7 +302,7 @@ public class VehicleController {
 
     @PostMapping("/delete/batch")
     @Limit("vehicle:delete")
-    public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
+    public Result<Object> deleteBatch(@RequestParam(value = "ids" ,required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().in("uid", ids));
         if (b)

@@ -175,7 +175,7 @@ public class VehicleTypeController {
 
     @PostMapping("/delete/batch")
     @Limit("system:vehicleType:delete")
-    public Result<Object> deleteBatch(@RequestParam("ids") List<Long> ids) {
+    public Result<Object> deleteBatch(@RequestParam(value = "ids" ,required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iVehicleTypeService.remove(new QueryWrapper<VehicleType>().in("uid", ids));
         if (b)

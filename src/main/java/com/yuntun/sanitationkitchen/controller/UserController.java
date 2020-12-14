@@ -358,7 +358,7 @@ public class UserController {
 
     @PostMapping("/delete/batch")
     @Limit("system:user:delete")
-    public Result<Object> delete(@RequestParam("ids") List<Long> ids) {
+    public Result<Object> delete(@RequestParam(value = "ids",required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "信息id");
         boolean b = iUserService.remove(new QueryWrapper<User>().in("uid", ids));
         if (b)

@@ -155,7 +155,6 @@ public class LoginController {
     }
 
 
-
     /**
      * 获取public key
      *
@@ -195,6 +194,7 @@ public class LoginController {
         RedisUtils.setValueExpireSeconds(UserConstant.CAPTCHA_ID_REDIS_KEY + captchaId, code, FIVE_MINUTE);
         return Result.ok(jsonObject);
     }
+
     @GetMapping("/uid")
     public Result<Object> uid() {
         return Result.ok(SnowflakeUtil.getUnionId());
@@ -208,7 +208,11 @@ public class LoginController {
         ErrorUtil.isStringEmpty(publickey, "公钥");
 
         //先查询用户是否存在
-        User targetUser = iUserService.getOne(new QueryWrapper<User>().eq("username", username));
+        User targetUser = iUserService.getOne(new QueryWrapper<User>()
+                .eq("username", username)
+                .or()
+                .eq("phone", username)
+        );
         if (targetUser == null) {
             log.error("用户不存在");
             throw new ServiceException(UserCode.LOGIN_FAILED_USERNAME_INCORRECT);

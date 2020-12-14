@@ -12,7 +12,7 @@ spring:
       # 设置文件缓存的临界点,超过则先保存到临时目录,默认为0,所有文件都会进行缓存
       file-size-threshold: 0
   application:
-    name: calendar_sys
+    name: sanitation-kitchen
   jackson:
     #    time-zone: GMT+8
     #    date-format: yyyy-MM-dd HH:mm:ss
@@ -89,3 +89,31 @@ g780-data-package:
 id:
   datacenter-id: 1
   worker-id: 1
+
+
+
+
+# 地磅磅单的导出配置
+pound-bill:
+  file-name: 磅单
+  sheet-name: 导出磅单
+  headers:
+    - 序号
+    - 流水号
+    - 环卫机构
+    - 车牌号
+    - 垃圾桶(RFID - 重量)
+    - 净重
+    - 皮重
+    - 毛重
+    - 创建时间
+  columns:
+    - number
+    - serialCode
+    - sanitationOfficeName
+    - numberPlate
+    - trashWeightSerials
+    - netWeight
+    - tare
+    - grossWeight
+    - createTime
