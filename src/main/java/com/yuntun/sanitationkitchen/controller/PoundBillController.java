@@ -51,7 +51,8 @@ public class PoundBillController {
     @Limit("data:poundBill:query")
     @RequestMapping("/list")
     public Result list(PoundBillDto poundBillDto) {
-        return Result.ok(iPoundBillService.findPoundBillList(poundBillDto));
+        return Result.ok(iPoundBillService.pagePoundBill(poundBillDto));
+        //return Result.ok(iPoundBillService.findPoundBillList(poundBillDto));
     }
 
     /**
@@ -66,6 +67,7 @@ public class PoundBillController {
         System.out.println("poundBillDto:"+poundBillDto);
         iPoundBillService.exportPoundBill(poundBillDto, response);
     }
+
 
 
 }

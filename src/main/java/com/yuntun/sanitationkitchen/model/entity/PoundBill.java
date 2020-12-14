@@ -45,6 +45,11 @@ public class PoundBill implements Serializable {
     private Long sanitationOfficeId;
 
     /**
+     * 环卫所名称
+     */
+    private String sanitationOfficeName;
+
+    /**
      * 车牌
      */
     private String numberPlate;
