@@ -54,9 +54,7 @@ public class VehicleTypeController {
     @GetMapping("/list")
     @Limit("system:vehicleType:query")
     public Result<Object> list(VehicleTypeListDto dto) {
-
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
-
         IPage<VehicleType> iPage;
         iPage = iVehicleTypeService.page(
                 new Page<VehicleType>()

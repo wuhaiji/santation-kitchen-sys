@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.controller;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.AuthUtil;
@@ -10,6 +11,7 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
@@ -36,7 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -81,20 +85,44 @@ public class UserController {
         IPage<User> iPage = iUserService.listPage(dto);
 
         List<User> records = iPage.getRecords();
+        if (records != null && records.size() != 0) {
+            //封装环卫名字
+            Map<Long, SanitationOffice> map = toMap(iSanitationOfficeService.list(new LambdaQueryWrapper<SanitationOffice>()
+                    .in(SanitationOffice::getUid, records.stream()
+                            .map(User::getSanitationOfficeId).collect(Collectors.toList()))));
+            records.forEach(
+                    user -> {
+                        user.setSanitationOfficeName(map.get(user.getSanitationOfficeId()).getName());
+                    }
+            );
+        }
+
         List<UserListVo> userListVos = ListUtil.listMap(UserListVo.class, records);
 
         RowData<UserListVo> data = new RowData<UserListVo>()
                 .setRows(userListVos)
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
-        System.out.println("用户列表查询时间："+(System.currentTimeMillis()-l)+"ms");
+        System.out.println("用户列表查询时间：" + (System.currentTimeMillis() - l) + "ms");
         return Result.ok(data);
+    }
+
+    private Map<Long, SanitationOffice> toMap(List<SanitationOffice> sanitationOffices) {
+        Map<Long, SanitationOffice> map = new HashMap<>(1);
+        if (sanitationOffices != null && sanitationOffices.size() != 0) {
+            map = new HashMap<>(sanitationOffices.size());
+            for (SanitationOffice office : sanitationOffices) {
+                map.put(office.getUid(), office);
+            }
+        }
+        return map;
     }
 
     @GetMapping("/options")
     @Limit("system:user:query")
-    public Result<Object> options() {
-        List<User> list = iUserService.list();
+    public Result<Object> options(Long sanitationOfficeId) {
+        List<User> list = iUserService.list(new QueryWrapper<User>().lambda()
+                .eq(User::getSanitationOfficeId, sanitationOfficeId));
         List<OptionsVo> optionsVos = list
                 .parallelStream()
                 .map(i -> new OptionsVo().setLabel(i.getUsername()).setValue(i.getUid()))
@@ -114,6 +142,7 @@ public class UserController {
         BeanUtils.copyProperties(user, userGetVo);
         return Result.ok(userGetVo);
     }
+
     @GetMapping("/list/permission/{uid}")
     @Limit("system:user:query")
     public Result<Object> listPermission(@PathVariable Long uid) {
@@ -124,6 +153,7 @@ public class UserController {
 
         return Result.ok(userPermissionList);
     }
+
     @PostMapping("/save")
     @Limit("system:user:save")
     public Result<Object> save(UserSaveDto dto) {
@@ -215,14 +245,30 @@ public class UserController {
             }
         }
         User user = new User().setUpdator(UserIdHolder.get());
-        if(dto.getRoleId()!=null){
+        if (dto.getRoleId() != null) {
             Role role = iRoleService.getOne(new QueryWrapper<Role>().eq("uid", dto.getRoleId()));
-            if(role!=null){
+            if (role != null) {
                 user.setRoleName(role.getRoleName());
             }
         }
 
         BeanUtils.copyProperties(dto, user);
+        //修改了所属单位
+        Long officeId = dto.getSanitationOfficeId();
+        if (officeId != null) {
+            //如果当前用户还是其它环卫所的负责人就不能更改
+            LambdaQueryWrapper<SanitationOffice> eq = new QueryWrapper<SanitationOffice>().
+                    lambda()
+                    .ne(SanitationOffice::getUid, officeId)
+                    .eq(SanitationOffice::getManagerId, user.getUid());
+            List<SanitationOffice> sanitationOffices = iSanitationOfficeService.list(eq);
+            if (sanitationOffices != null && sanitationOffices.size() != 0) {
+                //此用户还在管理其它的环卫所 不能更改
+                log.error("此用户还在管理其它的环卫所不能更改");
+                throw new ServiceException(UserCode.USER_OFFICE_ERROR);
+            }
+
+        }
         //如果密码为空就不修改密码
         if (EptUtil.isNotEmpty(dto.getPassword())) {
             String passwordDecrypt = LoginController.getPasswordDecrypt(dto.getPassword(), publickey);

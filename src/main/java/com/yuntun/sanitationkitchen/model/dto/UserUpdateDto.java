@@ -46,4 +46,10 @@ public class UserUpdateDto {
 
 
     private Long roleId;
+    /**
+     * 环卫局id
+     */
+    private Long sanitationOfficeId;
+
+
 }

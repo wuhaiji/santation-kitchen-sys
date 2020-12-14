@@ -34,6 +34,7 @@ public enum UserCode implements ResultCode {
     USER_DOES_NOT_EXIST("20120", "用户不存在"),
     LIST_USER_PERMISSION_ERROR("20121", "查询用户权限列表异常"),
     LIST_USER_ROLE_ERROR("20122", "查询用户角色列表异常"),
+    USER_OFFICE_ERROR("20123", "该用户还是环卫所管理员,不能更改其所属单位"),
 
     ;
     /**

@@ -63,10 +63,10 @@ public class RestaurantController {
                 new Page<Restaurant>().setSize(dto.getPageSize()).setCurrent(dto.getPageNo()),
                 new QueryWrapper<Restaurant>()
                         .lambda()
-                        .like(EptUtil.isNotEmpty(dto.getAddress()), Restaurant::getAddress, dto.getAddress())
-                        .likeRight(EptUtil.isNotEmpty(dto.getName()), Restaurant::getName, dto.getName())
-                        .eq(EptUtil.isNotEmpty(dto.getPhone()), Restaurant::getPhone, dto.getPhone())
-                        .eq(EptUtil.isNotEmpty(dto.getManagerName()), Restaurant::getManagerName, dto.getManagerName())
+                        .like(EptUtil.stringIsNotEmpty(dto.getAddress()), Restaurant::getAddress, dto.getAddress())
+                        .like(EptUtil.stringIsNotEmpty(dto.getName()), Restaurant::getName, dto.getName())
+                        .eq(EptUtil.stringIsNotEmpty(dto.getPhone()), Restaurant::getPhone, dto.getPhone())
+                        .eq(EptUtil.stringIsNotEmpty(dto.getManagerName()), Restaurant::getManagerName, dto.getManagerName())
                         .orderByDesc(Restaurant::getCreateTime)
 
         );
