@@ -1,0 +1,18 @@
+# 地磅磅单的导出配置
+trash-can-serial:
+  file-name: 垃圾桶称重流水
+  sheet-name: 导出垃圾桶称重流水
+  headers:
+    - 序号
+    - 垃圾桶RFID
+    - 垃圾桶编号
+    - 餐馆名称
+    - 重量
+    - 创建时间
+  columns:
+    - number
+    - trashCanRfid
+    - facilityCode
+    - restaurantName
+    - weight
+    - createTime
