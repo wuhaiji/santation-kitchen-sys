@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class UDCDataUtil {
 
-    public static final String VEHICLE = "vehicle";
+    public final String VEHICLE = "vehicle";
 
-    public static final String TRASH = "trash";
+    public final String TRASH = "trash";
 
     @Autowired
     private VehicleMapper vehicleMapper;
@@ -36,12 +36,14 @@ public class UDCDataUtil {
      * @return
      */
     public int getFlag(byte[] bytes) {
+        System.out.println("进入flag！");
         Integer flagIndex = UDCDataPackageFormat.getFlag().getIndex();
         Integer flagSize = UDCDataPackageFormat.getFlag().getSize();
 
         byte[] flag = new byte[flagSize];
         System.arraycopy(bytes, flagIndex, flag,0, flagSize);
 
+        System.out.println("flag:"+BitOperator.byteToInteger(flag));
         return BitOperator.byteToInteger(flag);
     }
 
@@ -52,12 +54,14 @@ public class UDCDataUtil {
      * @return
      */
     public int getDataPackageType(byte[] bytes) {
+        System.out.println("进入数据包类型！");
         Integer typeIndex = UDCDataPackageFormat.getDataHeader().getTypeIndex();
         Integer typeSize = UDCDataPackageFormat.getDataHeader().getTypeSize();
 
         byte[] type = new byte[typeSize];
         System.arraycopy(bytes, typeIndex, type,0, typeSize);
 
+        System.out.println("type:"+BitOperator.byteToInteger(type));
         return BitOperator.byteToInteger(type);
     }
 

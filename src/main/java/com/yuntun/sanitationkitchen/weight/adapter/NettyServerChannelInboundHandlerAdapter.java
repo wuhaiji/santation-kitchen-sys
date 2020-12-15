@@ -1,6 +1,10 @@
 package com.yuntun.sanitationkitchen.weight.adapter;
 
+import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
+import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
+import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
@@ -17,6 +21,9 @@ import java.net.InetSocketAddress;
  * I/O数据读写处理类
  */
 public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
+
+    // 获取api地址信息
+    public static UDCDataUtil udcDataUtil = SpringUtil.getBean(UDCDataUtil.class);
 
     public static Logger logger = LoggerFactory.getLogger(NettyServerChannelInboundHandlerAdapter.class);
 
@@ -78,12 +85,32 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
         ByteBuf bytebuf = (ByteBuf) msg;
         byte[] bytes = new byte[bytebuf.readableBytes()];
         bytebuf.readBytes(bytes);
-
-
         System.out.println("msg:" +bytes);
         for (byte b:bytes) {
             System.out.println("byte:"+b);
         }
+
+        byte[] responseBytes = {0x22};
+
+        // 判断他是否是UDC协议
+        if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
+            System.out.println("进入了通信！");
+            // 判断他是否是登录
+            if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
+                System.out.println("进入了登录！");
+                ctx.write(Unpooled.copiedBuffer(responseBytes));
+            }
+            // 判断他是否是数据上报
+            if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
+//                MqttSenderUtil.getMqttSender().sendToMqtt("对应主题", "对应数据");
+                ctx.write(Unpooled.copiedBuffer(responseBytes));
+            }
+
+        } else {
+            ctx.write(Unpooled.copiedBuffer(responseBytes));
+//            ctx.write("非法访问···！");
+        }
+
     }
 
     /**
