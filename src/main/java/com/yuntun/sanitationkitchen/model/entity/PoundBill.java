@@ -60,16 +60,6 @@ public class PoundBill implements Serializable {
     private Long vehicleId;
 
     /**
-     * 垃圾箱
-     */
-    private Long trashCanId;
-
-    /**
-     * 垃圾箱名称
-     */
-    private String trashCanCode;
-
-    /**
      * 毛重
      */
     private Double grossWeight;

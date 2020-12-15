@@ -29,7 +29,7 @@ public interface IPoundBillService extends IService<PoundBill> {
      * @param poundBillDto
      * @return
      */
-    RowData<PoundBillBean> pagePoundBill(PoundBillDto poundBillDto);
+    RowData<PoundBill> pagePoundBill(PoundBillDto poundBillDto);
 
     void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
 

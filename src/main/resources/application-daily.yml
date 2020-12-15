@@ -98,7 +98,6 @@ pound-bill:
     - 流水号
     - 环卫机构
     - 车牌号
-    - 垃圾桶(RFID - 重量)
     - 净重
     - 皮重
     - 毛重
@@ -108,7 +107,6 @@ pound-bill:
     - serialCode
     - sanitationOfficeName
     - numberPlate
-    - trashWeightSerials
     - netWeight
     - tare
     - grossWeight

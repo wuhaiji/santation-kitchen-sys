@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,6 +25,7 @@ import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ExcelUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
 import com.yuntun.sanitationkitchen.util.excel.ExportExcelWrapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -117,11 +119,24 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
     }
 
     @Override
-    public RowData<PoundBillBean> pagePoundBill(PoundBillDto dto) {
-        RowData<PoundBillBean> page=new RowData<>();
-        page.setTotal(baseMapper.countPoundBill(dto))
-                .setRows(baseMapper.listPoundBill(dto));
-        return page;
+    public RowData<PoundBill> pagePoundBill(PoundBillDto dto) {
+
+        IPage<PoundBill> page=new Page<>();
+        page.setCurrent(dto.getPageNo());
+        page.setSize(dto.getPageSize());
+        LambdaQueryWrapper<PoundBill> q=new LambdaQueryWrapper<>();
+        q.eq(!StringUtils.isBlank(dto.getSerialCode()),PoundBill::getSerialCode,dto.getSerialCode())
+                .eq(dto.getVehicleId()!=null,PoundBill::getVehicleId,dto.getVehicleId())
+                .eq(dto.getSanitationOfficeId()!=null,PoundBill::getSanitationOfficeId,dto.getSanitationOfficeId())
+                .gt(dto.getBeginTime()!=null,PoundBill::getCreateTime,dto.getBeginTime())
+                .lt(dto.getEndTime()!=null,PoundBill::getCreateTime,dto.getEndTime());
+        this.page(page,q);
+
+        RowData<PoundBill> pageBean=new RowData<>();
+        pageBean.setTotal(page.getTotal())
+                .setRows(page.getRecords());
+        return pageBean;
+
     }
 
     @Override
