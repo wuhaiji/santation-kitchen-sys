@@ -232,6 +232,36 @@ public class BitOperator {
     }
 
     /**
+     * 将double数字转为byte数组
+     *
+     * @param d
+     * @return
+     */
+    public static byte[] doubleToBytes(double d) {
+        long value = Double.doubleToRawLongBits(d);
+        byte[] bytes = new byte[8];
+        for (int i = 0; i < 8; i++) {
+            bytes[i] = (byte) ((value >> 8 * i) & 0xff);
+            System.out.println("bytes["+i+"]："+bytes[i] );
+        }
+        return bytes;
+    }
+
+    /**
+     * 将byte数组转为double数字
+     *
+     * @param bytes
+     * @return
+     */
+    public static Double bytesToDouble(byte[] bytes) {
+        long value = 0;
+        for (int i = 0; i < 8; i++) {
+            value |= ((long) (bytes[i] & 0xff)) << (8 * i);
+        }
+        return Double.longBitsToDouble(value);
+    }
+
+    /**
      * 得到一个消息ID
      *
      * @return

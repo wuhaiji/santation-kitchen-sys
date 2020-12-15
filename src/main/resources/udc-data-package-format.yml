@@ -21,3 +21,8 @@ udc-data-package-format:
     # 端口
     port-index: 19
     port-size: 2
+  # 数据体
+  data-body:
+    rfid-size: 13
+    gross_weight: 8
+    tare: 8
