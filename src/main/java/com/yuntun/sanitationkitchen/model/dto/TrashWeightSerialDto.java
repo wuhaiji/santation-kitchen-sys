@@ -10,5 +10,19 @@ import lombok.Data;
 @Data
 public class TrashWeightSerialDto extends BasePageDto {
 
+    /**
+     * 垃圾桶rfid
+     */
+    private String rfid;
+
+    /**
+     * 垃圾桶编号
+     */
+    private String code;
+
+    /**
+     * 餐馆名称
+     */
+    private String restaurantName;
 
 }

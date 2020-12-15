@@ -9,6 +9,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -29,10 +30,6 @@ public class TrashWeightSerial implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    /**
-     * 称重的流水号，对应pound_bill 表的流水号
-     */
-    private String serialCode;
 
     /**
      * 垃圾桶RFID
@@ -45,12 +42,21 @@ public class TrashWeightSerial implements Serializable {
     private String facilityCode;
 
     /**
+     * 餐馆ID
+     */
+    private Long restaurantId;
+
+    /**
+     * 餐馆名称
+     */
+    private String restaurantName;
+
+    /**
      * 重量
      */
     private Double weight;
 
-    @Override
-    public String toString(){
-        return trashCanRfid+" - "+weight+"kg";
-    }
+
+    private LocalDateTime createTime;
+
 }

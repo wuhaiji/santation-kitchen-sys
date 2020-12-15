@@ -1,11 +1,9 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yuntun.sanitationkitchen.bean.PoundBillBean;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.PoundBillMapper;
 import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
@@ -17,14 +15,12 @@ import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.PoundBillVo;
 import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
-import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
 import com.yuntun.sanitationkitchen.properties.PoundBillProperties;
 import com.yuntun.sanitationkitchen.service.IPoundBillService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ExcelUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
-import com.yuntun.sanitationkitchen.util.excel.ExportExcelWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +28,6 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -140,32 +135,18 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
     }
 
     @Override
-    public void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response) {
-//        String[] columns = null;
-//        List<PoundBill> poundBillList = poundBillMapper.selectList(new QueryWrapper<PoundBill>()
-//                .select(columns)
-//                .like(EptUtil.isNotEmpty(poundBillDto.getSerialCode()), "serial_code", poundBillDto.getSerialCode())
-//                .eq(EptUtil.isNotEmpty(poundBillDto.getVehicleId()), "vehicle_id", poundBillDto.getVehicleId())
-//                .eq(EptUtil.isNotEmpty(poundBillDto.getSanitationOfficeId()), "sanitation_office_id", poundBillDto.getSanitationOfficeId())
-//                .gt(EptUtil.isNotEmpty(poundBillDto.getBeginTime()), "create_time", poundBillDto.getBeginTime())
-//                .le(EptUtil.isNotEmpty(poundBillDto.getEndTime()), "create_time", poundBillDto.getEndTime())
-//                .orderByDesc("create_time"));
-//
-//        List<PoundBillVo> poundBillVoList = ListUtil.listMap(PoundBillVo.class, poundBillList);
-//        poundBillVoList = poundBillVoList.stream().map(poundBillVo -> {
-//            SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("name").eq("uid", poundBillVo.getSanitationOfficeId()));
-//            poundBillVo.setSanitationOfficeName(sanitationOffice.getName());
-//            return poundBillVo;
-//        }).collect(Collectors.toList());
+    public void exportPoundBill(PoundBillDto dto, HttpServletResponse response) {
 
-//        String[] headers = {"ID", "唯一ID", "流水号", "环卫ID", "车牌号", "车辆ID", "垃圾箱ID", "垃圾箱编号", "毛重", "皮重", "净重", "创建人", "创建时间", "禁用状态", "禁用人", "禁用时间",
-//        "修改人", "修改时间", "删除状态", "删除人" , "删除时间"};
-//        ExportExcelWrapper.exportExcel(poundBillDto.getFileName(), poundBillDto.getTitle(), headers, poundBillVoList, response, poundBillDto.getVersion());
-
-        List<PoundBillBean> poundBillBeans = baseMapper.listPoundBill(poundBillDto);
+        LambdaQueryWrapper<PoundBill> q=new LambdaQueryWrapper<>();
+        q.eq(!StringUtils.isBlank(dto.getSerialCode()),PoundBill::getSerialCode,dto.getSerialCode())
+                .eq(dto.getVehicleId()!=null,PoundBill::getVehicleId,dto.getVehicleId())
+                .eq(dto.getSanitationOfficeId()!=null,PoundBill::getSanitationOfficeId,dto.getSanitationOfficeId())
+                .gt(dto.getBeginTime()!=null,PoundBill::getCreateTime,dto.getBeginTime())
+                .lt(dto.getEndTime()!=null,PoundBill::getCreateTime,dto.getEndTime());
+        List<PoundBill> list = this.list(q);
 
         try {
-            ExcelUtil.excelExport(response, poundBillProperties.getFileName(), poundBillProperties.getSheetName(), poundBillBeans, poundBillProperties.getHeaders(), poundBillProperties.getColumns());
+            ExcelUtil.excelExport(response, poundBillProperties.getFileName(), poundBillProperties.getSheetName(), list, poundBillProperties.getHeaders(), poundBillProperties.getColumns());
         } catch (Exception e) {
             log.error("export PoundBill err,{}",e);
             throw new ServiceException(PoundBillCode.EXPORT_EXCEL);
