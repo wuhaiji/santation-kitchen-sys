@@ -1,7 +1,9 @@
 package com.yuntun.sanitationkitchen.properties;
 
+import com.yuntun.sanitationkitchen.config.YamlConfigFactory;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
  */
 @Component //不加这个注解的话, 使用@Autowired 就不能注入进去了
 @ConfigurationProperties(prefix = "pound-bill")
+@PropertySource(value = {"classpath:pound-bill.yml"}, factory = YamlConfigFactory.class)
 @Data
 public class PoundBillProperties {
 

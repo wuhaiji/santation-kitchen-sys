@@ -79,6 +79,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
         byte[] bytes = new byte[bytebuf.readableBytes()];
         bytebuf.readBytes(bytes);
 
+
         System.out.println("msg:" +bytes);
         for (byte b:bytes) {
             System.out.println("byte:"+b);

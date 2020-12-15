@@ -1,9 +1,11 @@
 package com.yuntun.sanitationkitchen.weight.config;
 
 /**
+ * UDC数据头类型
+ *
  * @author wujihong
  */
-public class G780DataPackage {
+public class UDCDataHeaderType {
 
     // 标识位
     public static final int PACKAGE_SYMBOL = 0X7B;

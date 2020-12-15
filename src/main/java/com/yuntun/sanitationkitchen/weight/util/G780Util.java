@@ -1,6 +1,6 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
-import com.yuntun.sanitationkitchen.weight.propertise.G780DataPackageFormat;
+import com.yuntun.sanitationkitchen.weight.propertise.UDCDataPackageFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class G780Util {
 
     @Autowired
-    private G780DataPackageFormat g780DataPackageFormat;
+    private UDCDataPackageFormat UDCDataPackageFormat;
 
     /**
      * 获取设备号：11字节
@@ -19,8 +19,8 @@ public class G780Util {
      * @since 2020-12-01 15:49
      */
     public byte[] getDeviceNumber(byte[] bytes) {
-        Integer deviceNumberIndex = g780DataPackageFormat.getDataHeader().getDeviceNumberIndex();
-        Integer deviceNumberSize = g780DataPackageFormat.getDataHeader().getDeviceNumberSize();
+        Integer deviceNumberIndex = UDCDataPackageFormat.getDataHeader().getDeviceNumberIndex();
+        Integer deviceNumberSize = UDCDataPackageFormat.getDataHeader().getDeviceNumberSize();
 
         byte[] deviceNumber = new byte[deviceNumberSize];
         System.arraycopy(bytes, deviceNumberIndex, deviceNumber,0, deviceNumberSize);

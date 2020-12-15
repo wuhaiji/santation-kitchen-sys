@@ -1,0 +1,24 @@
+# 地磅磅单的导出配置
+pound-bill:
+  file-name: 磅单
+  sheet-name: 导出磅单
+  headers:
+    - 序号
+    - 流水号
+    - 环卫机构
+    - 车牌号
+    - 垃圾桶(RFID - 重量)
+    - 净重
+    - 皮重
+    - 毛重
+    - 创建时间
+  columns:
+    - number
+    - serialCode
+    - sanitationOfficeName
+    - numberPlate
+    - trashWeightSerials
+    - netWeight
+    - tare
+    - grossWeight
+    - createTime

@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.weight.propertise;
 
+import com.yuntun.sanitationkitchen.config.YamlConfigFactory;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -12,9 +13,10 @@ import org.springframework.stereotype.Component;
  * @author wujihong
  */
 @Component //不加这个注解的话, 使用@Autowired 就不能注入进去了
-@ConfigurationProperties(prefix = "g780-data-package")
+@ConfigurationProperties(prefix = "udc-data-package-format")
+@PropertySource(value = {"classpath:udc-data-package-format.yml"}, factory = YamlConfigFactory.class)
 @Data
-public class G780DataPackageFormat {
+public class UDCDataPackageFormat {
 
     // 标识位
     private G780DataFlag flag;
