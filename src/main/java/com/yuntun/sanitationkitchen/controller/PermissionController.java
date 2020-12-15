@@ -63,6 +63,7 @@ public class PermissionController {
                         .setSize(dto.getPageSize())
                         .setCurrent(dto.getPageNo()),
                 new QueryWrapper<Permission>()
+                        .like(EptUtil.isNotEmpty(dto.getPermissionName()),"permission_name",dto.getPermissionName())
                         .orderByDesc("create_time")
 
         );

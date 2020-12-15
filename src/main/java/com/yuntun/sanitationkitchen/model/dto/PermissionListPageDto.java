@@ -16,6 +16,7 @@ import lombok.experimental.Accessors;
 public class PermissionListPageDto {
     Integer pageSize;
     Integer pageNo;
+    String permissionName;
 
 
 }
