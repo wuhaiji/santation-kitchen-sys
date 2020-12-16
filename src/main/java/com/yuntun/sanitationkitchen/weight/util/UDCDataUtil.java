@@ -16,9 +16,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class UDCDataUtil {
 
-    public final String VEHICLE = "vehicle";
+    public static final String VEHICLE = "vehicle";
 
-    public final String TRASH = "trash";
+    public static final String TRASH = "trash";
 
     @Autowired
     private VehicleMapper vehicleMapper;
@@ -36,14 +36,12 @@ public class UDCDataUtil {
      * @return
      */
     public int getFlag(byte[] bytes) {
-        System.out.println("进入flag！");
         Integer flagIndex = UDCDataPackageFormat.getFlag().getIndex();
         Integer flagSize = UDCDataPackageFormat.getFlag().getSize();
 
         byte[] flag = new byte[flagSize];
         System.arraycopy(bytes, flagIndex, flag,0, flagSize);
 
-        System.out.println("flag:"+BitOperator.byteToInteger(flag));
         return BitOperator.byteToInteger(flag);
     }
 
@@ -54,14 +52,12 @@ public class UDCDataUtil {
      * @return
      */
     public int getDataPackageType(byte[] bytes) {
-        System.out.println("进入数据包类型！");
         Integer typeIndex = UDCDataPackageFormat.getDataHeader().getTypeIndex();
         Integer typeSize = UDCDataPackageFormat.getDataHeader().getTypeSize();
 
         byte[] type = new byte[typeSize];
         System.arraycopy(bytes, typeIndex, type,0, typeSize);
 
-        System.out.println("type:"+BitOperator.byteToInteger(type));
         return BitOperator.byteToInteger(type);
     }
 
@@ -88,6 +84,23 @@ public class UDCDataUtil {
      * @param bytes
      * @since 2020-12-01 15:49
      */
+    public byte[] getDeviceNumberBytes(byte[] bytes) {
+        Integer deviceNumberIndex = UDCDataPackageFormat.getDataHeader().getDeviceNumberIndex();
+        Integer deviceNumberSize = UDCDataPackageFormat.getDataHeader().getDeviceNumberSize();
+
+        byte[] deviceNumber = new byte[deviceNumberSize];
+        System.arraycopy(bytes, deviceNumberIndex, deviceNumber,0, deviceNumberSize);
+
+        return deviceNumber;
+    }
+
+    /**
+     * 获取设备号：11字节
+     *
+     * @author wujihong
+     * @param bytes
+     * @since 2020-12-01 15:49
+     */
     public String getDeviceNumber(byte[] bytes) {
         Integer deviceNumberIndex = UDCDataPackageFormat.getDataHeader().getDeviceNumberIndex();
         Integer deviceNumberSize = UDCDataPackageFormat.getDataHeader().getDeviceNumberSize();
@@ -95,7 +108,7 @@ public class UDCDataUtil {
         byte[] deviceNumber = new byte[deviceNumberSize];
         System.arraycopy(bytes, deviceNumberIndex, deviceNumber,0, deviceNumberSize);
 
-        return new String(deviceNumber);
+        return new String(deviceNumber).trim();
     }
 
     /**
@@ -118,7 +131,7 @@ public class UDCDataUtil {
                 deviceIP.append(".");
             }
         }
-        return deviceIP.toString();
+        return deviceIP.toString().trim();
     }
 
     /**
@@ -152,6 +165,7 @@ public class UDCDataUtil {
 
         byte[] dataBody = new byte[dataBodySize];
         System.arraycopy(bytes, dataBodyIndex, dataBody,0, dataBodySize);
+
         return dataBody;
     }
 
@@ -168,11 +182,11 @@ public class UDCDataUtil {
         byte[] RFID = new byte[RFIDSize];
         System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
 
-        return new String(RFID);
+        return new String(RFID).trim();
     }
 
     /**
-     * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶数据）
+     * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据）
      *
      * @param bytes
      * @return
@@ -180,14 +194,14 @@ public class UDCDataUtil {
     public String getRFIDType(byte[] bytes) {
         String rfid = getRFID(bytes);
 
-        if (rfid != null) {
+        if (rfid == null) {
             throw new ServiceException("rfid不能为空");
         }
-        Integer vehicleCount = vehicleMapper.selectCount(new QueryWrapper<Vehicle>().eq("rfid", rfid));
+        Integer vehicleCount = vehicleMapper.selectCount(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, rfid));
         if (vehicleCount != null && vehicleCount != 0) {
             return VEHICLE;
         }
-        Integer trashCanCount = trashCanMapper.selectCount(new QueryWrapper<TrashCan>().eq("rfid", rfid));
+        Integer trashCanCount = trashCanMapper.selectCount(new QueryWrapper<TrashCan>().lambda().eq(TrashCan::getRfid, rfid));
         if (trashCanCount != null && trashCanCount != 0) {
             return TRASH;
         }
@@ -202,10 +216,11 @@ public class UDCDataUtil {
      */
     public double getGrossWeight(byte[] bytes) {
         byte[] dataBody = getDataBody(bytes);
+        Integer RFIDSize = UDCDataPackageFormat.getDataBody().getRfidSize();
         Integer grossWeightSize = UDCDataPackageFormat.getDataBody().getGrossWeight();
 
         byte[] grossWeight = new byte[grossWeightSize];
-        System.arraycopy(dataBody, 0, grossWeight,0, grossWeightSize);
+        System.arraycopy(dataBody, RFIDSize, grossWeight,0, grossWeightSize);
 
        return BitOperator.bytesToDouble(grossWeight);
     }
@@ -218,10 +233,12 @@ public class UDCDataUtil {
      */
     public double getTare(byte[] bytes) {
         byte[] dataBody = getDataBody(bytes);
+        Integer RFIDSize = UDCDataPackageFormat.getDataBody().getRfidSize();
+        Integer grossWeightSize = UDCDataPackageFormat.getDataBody().getGrossWeight();
         Integer tareSize = UDCDataPackageFormat.getDataBody().getTare();
 
         byte[] tare = new byte[tareSize];
-        System.arraycopy(dataBody, 8, tare,0, tareSize);
+        System.arraycopy(dataBody, RFIDSize+grossWeightSize, tare,0, tareSize);
 
         return BitOperator.bytesToDouble(tare);
     }

@@ -1,7 +1,12 @@
 package com.yuntun.sanitationkitchen.weight.adapter;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
+import com.yuntun.sanitationkitchen.weight.entity.G780Data;
+import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
+import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
+import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -12,7 +17,6 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -22,7 +26,6 @@ import java.net.InetSocketAddress;
  */
 public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
 
-    // 获取api地址信息
     public static UDCDataUtil udcDataUtil = SpringUtil.getBean(UDCDataUtil.class);
 
     public static Logger logger = LoggerFactory.getLogger(NettyServerChannelInboundHandlerAdapter.class);
@@ -92,23 +95,46 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
         byte[] responseBytes = {0x22};
 
-        // 判断他是否是UDC协议
+        // 判断它是否是UDC协议
         if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
-            System.out.println("进入了通信！");
-            // 判断他是否是登录
+//            UDCDataResponse udcDataResponse = new UDCDataResponse();
+            // 判断它是否是登录
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
                 System.out.println("进入了登录！");
-                ctx.write(Unpooled.copiedBuffer(responseBytes));
+                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
             }
-            // 判断他是否是数据上报
+            // 判断它是否是数据上报
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
-//                MqttSenderUtil.getMqttSender().sendToMqtt("对应主题", "对应数据");
-                ctx.write(Unpooled.copiedBuffer(responseBytes));
+                String rfidType = udcDataUtil.getRFIDType(bytes);
+                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
+                if (UDCDataUtil.VEHICLE.equals(rfidType)) {
+                    // 车辆--地磅 业务处理
+                    G780Data g780Data = new G780Data(bytes);
+                    String g780DataStr = JSONObject.toJSONString(g780Data);
+                    System.out.println("解析地磅后得到的数据:"+g780DataStr);
+                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
+                }
+                if (UDCDataUtil.TRASH.equals(rfidType)) {
+                    // 垃圾桶--车辆 业务处理
+
+                }
+            }
+
+            // 判断它是否是心跳
+            if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.HEART_PACKAGE) {
+                System.out.println("进入了心跳！");
+                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.heartResponse(bytes)));
+            }
+
+            // 判断它是否是主动下线报文
+            if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.OFFLINE_PACKAGE) {
+                System.out.println("进入了下线！");
+                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
             }
 
         } else {
-            ctx.write(Unpooled.copiedBuffer(responseBytes));
-//            ctx.write("非法访问···！");
+            System.out.println("非法访问···！");
+            logger.error("非法访问···！");
         }
 
     }
