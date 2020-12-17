@@ -5,6 +5,7 @@ import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
 import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
+import com.yuntun.sanitationkitchen.weight.service.CommonService;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
@@ -25,6 +26,8 @@ import java.net.InetSocketAddress;
  * I/O数据读写处理类
  */
 public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
+
+    public static CommonService myService = SpringUtil.getBean(CommonService.class);
 
     public static UDCDataUtil udcDataUtil = SpringUtil.getBean(UDCDataUtil.class);
 
@@ -100,21 +103,22 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 //            UDCDataResponse udcDataResponse = new UDCDataResponse();
             // 判断它是否是登录
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
-                System.out.println("进入了登录！");
+                System.out.println("登录响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
             }
             // 判断它是否是数据上报
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
-                String rfidType = udcDataUtil.getRFIDType(bytes);
+                String rfidType = myService.getRFIDType(bytes);
                 // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
-                if (UDCDataUtil.VEHICLE.equals(rfidType)) {
+                if (myService.VEHICLE.equals(rfidType)) {
                     // 车辆--地磅 业务处理
                     G780Data g780Data = new G780Data(bytes);
+                    g780Data.setTare(udcDataUtil.getTare(bytes));
                     String g780DataStr = JSONObject.toJSONString(g780Data);
                     System.out.println("解析地磅后得到的数据:"+g780DataStr);
                     MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
                 }
-                if (UDCDataUtil.TRASH.equals(rfidType)) {
+                if (myService.TRASH.equals(rfidType)) {
                     // 垃圾桶--车辆 业务处理
 
                 }
@@ -122,13 +126,13 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
             // 判断它是否是心跳
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.HEART_PACKAGE) {
-                System.out.println("进入了心跳！");
+                System.out.println("进入了心跳响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.heartResponse(bytes)));
             }
 
             // 判断它是否是主动下线报文
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.OFFLINE_PACKAGE) {
-                System.out.println("进入了下线！");
+                System.out.println("进入了下线响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
             }
 

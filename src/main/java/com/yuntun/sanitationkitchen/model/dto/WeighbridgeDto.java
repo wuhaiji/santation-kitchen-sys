@@ -54,9 +54,9 @@ public class WeighbridgeDto extends BasePageDto {
     private Integer maxWeighing;
 
     /**
-     * 地磅rfid
+     * 设施编号（可能是DTU编号、地磅编号）
      */
-    private String rfid;
+    private String facilityCode;
 
     /**
      * 设备状态0.在线 1.离线

@@ -78,7 +78,7 @@ public class TicketMachineController {
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");
         ErrorUtil.isObjectNull(ticketMachineDto.getSanitationOfficeId(), "所属机构");
-        ErrorUtil.isObjectNull(ticketMachineDto.getVehicleId(), "所在车辆");
+        ErrorUtil.isObjectNull(ticketMachineDto.getUniqueCode(), "所属上级设备");
         ErrorUtil.isObjectNull(ticketMachineDto.getStatus(), "状态");
         return Result.ok(iTicketMachineService.insertTicketMachine(ticketMachineDto));
     }
@@ -99,7 +99,7 @@ public class TicketMachineController {
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");
         ErrorUtil.isObjectNull(ticketMachineDto.getSanitationOfficeId(), "所属机构");
-        ErrorUtil.isObjectNull(ticketMachineDto.getVehicleId(), "所在车辆");
+        ErrorUtil.isObjectNull(ticketMachineDto.getUniqueCode(), "所属上级设备");
         ErrorUtil.isObjectNull(ticketMachineDto.getStatus(), "状态");
         ErrorUtil.isObjectNull(ticketMachineDto.getCreateTime(), "创建时间");
         return Result.ok(iTicketMachineService.updateTicketMachine(ticketMachineDto));

@@ -61,7 +61,7 @@ public class WeighbridgeController {
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
         ErrorUtil.isObjectNull(dto.getMaxWeighing(), "最大称重量(kg)");
-        ErrorUtil.isStringLengthOutOfRange(dto.getRfid(), 2, 30, "RFID");
+        ErrorUtil.isStringLengthOutOfRange(dto.getFacilityCode(), 2, 30, "设施编号");
         ErrorUtil.isObjectNull(dto.getStatus(), "状态");
 
         return Result.ok(iWeighbridgeService.insertWeighbridge(dto));
@@ -78,7 +78,7 @@ public class WeighbridgeController {
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
         ErrorUtil.isObjectNull(dto.getMaxWeighing(), "最大称重量(kg)");
-        ErrorUtil.isStringLengthOutOfRange(dto.getRfid(), 2, 30, "RFID");
+        ErrorUtil.isStringLengthOutOfRange(dto.getFacilityCode(), 2, 30, "设施编号");
         ErrorUtil.isObjectNull(dto.getStatus(), "状态");
         ErrorUtil.isObjectNull(dto.getCreateTime(), "创建时间");
         return Result.ok(iWeighbridgeService.updateWeighbridge(dto));

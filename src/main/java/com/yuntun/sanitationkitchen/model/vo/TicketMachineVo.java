@@ -46,6 +46,13 @@ public class TicketMachineVo {
 //    private String sanitationOfficeName;
 
     /**
+     * 小票机的绑定设备类型
+     * 0：表示车辆
+     * 1：表示地磅
+     */
+    private Integer type;
+
+    /**
      * 设备状态0.在线 1.离线
      */
     private Integer status;
@@ -56,9 +63,11 @@ public class TicketMachineVo {
     private String model;
 
     /**
-     * 车辆id
+     * 唯一编号（两种情况）
+     * 1.垃圾桶的rfid--垃圾桶表的rfid
+     * 2.地磅或是DTU的编号--地磅表的
      */
-    private Long vehicleId;
+    private String uniqueCode;
 
     /**
      * 车辆号码

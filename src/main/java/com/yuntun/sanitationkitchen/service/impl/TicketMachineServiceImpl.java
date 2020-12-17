@@ -9,6 +9,7 @@ import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
 import com.yuntun.sanitationkitchen.mapper.TicketMachineMapper;
 import com.yuntun.sanitationkitchen.mapper.VehicleMapper;
+import com.yuntun.sanitationkitchen.mapper.WeighbridgeMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
 import com.yuntun.sanitationkitchen.model.entity.*;
@@ -46,6 +47,9 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
     @Autowired
     private VehicleMapper vehicleMapper;
 
+    @Autowired
+    private WeighbridgeMapper weighbridgeMapper;
+
     @Override
     public SelectOptionVo selectTicketMachineOption() {
         SelectOptionVo selectOptionVo = new SelectOptionVo();
@@ -61,15 +65,26 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
 
         // 3.车辆
         List<VehicleValue> vehicleList = vehicleMapper.selectList(new QueryWrapper<Vehicle>().
-                select("uid", "number_plate")).stream().map(vehicle -> {
+                select("uid", "number_plate", "rfid")).stream().map(vehicle -> {
             VehicleValue vehicleValue = new VehicleValue();
             vehicleValue.setVehicleId(vehicle.getUid());
             vehicleValue.setVehicleNumber(vehicle.getNumberPlate());
+            vehicleValue.setVehicleRFID(vehicle.getRfid());
             return vehicleValue;
         }).collect(Collectors.toList());
         selectOptionVo.setVehicleList(vehicleList);
 
-        // 4.查询环卫机构
+        // 4.地磅
+        List<WeighbridgeValue> weighbridgeList = weighbridgeMapper.selectList(new QueryWrapper<Weighbridge>().
+                select("uid", "device_name", "facility_code")).stream().map(weighbridge -> {
+            WeighbridgeValue weighbridgeValue = new WeighbridgeValue();
+            weighbridgeValue.setWeighbridgeCode(weighbridge.getFacilityCode());
+            weighbridgeValue.setWeighbridgeName(weighbridge.getDeviceName());
+            return weighbridgeValue;
+        }).collect(Collectors.toList());
+        selectOptionVo.setWeighbridgeList(weighbridgeList);
+
+        // 5.查询环卫机构
         List<SanitationOfficeValue> sanitationOfficeList = sanitationOfficeMapper.selectList(new QueryWrapper<SanitationOffice>().
                 select("uid", "name")).stream().map(sanitationOffice -> {
                     SanitationOfficeValue sanitationOfficeValue = new SanitationOfficeValue();
@@ -93,7 +108,7 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getDeviceName()), "device_name", ticketMachineDto.getDeviceName())
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getBrand()), "brand", ticketMachineDto.getBrand())
                         .like(EptUtil.isNotEmpty(ticketMachineDto.getModel()), "model", ticketMachineDto.getModel())
-                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getVehicleId()), "vehicle_id", ticketMachineDto.getVehicleId())
+//                        .eq(EptUtil.isNotEmpty(ticketMachineDto.getVehicleId()), "vehicle_id", ticketMachineDto.getVehicleId())
                         .eq(EptUtil.isNotEmpty(ticketMachineDto.getSanitationOfficeId()), "sanitation_office_id", ticketMachineDto.getSanitationOfficeId())
                         .orderByDesc("create_time")
         );

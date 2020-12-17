@@ -14,6 +14,11 @@ public class VehicleValue {
     private Long vehicleId;
 
     /**
+     * 车辆的RFID vehicleRFID
+     */
+    private String vehicleRFID;
+
+    /**
      * 车辆车牌号 vehicleNumber
      */
     private String vehicleNumber;

@@ -6,11 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
+import com.yuntun.sanitationkitchen.mapper.TicketMachineMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeListDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeSaveDto;
-import com.yuntun.sanitationkitchen.model.dto.WeighbridgeUpdateDto;
+import com.yuntun.sanitationkitchen.model.dto.*;
 import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.mapper.WeighbridgeMapper;
 import com.yuntun.sanitationkitchen.model.response.RowData;
@@ -47,6 +45,9 @@ public class WeighbridgeServiceImpl extends ServiceImpl<WeighbridgeMapper, Weigh
 
     @Autowired
     private SanitationOfficeMapper sanitationOfficeMapper;
+
+    @Autowired
+    private TicketMachineMapper ticketMachineMapper;
 
     @Override
     public RowData<WeighbridgeVo> findWeighbridgeList(WeighbridgeDto dto) {
@@ -122,10 +123,18 @@ public class WeighbridgeServiceImpl extends ServiceImpl<WeighbridgeMapper, Weigh
     @Override
     public Boolean deleteWeighbridge(List<Long> uids) {
         uids.forEach(uid -> {
+            // 1.判断地磅是否存在
             Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().eq("uid", uid));
-            if (weighbridge == null) {
-                log.error("删除地磅异常->uid不存在");
+            if (weighbridge == null && weighbridge.getFacilityCode() == null) {
+                log.error("删除地磅异常,必要数据存在空值");
                 throw new ServiceException(VehicleCode.ID_NOT_EXIST);
+            } else {
+                // 2.判断地磅是否可以删除（有无绑定小票机设备）
+                Integer count = ticketMachineMapper.selectCount(new QueryWrapper<TicketMachine>().eq("unique_code", weighbridge.getFacilityCode()));
+                if (count != null && count > 0) {
+                    log.error("不能删除，已绑定了小票机的地磅");
+                    throw new ServiceException("不能删除，已绑定了小票机的地磅");
+                }
             }
         });
 

@@ -288,7 +288,7 @@ public class VehicleController {
         }
 
         // 2.判断车辆是否可以删除（有无绑定小票机设备）
-        RowData<TicketMachineVo> ticketMachineList = iTicketMachineService.findTicketMachineList(new TicketMachineDto().setVehicleId(uid));
+        RowData<TicketMachineVo> ticketMachineList = iTicketMachineService.findTicketMachineList(new TicketMachineDto().setUniqueCode(vehicle.getRfid()));
         if (ticketMachineList.getRows() != null) {
             log.error("不能删除，已绑定了小票机的车辆");
             throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);

@@ -1,11 +1,5 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.mapper.TrashCanMapper;
-import com.yuntun.sanitationkitchen.mapper.VehicleMapper;
-import com.yuntun.sanitationkitchen.model.entity.TrashCan;
-import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.weight.propertise.UDCDataPackageFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,16 +9,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class UDCDataUtil {
-
-    public static final String VEHICLE = "vehicle";
-
-    public static final String TRASH = "trash";
-
-    @Autowired
-    private VehicleMapper vehicleMapper;
-
-    @Autowired
-    private TrashCanMapper trashCanMapper;
 
     @Autowired
     private UDCDataPackageFormat UDCDataPackageFormat;
@@ -183,29 +167,6 @@ public class UDCDataUtil {
         System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
 
         return new String(RFID).trim();
-    }
-
-    /**
-     * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据）
-     *
-     * @param bytes
-     * @return
-     */
-    public String getRFIDType(byte[] bytes) {
-        String rfid = getRFID(bytes);
-
-        if (rfid == null) {
-            throw new ServiceException("rfid不能为空");
-        }
-        Integer vehicleCount = vehicleMapper.selectCount(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, rfid));
-        if (vehicleCount != null && vehicleCount != 0) {
-            return VEHICLE;
-        }
-        Integer trashCanCount = trashCanMapper.selectCount(new QueryWrapper<TrashCan>().lambda().eq(TrashCan::getRfid, rfid));
-        if (trashCanCount != null && trashCanCount != 0) {
-            return TRASH;
-        }
-        return rfid;
     }
 
     /**

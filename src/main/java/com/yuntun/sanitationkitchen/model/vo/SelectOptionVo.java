@@ -31,6 +31,11 @@ public class SelectOptionVo {
     private List<TrashCanValue> trashCanList;
 
     /**
+     * 地磅
+     */
+    private List<WeighbridgeValue> WeighbridgeList;
+
+    /**
      * 餐馆
      */
     private List<RestaurantValue> restaurantList;

@@ -51,9 +51,9 @@ public class WeighbridgeSaveDto implements Serializable {
     private Integer maxWeighing;
 
     /**
-     * 地磅rfid
+     * 设施编号（可能是DTU编号、地磅编号）
      */
-    private String rfid;
+    private String facilityCode;
 
 
 }
