@@ -92,4 +92,10 @@ public interface IVehicle {
     void getQueryImage();
 
     void getDownloadImage();
+
+
+    /**
+     * 获取视频流服务车辆集合
+     */
+    List<VehicleVideoDto> listVideoVehicle();
 }

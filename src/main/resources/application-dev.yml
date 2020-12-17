@@ -113,3 +113,8 @@ pound-bill:
     - tare
     - grossWeight
     - createTime
+# mqtt 配置
+mqtt:
+  host: tcp://192.168.0.108:1883
+  username: xxx
+  password: xxx

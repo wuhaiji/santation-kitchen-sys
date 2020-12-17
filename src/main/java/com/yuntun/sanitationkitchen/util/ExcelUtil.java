@@ -112,21 +112,31 @@ public class ExcelUtil {
             row = excelSheet.createRow(i + 1);
             map = dataList.get(i);
 
-            log.error("map:{}",map);
+            log.info("map:{}",map);
             for (int j = 0; j < keyList.size(); j++) {
                 // 创建数据单元格数量
                 row.createCell(j).setCellValue(map.get(keyList.get(j)).toString());
             }
         }
         // 将导出的Excel进行下载
-        response.setContentType("application/vnd.ms-excel;charset=utf-8");
-        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xls");
-        response.flushBuffer();
-        OutputStream outputStream = response.getOutputStream();
-        myWorkbook.write(outputStream);
-        myWorkbook.close();
-        outputStream.flush();
-        outputStream.close();
+        OutputStream outputStream = null;
+        try {
+            response.setContentType("application/vnd.ms-excel;charset=utf-8");
+            response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xls");
+            response.flushBuffer();
+            outputStream = response.getOutputStream();
+            myWorkbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            myWorkbook.close();
+           if(outputStream!=null){
+               outputStream.flush();
+               outputStream.close();
+           }
+
+        }
+
     }
 
 

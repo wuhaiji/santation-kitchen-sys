@@ -32,4 +32,9 @@ public class FuelCountListVo {
      * 油耗余量
      */
     private String fuelRemaining;
+
+    /**
+     * 油耗消耗
+     */
+    private Double fuelConsume;
 }

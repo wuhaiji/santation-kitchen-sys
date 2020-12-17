@@ -1,11 +1,12 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
+import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
+import com.yuntun.sanitationkitchen.model.entity.VehicleRealTimeStatus;
+import com.yuntun.sanitationkitchen.service.IVehicleRealTimeStatusService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,23 +18,34 @@ import java.util.stream.Collectors;
  * </p>
  *
  * @author whj
- * @since 2020/12/11
+ * @since 2020/12/15
  */
-
 @Component
-public class VehicleTask {
-    private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
+public class VehicleTask implements ScheduledTask {
 
-    @Autowired
-    IVehicle vehicle;
     @Autowired
     IVehicleService iVehicleService;
 
-    // @Scheduled(cron = "0 0/2 * * * ? ")
-    // public void execute() {
-    //     List<Vehicle> list = iVehicleService.list();
-    //     List<String> plates = list.parallelStream().map(i -> i.getNumberPlate()).collect(Collectors.toList());
-    //     List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtos = vehicle.ListVehicleRealtimeStatusByPlates(plates);
-    //
-    // }
+    @Autowired
+    IVehicle iVehicle;
+
+    @Autowired
+    IVehicleRealTimeStatusService iVehicleRealTimeStatusService;
+
+    @Override
+    public void execute() {
+
+        List<Vehicle> vehicles = iVehicleService.list();
+        List<String> vehiclePates = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
+        List<VehicleRealtimeStatusAdasDto> realtimeStatuses = iVehicle.ListVehicleRealtimeStatusByPlates(vehiclePates);
+        List<VehicleRealTimeStatus> vehicleRealTimeStatuses = realtimeStatuses.parallelStream().map(i -> {
+            VehicleRealTimeStatus vehicleRealTimeStatus = new VehicleRealTimeStatus();
+            BeanUtils.copyProperties(i, vehicleRealTimeStatus);
+            return vehicleRealTimeStatus;
+        }).collect(Collectors.toList());
+
+
+        iVehicleRealTimeStatusService.saveBatch(vehicleRealTimeStatuses);
+
+    }
 }

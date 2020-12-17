@@ -5,19 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
-import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
-import com.yuntun.sanitationkitchen.model.dto.TicketMachineDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.VehicleUpdateDto;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
+import com.yuntun.sanitationkitchen.model.entity.TicketMachine;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
-import com.yuntun.sanitationkitchen.model.vo.TicketMachineVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleGetVo;
 import com.yuntun.sanitationkitchen.model.vo.VehicleListVo;
 import com.yuntun.sanitationkitchen.service.ISanitationOfficeService;
@@ -28,6 +26,9 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import com.yuntun.sanitationkitchen.vehicle.api.IVehicle;
 import com.yuntun.sanitationkitchen.vehicle.api.VehicleRealtimeStatusAdasDto;
+import com.yuntun.sanitationkitchen.vehicle.api.VehicleVideoDto;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -75,25 +76,16 @@ public class VehicleController {
         IPage<Vehicle> iPage = iVehicleService.listPage(dto);
 
         List<Vehicle> records = iPage.getRecords();
+
+
         // 获取车辆实时信息
         List<String> plateNos = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
-        List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = iVehicle
-                .ListVehicleRealtimeStatusByPlates(plateNos);
+        List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtoList = new ArrayList<>();
+        if (plateNos.size() > 0) {
+            vehicleRealtimeStatusAdasDtoList = iVehicle
+                    .ListVehicleRealtimeStatusByPlates(plateNos);
+        }
         log.info("车辆实时状态列表：{}", vehicleRealtimeStatusAdasDtoList);
-
-        Map<String, Vehicle> vehicleMap = records.parallelStream().collect(Collectors.toMap(i -> i.getNumberPlate(), i -> i));
-
-
-        //查询来源云的车辆集合
-        List<VehicleBean> vehicleBeans = iVehicle.list();
-        // 找出本系统中对应的车辆
-        vehicleBeans.parallelStream().map(i -> {
-            Vehicle vehicle = vehicleMap.get(i.getPlateNo());
-            if (vehicle != null) {
-                return i;
-            }
-            return null;
-        }).collect(Collectors.toList());
 
         //查询所属单位名称
         List<Long> sanitationOfficeIds = records.parallelStream().map(Vehicle::getSanitationOfficeId).collect(Collectors.toList());
@@ -108,11 +100,13 @@ public class VehicleController {
         Map<Long, SanitationOffice> sanitationOfficeMap = sanitationOffices.parallelStream().collect(Collectors.toMap(SanitationOffice::getUid, i -> i));
 
 
+        List<VehicleRealtimeStatusAdasDto> finalVehicleRealtimeStatusAdasDtoList = vehicleRealtimeStatusAdasDtoList;
+
         List<VehicleListVo> collect = records.parallelStream().map(i -> {
             VehicleListVo vehicleListVo = new VehicleListVo();
             BeanUtils.copyProperties(i, vehicleListVo);
             //循环找出油量信息和在线离线信息
-            for (VehicleRealtimeStatusAdasDto status : vehicleRealtimeStatusAdasDtoList) {
+            for (VehicleRealtimeStatusAdasDto status : finalVehicleRealtimeStatusAdasDtoList) {
                 if (status.getPlate().equals(vehicleListVo.getNumberPlate())) {
                     vehicleListVo.setStatus(status.getVehicleStatus());
                     String oil = status.getOil();
@@ -121,6 +115,7 @@ public class VehicleController {
                     }
                 }
             }
+
             SanitationOffice sanitationOffice = sanitationOfficeMap.get(i.getSanitationOfficeId());
             if (sanitationOffice != null) {
                 vehicleListVo.setSanitationOfficeName(sanitationOffice.getName());
@@ -215,6 +210,32 @@ public class VehicleController {
         }
     }
 
+
+    @GetMapping("/list/video")
+    @Limit("vehicle:query")
+    public Result<Object> videos() {
+
+        //查询本服务的车辆信息
+        List<Vehicle> vehicles = iVehicleService.list();
+        Map<String, Vehicle> vehiclesMap = vehicles.parallelStream().collect(Collectors.toMap(Vehicle::getNumberPlate, i -> i));
+        //查询来源云车辆集合
+        List<VehicleVideoDto> vehicleVideoDtos = iVehicle.listVideoVehicle();
+        Map<String, VehicleVideoDto> vehicleVideoDtoMap = vehicleVideoDtos.parallelStream().collect(Collectors.toMap(VehicleVideoDto::getPlate, i -> i));
+
+        List<VehicleVideoListVo> collect = vehicles.parallelStream().map(i -> {
+            VehicleVideoListVo vehicleVideoListVo = new VehicleVideoListVo();
+            VehicleVideoDto vehicleVideoDto = vehicleVideoDtoMap.get(i.getNumberPlate());
+            if (vehicleVideoDto != null) {
+                BeanUtils.copyProperties(vehicleVideoDto, vehicleVideoListVo);
+            }
+            vehicleVideoListVo.setDriverName(i.getDriverName()).setDriverPhone(i.getDriverPhone());
+            return vehicleVideoListVo;
+        }).collect(Collectors.toList());
+
+        return Result.ok(collect);
+
+    }
+
     @PostMapping("/update")
     @Limit("vehicle:update")
     public Result<Object> update(VehicleUpdateDto dto) {
@@ -288,8 +309,8 @@ public class VehicleController {
         }
 
         // 2.判断车辆是否可以删除（有无绑定小票机设备）
-        RowData<TicketMachineVo> ticketMachineList = iTicketMachineService.findTicketMachineList(new TicketMachineDto().setUniqueCode(vehicle.getRfid()));
-        if (ticketMachineList.getRows() != null) {
+        List<TicketMachine> ticketMachines = iTicketMachineService.list(new QueryWrapper<TicketMachine>().eq("unique_code", vehicle.getRfid()));
+        if (EptUtil.isNotEmpty(ticketMachines.size())) {
             log.error("不能删除，已绑定了小票机的车辆");
             throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);
         }
@@ -302,12 +323,271 @@ public class VehicleController {
 
     @PostMapping("/delete/batch")
     @Limit("vehicle:delete")
-    public Result<Object> deleteBatch(@RequestParam(value = "ids" ,required = false) List<Long> ids) {
+    public Result<Object> deleteBatch(@RequestParam(value = "ids", required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
+        if (ids.size() > 100) {
+            throw new ServiceException(VehicleCode.IDS_TOO_MUCH);
+        }
+        // 2.判断车辆是否可以删除（有无绑定小票机设备）
+
+        //判断查询辆的rfid
+        List<Vehicle> vehicles = iVehicleService.list(new QueryWrapper<Vehicle>().in("uid", ids));
+        List<String> vehicleRFIDs = vehicles.parallelStream().map(Vehicle::getRfid).collect(Collectors.toList());
+
+        List<TicketMachine> ticketMachineList = iTicketMachineService.list(new QueryWrapper<TicketMachine>().in("unique_code", vehicleRFIDs));
+        if (EptUtil.isNotEmpty(ticketMachineList)) {
+            log.error("不能删除，已绑定了小票机的车辆");
+            throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);
+        }
         boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().in("uid", ids));
+
         if (b)
             return Result.ok();
         return Result.error(VehicleCode.DELETE_ERROR);
+
+    }
+
+    @Accessors(chain = true)
+    @Data
+    public static class VehicleVideoListVo {
+
+        String driverPhone;
+        private String driverName;
+
+        private String VehBindPath;
+
+        private String activationTme;
+
+        private String activationTmeStr;
+
+        private String activeType;
+
+        private String address;
+
+        private String appendixid;
+
+        private String appendixnum;
+
+        private String area;
+
+        private String authority;
+
+        private String brand;
+
+        private String cameraLine;
+
+        private int cameraNum;
+
+        private String carhrough;
+
+        private String carstar;
+
+        private String catage;
+
+        private String circle;
+
+        private String cityAndCountyId;
+
+        private String commType;
+
+        private String company;
+
+        private String container;
+
+        private String containervolume;
+
+        private String createTime;
+
+        private String customMessage;
+
+        private String customNo;
+
+        private int cvehicleId;
+
+        private int datausage;
+
+        private int delFlag;
+
+        private int displayYear;
+
+        private String driverId;
+
+
+        private String email;
+
+        private String engineNo;
+
+        private String expireDate;
+
+        private String expireDateStr;
+
+        private String extend;
+
+        private String extendtwo;
+
+        private String factoryNo;
+
+        private String frameNo;
+
+        private String goods;
+
+        private int groupId;
+
+        private String groupName;
+
+        private String groupPhone;
+
+        private String grouparea;
+
+        private String groupperson;
+
+        private String iccid;
+
+        private String industry;
+
+        private int initMilage;
+
+        private String installDate;
+
+        private String installPerson;
+
+        private String installPlace;
+
+        private String installStaue;
+
+        private String installType;
+
+        private String ipAddress;
+
+        private int isAcc;
+
+        private int isDangerous;
+
+        private String isLoan;
+
+        private int isStore;
+
+        private int isVender;
+
+        private String license;
+
+        private String manufacturerId;
+
+        private String nextReturnDue;
+
+        private String nextReturnDueStr;
+
+        private String nickName;
+
+        private String operatingTypes;
+
+        private String operator;
+
+        private String organizationType;
+
+        private String owner;
+
+        private String ownerproperty;
+
+        private int percentageOfFlow;
+
+        private int peripheral;
+
+        private String phone;
+
+        private String plate;
+
+        private String plateColor;
+
+        private String producerID;
+
+        private int productType;
+
+        private String provincialId;
+
+        private String readdress;
+
+        private String recordPerson;
+
+        private String remark;
+
+        private int renewNum;
+
+        private String renewalExpireDate;
+
+        private String renewalExpireDateStr;
+
+        private String rephone;
+
+        private String representative;
+
+        private String roadPermit;
+
+        private String salesman;
+
+        private String schooladr;
+
+        private String schooltype;
+
+        private String scope;
+
+        private String seat;
+
+        private String serviceCode;
+
+        private String serviceExpireTime;
+
+        private String serviceProvider;
+
+        private String sex;
+
+        private String sim;
+
+        private String staypoint;
+
+        private int storeState;
+
+        private int storeUserID;
+
+        private String strExpire;
+
+        private String supervosperId;
+
+        private String supervosprName;
+
+        private String terminalIMEI;
+
+        private String terminalId;
+
+        private String terminalNo;
+
+        private String terminalType;
+
+        private String transport;
+
+        private String tripREC;
+
+        private String type;
+
+        private String updateTime;
+
+        private String validitytime;
+
+        private String vehicleColor;
+
+        private int vehicleId;
+
+        private String vehicleLicense;
+
+        private String vehicleShape;
+
+        private int vehicleState;
+
+        private String vehicleType;
+
+        private String vehiclestate;
+
+        private int version;
 
     }
 

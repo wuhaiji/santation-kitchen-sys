@@ -17,8 +17,10 @@ public enum VehicleTypeCode implements ResultCode {
     UPDATE_ERROR("40205", "修改异常"),
     DELETE_ERROR("40206", "删除异常"),
     ID_NOT_EXIST("40207", "数据不存在"),
+    HAS_VEHICLE_LIST("40208", "请删除下属车辆"),
 
     ;
+
 
     VehicleTypeCode(String resultCode, String resultMsg) {
         this.resultCode = resultCode;

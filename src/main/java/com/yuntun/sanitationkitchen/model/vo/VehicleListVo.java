@@ -72,6 +72,8 @@ public class VehicleListVo implements Serializable {
      */
     private String rfid;
 
+
+
     /**
      * 创建时间
      */

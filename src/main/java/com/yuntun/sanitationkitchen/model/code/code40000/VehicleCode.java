@@ -17,11 +17,11 @@ public enum VehicleCode implements ResultCode {
     OPTIONS_ERROR("40104", "查询选项列表"),
     UPDATE_ERROR("40105", "修改异常"),
     DELETE_ERROR("40106", "删除异常"),
-    DELETE_BIND_ERROR("40107", "不能删除，已绑定了小票机的车辆"),
+    DELETE_BIND_ERROR("40107", "不能删除,该车绑定了小票机"),
     ID_NOT_EXIST("40108", "数据不存在"),
     NUMBER_PLATE_ALREADY_EXISTS("40109", "车牌号已存在"),
     RFID_PLATE_ALREADY_EXISTS("40110", "RFID号已存在"),
-    HAS_VEHICLE_LIST("40111", "请删除下属车辆"),
+    IDS_TOO_MUCH("40111", "一次删除车辆不能大于100"),
 
     ;
 

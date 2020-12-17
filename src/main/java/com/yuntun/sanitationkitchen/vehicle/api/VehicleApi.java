@@ -1,7 +1,6 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
 import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -32,48 +31,29 @@ public class VehicleApi implements IVehicle {
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
     public static final String realtimeDataByPlateUrl = "/deviceData/realtimeDataByPlate.do";
     public static final String realtimeDataByIdsUrl = "/deviceData/realtimeData.do";
+    public static final String videoVehicleUrl = "/vehicle/getVehicleByVender.do";
     public static final String KEY = "key";
     public static final String IDS = "ids";
+    public static final String PLATE = "plate";
+    public static final String CUSTOMER_KEY = "customerKey";
+    public static final String TYPE = "type";
 
+    // @Autowired
+    ThirdApiConfig thirdApiConfig
+            = new ThirdApiConfig()
+            .setAuthIp("http://120.77.112.76:6809")
+            .setKey("85f79a11-8770-4b4b-86a7-fc964bbbfb0f")
+            .setVideoUrl("https://vserver.car900.com");
 
     public static void main(String[] args) {
 
         // 根据车牌号查询车辆动态数据
-        // ArrayList<String> plates = new ArrayList<String>() {{
-        //     add("13302690436");
-        // }};
-        // HashMap<String, Object> paramsMap = new HashMap<>();
-        // paramsMap.put(KEY, ThirdApiConfig.key);
-        // paramsMap.put("plate", String.join(",", plates));
-        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
-        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto1 = JSONObject.parseObject(
-        //         response,
-        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
-        //         }
-        // );
-        // System.out.println(resultDto1.getObj());
-        //
-
-        //根据车辆ids查询车辆动态数据
+        ArrayList<String> plates = new ArrayList<String>() {{
+            add("13302690436");
+        }};
+        List<VehicleVideoDto> vehicleVideoDtoList = new VehicleApi().listVideoVehicle();
 
 
-        // ArrayList<String> list = new ArrayList<String>() {{
-        //     add("F6FA39393347F2B86E734D40396CDE93");
-        // }};
-        // HashMap<String, Object> paramsMap = new HashMap<>();
-        // paramsMap.put(KEY, ThirdApiConfig.key);
-        // paramsMap.put(IDS, String.join(",", list));
-        // String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
-        // AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto2 = JSONObject.parseObject(
-        //         response,
-        //         new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
-        //         }
-        // );
-        // System.out.println(resultDto2);
-
-
-        List<VehicleBean> list = new VehicleApi().list();
-        System.out.println("结果："+JSON.toJSONString(list));
     }
 
 
@@ -85,10 +65,10 @@ public class VehicleApi implements IVehicle {
     @Override
     public List<VehicleBean> list() {
         Map<String, Object> params = new HashMap<>(2);
-        params.put("key", ThirdApiConfig.key);
+        params.put("key", thirdApiConfig.getKey());
         HttpUtils httpUtils = new HttpUtils();
 
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/vehicleBaseInfo.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/deviceData/vehicleBaseInfo.do", params);
         System.out.println("返回结果==" + result);
 
         List<VehicleBean> vehicleBeans = null;
@@ -120,10 +100,10 @@ public class VehicleApi implements IVehicle {
         List<VehicleBean> vehicleBeanList = new ArrayList<>();
         VehicleBean vehicleBean;
         Map<String, Object> params = new HashMap<>(3);
-        params.put("key", ThirdApiConfig.key);
+        params.put("key", thirdApiConfig.getKey());
         params.put("ids", String.join(",", ids));
         HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeData.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/deviceData/realtimeData.do", params);
         System.out.println("返回结果==" + result);
         if (result != null) {
             JSONObject jsonObject = JSONObject.parseObject(result);
@@ -152,12 +132,12 @@ public class VehicleApi implements IVehicle {
         List<TireBean> tireBeanList = new ArrayList<>();
         VehicleBean vehicleBean;
         Map<String, Object> params = new HashMap<>(3);
-        params.put("key", ThirdApiConfig.key);
+        params.put("key", thirdApiConfig.getKey());
         params.put("type", "1");
         params.put("filterTime", String.valueOf(System.currentTimeMillis()));
 
         HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/allRealData.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/deviceData/allRealData.do", params);
         System.out.println("返回结果==" + result);
         if (result != null) {
             JSONObject jsonObject = JSONObject.parseObject(result);
@@ -204,13 +184,13 @@ public class VehicleApi implements IVehicle {
     public List<MileBean> getMileageData(String id, Long startTime, Long endTime) {
         List<MileBean> mileBeanList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>(5);
-        params.put("key", ThirdApiConfig.key);
+        params.put("key", thirdApiConfig.getKey());
         params.put("type", "1");
         params.put("id", id);
         params.put("startTime", String.valueOf(System.currentTimeMillis()));
         params.put("endTime", String.valueOf(System.currentTimeMillis()));
         HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/mileage/mileageData.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/mileage/mileageData.do", params);
         System.out.println("返回结果==" + result);
         if (result != null) {
             JSONObject jsonObject = JSONObject.parseObject(result);
@@ -260,13 +240,13 @@ public class VehicleApi implements IVehicle {
     public List<TrackBean> queryTrackData(String id, Long startTime, Long endTime) {
         List<TrackBean> trackBeanList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>(5);
-        params.put("key", ThirdApiConfig.key);
+        params.put("key", thirdApiConfig.getKey());
         params.put("type", "1");
         params.put("id", id);
         params.put("startTime", String.valueOf(startTime));
         params.put("endTime", String.valueOf(endTime));
         HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/track/queryTrackData.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/track/queryTrackData.do", params);
         System.out.println("返回结果==" + result);
         if (result != null) {
             JSONObject jsonObject = JSONObject.parseObject(result);
@@ -318,11 +298,11 @@ public class VehicleApi implements IVehicle {
         List<TireBean> tireBeanList = new ArrayList<>();
         VehicleBean vehicleBean;
         Map<String, Object> params = new HashMap<>(3);
-        params.put("key", ThirdApiConfig.key);
+        params.put(KEY, thirdApiConfig.getKey());
         params.put("type", "1");
-        params.put("plate", String.join(",", plates));
+        params.put(PLATE, String.join(",", plates));
         HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(ThirdApiConfig.authIp + "/deviceData/realtimeDataByPlate.do", params);
+        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/deviceData/realtimeDataByPlate.do", params);
         System.out.println("返回结果==" + result);
         if (result != null) {
             JSONObject jsonObject = JSONObject.parseObject(result);
@@ -390,10 +370,10 @@ public class VehicleApi implements IVehicle {
         log.info("vehicle api->ListVehicleRealtimeStatusByIds->params:{}", ids);
 
         HashMap<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put(KEY, ThirdApiConfig.key);
+        paramsMap.put(KEY, thirdApiConfig.getKey());
         paramsMap.put(IDS, String.join(",", ids));
 
-        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByIdsUrl, paramsMap);
+        String response = HttpUtil.post(thirdApiConfig.getAuthIp() + realtimeDataByIdsUrl, paramsMap);
         log.info("vehicle api->ListVehicleRealtimeStatusByIds,response:{}", response);
 
         if (EptUtil.isEmpty(response)) {
@@ -401,16 +381,20 @@ public class VehicleApi implements IVehicle {
             return new ArrayList<>();
         }
 
+        JSONObject jsonObject = handleOilValue(response);
+
+
         AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
-                response,
+                jsonObject.toJSONString(),
                 new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
                 }
         );
 
-        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
-            log.error("vehicle api->ListVehicleRealtimeStatusByIds->api调用返回失败消息，msg{}", resultDto.getMsg());
+        boolean b = checkResponse(response, resultDto);
+        if (b) {
+            return resultDto.getObj();
         }
-        return resultDto.getObj();
+        return new ArrayList<>();
     }
 
     /**
@@ -426,10 +410,10 @@ public class VehicleApi implements IVehicle {
         log.info("vehicle api->ListVehicleRealtimeStatusByPlates->params:{}", plates);
 
         HashMap<String, Object> paramsMap = new HashMap<>();
-        paramsMap.put("key", ThirdApiConfig.key);
-        paramsMap.put("plate", String.join(",", plates));
+        paramsMap.put(KEY, thirdApiConfig.getKey());
+        paramsMap.put(PLATE, String.join(",", plates));
 
-        String response = HttpUtil.post(ThirdApiConfig.authIp + realtimeDataByPlateUrl, paramsMap);
+        String response = HttpUtil.post(thirdApiConfig.getAuthIp() + realtimeDataByPlateUrl, paramsMap);
         log.info("vehicle api->ListVehicleRealtimeStatusByPlates,response:{}", response);
 
         if (EptUtil.isEmpty(response)) {
@@ -437,8 +421,12 @@ public class VehicleApi implements IVehicle {
             return new ArrayList<>();
         }
 
+
+        JSONObject jsonObject = handleOilValue(response);
+        String text = jsonObject.toJSONString();
+
         AdasResultDto<List<VehicleRealtimeStatusAdasDto>> resultDto = JSONObject.parseObject(
-                response,
+                text,
                 new TypeReference<AdasResultDto<List<VehicleRealtimeStatusAdasDto>>>() {
                 }
         );
@@ -446,10 +434,52 @@ public class VehicleApi implements IVehicle {
         boolean b = checkResponse(response, resultDto);
         if (b) {
             return resultDto.getObj();
-        }else{
+        }
+        return new ArrayList<>();
+
+    }
+
+    @Override
+    public List<VehicleVideoDto> listVideoVehicle() {
+
+        log.info("vehicle api->listVideoVehicle");
+
+        HashMap<String, Object> paramsMap = new HashMap<>();
+        paramsMap.put(CUSTOMER_KEY, thirdApiConfig.getKey());
+        paramsMap.put(TYPE, "1");
+
+        String response = HttpUtil.get(thirdApiConfig.getVideoUrl() + videoVehicleUrl, paramsMap);
+        log.info("vehicle api->listVideoVehicle,response:{}", response);
+
+        if (EptUtil.isEmpty(response)) {
+            log.error("vehicle api->listVideoVehicle->api调用无返回信息,response:{}", response);
             return new ArrayList<>();
         }
+        AdasResultDto<List<VehicleVideoDto>> resultDto = JSONObject.parseObject(
+                response,
+                new TypeReference<AdasResultDto<List<VehicleVideoDto>>>() {
+                }
+        );
+        boolean b = checkResponse(response, resultDto);
+        if (b) {
+            return resultDto.getObj();
+        }
+        return new ArrayList<>();
+    }
 
+    private JSONObject handleOilValue(String response) {
+        JSONObject jsonObject = JSONObject.parseObject(response);
+        JSONArray jsonArray = jsonObject.getJSONArray("obj");
+        if(jsonArray==null)
+            return jsonObject;
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject status = jsonArray.getJSONObject(i);
+            Object oil = status.get("oil");
+            status.put("oil", oil.toString());
+            jsonArray.set(i, status);
+        }
+        jsonObject.put("obj", jsonArray);
+        return jsonObject;
     }
 
     private boolean checkResponse(String response, AdasResultDto<?> resultDto) {
@@ -460,7 +490,7 @@ public class VehicleApi implements IVehicle {
                     response
             );
             //直接异常
-           return false;
+            return false;
         }
         return true;
     }
@@ -497,4 +527,6 @@ public class VehicleApi implements IVehicle {
     public void getDownloadImage() {
 
     }
+
+
 }

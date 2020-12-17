@@ -1,8 +1,6 @@
 package com.yuntun.sanitationkitchen.auth;
 
-import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
-import com.yuntun.sanitationkitchen.properties.IdProperties;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import lombok.Data;
@@ -89,7 +87,15 @@ public class AuthUtil {
         //过期时间取80%防止token到达过期临界点
         tokenInfo.setExpireTime(System.currentTimeMillis() + TOKEN_TIMEOUT_80_PERCENTAGE);
         RedisUtils.setValueExpireMills(SK_TOKEN + tokenInfo.getToken(), JSON.toJSONString(tokenInfo), TOKEN_TIMEOUT);
-        RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+        synchronized (AuthUtil.class) {
+            Long expireTimeTTl = RedisUtils.getExpireTTl(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken());
+            if (expireTimeTTl != null) {
+                RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), expireTimeTTl);
+            }else{
+                RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+            }
+        }
+
         return tokenInfo;
     }
 

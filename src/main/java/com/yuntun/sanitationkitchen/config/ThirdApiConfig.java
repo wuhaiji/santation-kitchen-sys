@@ -1,15 +1,26 @@
 package com.yuntun.sanitationkitchen.config;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
 /**
  * @author yookfeng
  * 2020/7/22
  * @des 三方设备API
  **/
+@Component
+@ConfigurationProperties(prefix = "lyy.api")
+@Data
+@Accessors(chain = true)
 public class ThirdApiConfig {
 
+    String authIp;
 
-  public static String authIp = "http://120.77.112.76:6809";
-  public static String key = "85f79a11-8770-4b4b-86a7-fc964bbbfb0f";
+    String key;
+
+    String videoUrl;
 
 
 }
