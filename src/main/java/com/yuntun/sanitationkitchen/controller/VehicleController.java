@@ -333,12 +333,21 @@ public class VehicleController {
         //判断查询辆的rfid
         List<Vehicle> vehicles = iVehicleService.list(new QueryWrapper<Vehicle>().in("uid", ids));
         List<String> vehicleRFIDs = vehicles.parallelStream().map(Vehicle::getRfid).collect(Collectors.toList());
-
-        List<TicketMachine> ticketMachineList = iTicketMachineService.list(new QueryWrapper<TicketMachine>().in("unique_code", vehicleRFIDs));
-        if (EptUtil.isNotEmpty(ticketMachineList)) {
-            log.error("不能删除，已绑定了小票机的车辆");
-            throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);
+        if(EptUtil.isNotEmpty(vehicleRFIDs)){
+            List<TicketMachine> ticketMachineList = iTicketMachineService.list(
+                    new QueryWrapper<TicketMachine>()
+                            .lambda()
+                            .in(
+                                    TicketMachine::getUniqueCode,
+                                    vehicleRFIDs
+                            )
+            );
+            if (EptUtil.isNotEmpty(ticketMachineList)) {
+                log.error("不能删除，已绑定了小票机的车辆");
+                throw new ServiceException(VehicleCode.DELETE_BIND_ERROR);
+            }
         }
+
         boolean b = iVehicleService.remove(new QueryWrapper<Vehicle>().in("uid", ids));
 
         if (b)
