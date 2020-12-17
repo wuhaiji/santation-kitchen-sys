@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
+import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -169,8 +171,16 @@ public class VehicleController {
         ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构id");
         ErrorUtil.isObjectNull(dto.getTypeId(), "车辆类型");
 
+        //查询来源云平台是否已经注册这个车辆
+        List<VehicleBean> list = iVehicle.list();
+        if(list.parallelStream().noneMatch(i -> dto.getNumberPlate().equals(i.getPlateNo()))){
+            throw new ServiceException(VehicleCode.UNREGISTERED_IN_LYY);
+        }
+
+        //检查数据库是否有重复值
         checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
 
+        //冗余字段，机构名称
         SanitationOffice sanitationOffice = iSanitationOfficeService.getOne(
                 new QueryWrapper<SanitationOffice>().eq("uid", dto.getSanitationOfficeId())
         );
@@ -333,7 +343,7 @@ public class VehicleController {
         //判断查询辆的rfid
         List<Vehicle> vehicles = iVehicleService.list(new QueryWrapper<Vehicle>().in("uid", ids));
         List<String> vehicleRFIDs = vehicles.parallelStream().map(Vehicle::getRfid).collect(Collectors.toList());
-        if(EptUtil.isNotEmpty(vehicleRFIDs)){
+        if (EptUtil.isNotEmpty(vehicleRFIDs)) {
             List<TicketMachine> ticketMachineList = iTicketMachineService.list(
                     new QueryWrapper<TicketMachine>()
                             .lambda()

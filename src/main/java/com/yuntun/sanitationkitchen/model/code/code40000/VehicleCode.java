@@ -22,6 +22,7 @@ public enum VehicleCode implements ResultCode {
     NUMBER_PLATE_ALREADY_EXISTS("40109", "车牌号已存在"),
     RFID_PLATE_ALREADY_EXISTS("40110", "RFID号已存在"),
     IDS_TOO_MUCH("40111", "一次删除车辆不能大于100"),
+    UNREGISTERED_IN_LYY("40111", "车辆应该在来源云平台注册"),
 
     ;
 
