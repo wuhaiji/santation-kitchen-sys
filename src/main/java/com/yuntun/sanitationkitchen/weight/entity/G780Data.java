@@ -33,8 +33,8 @@ public class G780Data {
     // 毛重
     private Double grossWeight;
 
-    // 皮重
-    private Double tare;
+//    // 皮重
+//    private Double tare;
 
     public G780Data() {
     }
@@ -43,8 +43,6 @@ public class G780Data {
         this.flag = udcDataUtil.getFlag(bytes);
         this.dataPackageType = udcDataUtil.getDataPackageType(bytes);
         this.deviceNumber = udcDataUtil.getDeviceNumber(bytes);
-//        this.IP = udcDataUtil.getDeviceIP(bytes);
-//        this.port = udcDataUtil.getDevicePort(bytes);
         this.rfid = udcDataUtil.getRFID(bytes);
         this.grossWeight = udcDataUtil.getGrossWeight(bytes);
     }
