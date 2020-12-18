@@ -135,5 +135,10 @@ public class Vehicle implements Serializable {
      */
     private LocalDateTime deletedTime;
 
+    /**
+     * 车辆皮重 kg
+     */
+    private Integer weight;
+
 
 }

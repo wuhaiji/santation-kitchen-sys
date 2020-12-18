@@ -73,4 +73,9 @@ public class VehicleListDto {
      */
     private Long typeId;
 
+    /**
+     * 车辆皮重 kg
+     */
+    private Integer weight;
+
 }

@@ -80,6 +80,10 @@ public class VehicleListVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:ss:mm")
     private LocalDateTime createTime;
 
+    /**
+     * 车辆皮重 kg
+     */
+    private Integer weight;
 
 
 
