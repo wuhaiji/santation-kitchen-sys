@@ -87,7 +87,7 @@ public class CommonService {
         String format = dtf.format(LocalDateTime.now());
         PoundBill poundBill = new PoundBill();
         // 获取流水号
-        poundBill.setSerialCode(vehicle.getNumberPlate()+format);
+        poundBill.setSerialCode(vehicle.getNumberPlate()+"-"+format);
 
         // 获取所属机构信息
         // 根据地磅的设备号去查询地磅所属机构信息

@@ -21,8 +21,7 @@ public class MqttMsgHandler implements MessageHandler {
         String payload=(String) message.getPayload();
         try {
             if(MqttTopicConst.VEHICLE_MESSAGE.equals(topic)){
-
-                System.out.println("mqtt发送车辆设备信息！");
+                System.out.println("mqtt发送地磅设备信息！");
             }
 
             if(MqttTopicConst.TRASH_MESSAGE.equals(topic)){

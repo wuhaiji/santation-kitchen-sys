@@ -136,6 +136,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
             // 判断它是否是主动下线报文
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.OFFLINE_PACKAGE) {
                 System.out.println("进入了下线响应！");
+                MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.UDC_DIED, "设备离线");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
             }
 
