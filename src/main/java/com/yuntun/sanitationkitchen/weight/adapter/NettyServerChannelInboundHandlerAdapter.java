@@ -96,8 +96,6 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
             System.out.println("byte:"+b);
         }
 
-        byte[] responseBytes = {0x22};
-
         // 判断它是否是UDC协议
         if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
 //            UDCDataResponse udcDataResponse = new UDCDataResponse();
@@ -115,12 +113,14 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     G780Data g780Data = new G780Data(bytes);
                     g780Data.setTare(udcDataUtil.getTare(bytes));
                     String g780DataStr = JSONObject.toJSONString(g780Data);
-                    System.out.println("解析地磅后得到的数据:"+g780DataStr);
+                    System.out.println("解析地磅设备上传数据:"+g780DataStr);
+                    // 生成榜单
+                    myService.generatePoundBill(g780Data);
                     MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
                 }
                 if (myService.TRASH.equals(rfidType)) {
                     // 垃圾桶--车辆 业务处理
-
+                    G780Data g780Data = new G780Data(bytes);
                 }
             }
 

@@ -33,7 +33,7 @@ public class SelectOptionVo {
     /**
      * 地磅
      */
-    private List<WeighbridgeValue> WeighbridgeList;
+    private List<WeighbridgeValue> weighbridgeList;
 
     /**
      * 餐馆
