@@ -98,7 +98,6 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
         // 判断它是否是UDC协议
         if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
-//            UDCDataResponse udcDataResponse = new UDCDataResponse();
             // 判断它是否是登录
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
                 System.out.println("登录响应！");
@@ -111,7 +110,6 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 if (myService.VEHICLE.equals(rfidType)) {
                     // 车辆--地磅 业务处理
                     G780Data g780Data = new G780Data(bytes);
-                    g780Data.setTare(udcDataUtil.getTare(bytes));
                     String g780DataStr = JSONObject.toJSONString(g780Data);
                     System.out.println("解析地磅设备上传数据:"+g780DataStr);
                     // 生成榜单
@@ -121,6 +119,11 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 if (myService.TRASH.equals(rfidType)) {
                     // 垃圾桶--车辆 业务处理
                     G780Data g780Data = new G780Data(bytes);
+                    String g780DataStr = JSONObject.toJSONString(g780Data);
+                    System.out.println("解析车辆设备上传数据:"+g780DataStr);
+                    // 生成垃圾桶流水
+                    myService.generateTrashWeightSerial(g780Data);
+                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TRASH_MESSAGE, g780DataStr);
                 }
             }
 

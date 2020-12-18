@@ -33,8 +33,8 @@ public class G780Data {
     // 毛重
     private Double grossWeight;
 
-    // 皮重
-    private Double tare;
+//    // 皮重
+//    private Double tare;
 
     public G780Data() {
     }

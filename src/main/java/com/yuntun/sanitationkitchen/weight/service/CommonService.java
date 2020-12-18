@@ -114,7 +114,7 @@ public class CommonService {
         poundBill.setGrossWeight(g780Data.getGrossWeight());
 
         // 获取皮重(单位：kg)
-        poundBill.setTare(g780Data.getTare());
+        poundBill.setTare(Double.valueOf(vehicle.getWeight().toString()));
 
         // 获取净重(单位：kg)
         poundBill.setNetWeight(poundBill.getGrossWeight()-poundBill.getTare());
@@ -134,7 +134,7 @@ public class CommonService {
         TrashWeightSerial trashWeightSerial = new TrashWeightSerial();
 
         // 获取垃圾桶信息
-        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().select(TrashCan::getFacilityCode, TrashCan::getRfid).
+        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().select(TrashCan::getFacilityCode, TrashCan::getRfid, TrashCan::getRestaurantId).
                 eq(rfid != null, TrashCan::getRfid, rfid));
         if (trashCan == null) {
             log.error("垃圾桶的RFID无效！");

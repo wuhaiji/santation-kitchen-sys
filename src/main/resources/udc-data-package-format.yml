@@ -25,4 +25,4 @@ udc-data-package-format:
   data-body:
     rfid-size: 13
     gross_weight: 8
-    tare: 8
+#    tare: 8
