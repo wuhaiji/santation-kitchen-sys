@@ -195,7 +195,7 @@ public class RoleController {
                 .collect(Collectors.toList());
 
 
-        boolean save = iRolePermissionService.saveBatch(collect, dto.getRoleId());
+        boolean save = iRolePermissionService.allotPermission(collect, dto.getRoleId());
         if (!save) {
             log.error("permission->update->修改权限失败,PermissionUpdateDto:{}", JSON.toJSONString(dto));
             return Result.error(PermissionCode.UPDATE_ERROR);

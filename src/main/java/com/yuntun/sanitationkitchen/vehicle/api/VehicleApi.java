@@ -12,6 +12,7 @@ import com.yuntun.sanitationkitchen.util.HttpUtils;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -38,12 +39,14 @@ public class VehicleApi implements IVehicle {
     public static final String CUSTOMER_KEY = "customerKey";
     public static final String TYPE = "type";
 
-    // @Autowired
+    @Autowired
     ThirdApiConfig thirdApiConfig
-            = new ThirdApiConfig()
-            .setAuthIp("http://120.77.112.76:6809")
-            .setKey("85f79a11-8770-4b4b-86a7-fc964bbbfb0f")
-            .setVideoUrl("https://vserver.car900.com");
+            // = new ThirdApiConfig()
+            // .setAuthIp("http://120.77.112.76:6809")
+            // .setKey("85f79a11-8770-4b4b-86a7-fc964bbbfb0f")
+            // .setVideoUrl("https://vserver.car900.com")
+
+            ;
 
     public static void main(String[] args) {
 
