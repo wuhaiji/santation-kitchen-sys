@@ -90,9 +90,9 @@ public class AuthUtil {
         synchronized (AuthUtil.class) {
             Long expireTimeTTl = RedisUtils.getExpireTTl(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken());
             if (expireTimeTTl != null) {
-                RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), expireTimeTTl);
+                RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), expireTimeTTl);
             }else{
-                RedisUtils.setValueExpireMills(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
+                RedisUtils.setValueExpireSeconds(SK_REFRESH_TOKEN + tokenInfo.getRefreshToken(), JSON.toJSONString(tokenInfo), REFRESH_TOKEN_TIME);
             }
         }
 

@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 
 /**
  * <p>
- *
+ *  定时任务配置
  * </p>
  *
  * @author whj
@@ -35,7 +35,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-
+        //项目启动查询所有的定时任务，并且启动
         for (Cron cron : iCronService.list()) {
             Class<?> clazz;
             Object task;
@@ -51,6 +51,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
             // 可以通过改变数据库数据进而实现动态改变执行周期
             taskRegistrar.addTriggerTask(
                     ((Runnable) task),
+                    //下面这个函数会在当前触发时，查询数据库下一次触发的时间，由此可以动态改变定时任务频率
                     triggerContext ->
                             new CronTrigger(iCronService.getById(cron.getId()).getCronExpression()).nextExecutionTime(triggerContext)
             );
@@ -59,6 +60,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
     @Bean
     public Executor taskExecutor() {
+        //可根据cpu核心数配置线程数
         return Executors.newScheduledThreadPool(8);
     }
 

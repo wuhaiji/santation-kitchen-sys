@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.bean.VehicleBean;
+import com.yuntun.sanitationkitchen.config.ThirdApiConfig;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
@@ -171,11 +172,11 @@ public class VehicleController {
         ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构id");
         ErrorUtil.isObjectNull(dto.getTypeId(), "车辆类型");
 
-        //查询来源云平台是否已经注册这个车辆
-        List<VehicleBean> list = iVehicle.list();
-        if(list.parallelStream().noneMatch(i -> dto.getNumberPlate().equals(i.getPlateNo()))){
-            throw new ServiceException(VehicleCode.UNREGISTERED_IN_LYY);
-        }
+        // //查询来源云平台是否已经注册这个车辆
+        // List<VehicleBean> list = iVehicle.list();
+        // if(list.parallelStream().noneMatch(i -> dto.getNumberPlate().equals(i.getPlateNo()))){
+        //     throw new ServiceException(VehicleCode.UNREGISTERED_IN_LYY);
+        // }
 
         //检查数据库是否有重复值
         checkRepeatedValue(dto.getNumberPlate(), dto.getRfid());
@@ -196,6 +197,7 @@ public class VehicleController {
                 .setNumberPlate(dto.getNumberPlate())
                 .setDriverPhone(dto.getDriverPhone())
                 .setTypeId(dto.getTypeId())
+                .setWeight(dto.getWeight())
                 .setCreator(UserIdHolder.get());
 
         boolean save = iVehicleService.save(role);
@@ -245,6 +247,16 @@ public class VehicleController {
         return Result.ok(collect);
 
     }
+
+    @Autowired
+    ThirdApiConfig thirdApiConfig;
+    @GetMapping("/get/video/key")
+    @Limit("vehicle:query")
+    public Result<Object> videoKey() {
+        return Result.ok(thirdApiConfig.getKey());
+    }
+
+
 
     @PostMapping("/update")
     @Limit("vehicle:update")

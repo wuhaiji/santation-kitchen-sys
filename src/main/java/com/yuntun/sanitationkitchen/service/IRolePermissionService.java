@@ -21,7 +21,7 @@ public interface IRolePermissionService extends IService<RolePermission> {
      * @param roleId
      * @return
      */
-    boolean saveBatch(List<RolePermission> collect,Long roleId);
+    boolean allotPermission(List<RolePermission> collect, Long roleId);
 
 
 }

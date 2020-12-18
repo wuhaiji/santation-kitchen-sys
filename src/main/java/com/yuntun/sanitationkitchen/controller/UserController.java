@@ -1,7 +1,6 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -11,14 +10,16 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.constant.UserConstant;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.mapper.SanitationOfficeMapper;
 import com.yuntun.sanitationkitchen.model.code.code10000.CommonCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.RoleCode;
 import com.yuntun.sanitationkitchen.model.code.code20000.UserCode;
 import com.yuntun.sanitationkitchen.model.dto.UserListDto;
 import com.yuntun.sanitationkitchen.model.dto.UserSaveDto;
 import com.yuntun.sanitationkitchen.model.dto.UserUpdateDto;
-import com.yuntun.sanitationkitchen.model.entity.*;
+import com.yuntun.sanitationkitchen.model.entity.Permission;
+import com.yuntun.sanitationkitchen.model.entity.Role;
+import com.yuntun.sanitationkitchen.model.entity.SanitationOffice;
+import com.yuntun.sanitationkitchen.model.entity.User;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.OptionsVo;
@@ -91,15 +92,35 @@ public class UserController {
                     .in(SanitationOffice::getUid, records.stream()
                             .map(User::getSanitationOfficeId).collect(Collectors.toList())))
                     .stream().collect(Collectors.toMap(
-                                    SanitationOffice::getUid,i->i));
+                            SanitationOffice::getUid, i -> i));
+            //封装角色名称
+            Map<Long, Role> roleMap = iRoleService
+                    .list(
+                            new LambdaQueryWrapper<Role>()
+                                    .eq(
+                                            Role::getUid,
+                                            records
+                                                    .parallelStream()
+                                                    .map(User::getRoleId)
+                                                    .collect(Collectors.toList())
+                                    )
+                    )
+                    .parallelStream()
+                    .collect(Collectors.toMap(Role::getUid, i -> i))
+            ;
+
             records.forEach(
                     user -> {
-                        log.error("user:{}",user);
-                        if (map.get(user.getSanitationOfficeId())!=null){
+                        if (map.get(user.getSanitationOfficeId()) != null) {
+                            user.setSanitationOfficeName(map.get(user.getSanitationOfficeId()).getName());
+                        }
+                        if (roleMap.get(user.getRoleId()) != null) {
                             user.setSanitationOfficeName(map.get(user.getSanitationOfficeId()).getName());
                         }
                     }
             );
+
+
         }
 
         List<UserListVo> userListVos = ListUtil.listMap(UserListVo.class, records);
@@ -358,7 +379,7 @@ public class UserController {
 
     @PostMapping("/delete/batch")
     @Limit("system:user:delete")
-    public Result<Object> delete(@RequestParam(value = "ids",required = false) List<Long> ids) {
+    public Result<Object> delete(@RequestParam(value = "ids", required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "信息id");
         boolean b = iUserService.remove(new QueryWrapper<User>().in("uid", ids));
         if (b)

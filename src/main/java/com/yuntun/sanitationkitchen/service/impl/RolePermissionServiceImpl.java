@@ -23,7 +23,7 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public boolean saveBatch(List<RolePermission> collect,Long roleId) {
+    public boolean allotPermission(List<RolePermission> collect, Long roleId) {
         //先删除所有的存在的权限
         baseMapper.delete(new QueryWrapper<RolePermission>().eq("role_id", roleId));
         Boolean aBoolean = baseMapper.insertBatch(collect);
