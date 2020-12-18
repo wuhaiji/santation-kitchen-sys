@@ -80,5 +80,8 @@ public class VehicleGetVo {
      */
     private Integer disabled;
 
-
+    /**
+     * 车辆皮重 kg
+     */
+    private Integer weight;
 }
