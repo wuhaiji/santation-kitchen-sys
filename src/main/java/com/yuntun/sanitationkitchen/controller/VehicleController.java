@@ -1,10 +1,13 @@
 package com.yuntun.sanitationkitchen.controller;
 
 
+import cn.hutool.core.date.LocalDateTimeUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.auth.UserIdHolder;
+import com.yuntun.sanitationkitchen.bean.TrackBean;
 import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.config.ThirdApiConfig;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
@@ -37,10 +40,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +73,8 @@ public class VehicleController {
     @Autowired
     ITicketMachineService iTicketMachineService;
 
+    @Autowired
+    ThirdApiConfig thirdApiConfig;
 
     @GetMapping("/list")
     @Limit("vehicle:query")
@@ -132,6 +138,62 @@ public class VehicleController {
                 .setTotal(iPage.getTotal())
                 .setTotalPages(iPage.getTotal());
         return Result.ok(data);
+    }
+
+    @GetMapping("/list/video")
+    @Limit("vehicle:query")
+    public Result<Object> videos() {
+
+        //查询本服务的车辆信息
+        List<Vehicle> vehicles = iVehicleService.list();
+        //查询来源云车辆集合
+        List<VehicleVideoDto> vehicleVideoDtos = iVehicle.listVideoVehicle();
+        Map<String, VehicleVideoDto> vehicleVideoDtoMap = vehicleVideoDtos.parallelStream().collect(Collectors.toMap(VehicleVideoDto::getPlate, i -> i));
+
+        List<VehicleVideoListVo> collect = vehicles.parallelStream().map(i -> {
+            VehicleVideoListVo vehicleVideoListVo = new VehicleVideoListVo();
+            VehicleVideoDto vehicleVideoDto = vehicleVideoDtoMap.get(i.getNumberPlate());
+            if (vehicleVideoDto != null) {
+                BeanUtils.copyProperties(vehicleVideoDto, vehicleVideoListVo);
+            }
+            vehicleVideoListVo.setDriverName(i.getDriverName()).setDriverPhone(i.getDriverPhone()).setPlate(i.getNumberPlate());
+            return vehicleVideoListVo;
+        }).collect(Collectors.toList());
+
+        return Result.ok(collect);
+
+    }
+
+
+    @GetMapping("/list/track")
+    @Limit("vehicle:query")
+    public Result<Object> listTrack(VehicleTrackDataListDto dto) {
+        //先查询来源云平台车辆的id
+        List<VehicleBean> list = iVehicle.list();
+        VehicleBean bean = null;
+        for (VehicleBean vehicleBean : list) {
+            if (vehicleBean.getPlate().equals(dto.getNumberPlate())) {
+                bean = vehicleBean;
+            }
+        }
+        List<TrackBean> trackBeans = new ArrayList<>();
+        // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.now()).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        // Long endTime = LocalDateTime.now().toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+
+        Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        // Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        if (dto.getStartTime() == null && dto.getEndTime() == null) {
+            if(bean!=null){
+                trackBeans = iVehicle.queryTrackData(
+                        bean.getId(),
+                        startTime,
+                        endTime
+                );
+            }
+        }
+        return Result.ok(trackBeans);
     }
 
     @GetMapping("/options")
@@ -223,39 +285,13 @@ public class VehicleController {
     }
 
 
-    @GetMapping("/list/video")
-    @Limit("vehicle:query")
-    public Result<Object> videos() {
 
-        //查询本服务的车辆信息
-        List<Vehicle> vehicles = iVehicleService.list();
-        Map<String, Vehicle> vehiclesMap = vehicles.parallelStream().collect(Collectors.toMap(Vehicle::getNumberPlate, i -> i));
-        //查询来源云车辆集合
-        List<VehicleVideoDto> vehicleVideoDtos = iVehicle.listVideoVehicle();
-        Map<String, VehicleVideoDto> vehicleVideoDtoMap = vehicleVideoDtos.parallelStream().collect(Collectors.toMap(VehicleVideoDto::getPlate, i -> i));
 
-        List<VehicleVideoListVo> collect = vehicles.parallelStream().map(i -> {
-            VehicleVideoListVo vehicleVideoListVo = new VehicleVideoListVo();
-            VehicleVideoDto vehicleVideoDto = vehicleVideoDtoMap.get(i.getNumberPlate());
-            if (vehicleVideoDto != null) {
-                BeanUtils.copyProperties(vehicleVideoDto, vehicleVideoListVo);
-            }
-            vehicleVideoListVo.setDriverName(i.getDriverName()).setDriverPhone(i.getDriverPhone());
-            return vehicleVideoListVo;
-        }).collect(Collectors.toList());
-
-        return Result.ok(collect);
-
-    }
-
-    @Autowired
-    ThirdApiConfig thirdApiConfig;
     @GetMapping("/get/video/key")
     @Limit("vehicle:query")
     public Result<Object> videoKey() {
         return Result.ok(thirdApiConfig.getKey());
     }
-
 
 
     @PostMapping("/update")
@@ -620,6 +656,17 @@ public class VehicleController {
 
         private int version;
 
+    }
+
+    @Accessors(chain = true)
+    @Data
+    public static class VehicleTrackDataListDto {
+        /**
+         * 车辆id
+         */
+        String numberPlate;
+        String startTime;
+        LocalDateTime endTime;
     }
 
 }

@@ -1,12 +1,14 @@
 package com.yuntun.sanitationkitchen.bean;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @author yookfeng 2020/8/17
  * @ 车辆轨迹
  **/
 @Data
+@Accessors(chain = true)
 public class TrackBean {
 
   /**
@@ -41,7 +43,7 @@ public class TrackBean {
   /**
    * 速度
    */
-  private String speed;
+  private Double speed;
 
   /**
    * 定位状态

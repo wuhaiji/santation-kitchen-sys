@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -17,10 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author yookfeng 2020/8/17
@@ -41,24 +39,80 @@ public class VehicleApi implements IVehicle {
 
     @Autowired
     ThirdApiConfig thirdApiConfig
-            // = new ThirdApiConfig()
-            // .setAuthIp("http://120.77.112.76:6809")
-            // .setKey("85f79a11-8770-4b4b-86a7-fc964bbbfb0f")
-            // .setVideoUrl("https://vserver.car900.com")
-
-            ;
+            = new ThirdApiConfig()
+            .setAuthIp("http://120.77.112.76:6809")
+            .setKey("85f79a11-8770-4b4b-86a7-fc964bbbfb0f")
+            .setVideoUrl("https://vserver.car900.com");
 
     public static void main(String[] args) {
 
-        // 根据车牌号查询车辆动态数据
-        ArrayList<String> plates = new ArrayList<String>() {{
-            add("13302690436");
-        }};
-        List<VehicleVideoDto> vehicleVideoDtoList = new VehicleApi().listVideoVehicle();
+        // // 根据车牌号查询车辆动态数据
+        // ArrayList<String> plates = new ArrayList<String>() {{
+        //     add("13302690436");
+        // }};
+        // List<VehicleVideoDto> vehicleVideoDtoList = new VehicleApi().listVideoVehicle();
+        Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+
+        System.out.println("startTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,16,0,0)));
+        System.out.println("endTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,19,0,0)));
 
 
+        // List<TrackBean> trackBeans = new VehicleApi().queryTrackData(
+        //         "F6FA39393347F2B86E734D40396CDE93",
+        //         new Date(120, 7, 17).getTime(),
+        //         new Date(120, 7, 18).getTime()
+        // );
+
+        List<TrackBean> trackBeans = new VehicleApi().queryTrackData(
+                "F6FA39393347F2B86E734D40396CDE93",
+                startTime,
+                endTime
+        );
+
+        System.out.println(JSONArray.toJSON(trackBeans));
     }
 
+    /**
+     * 处理oil字段
+     *
+     * @param response
+     * @return
+     */
+    private JSONObject handleOilValue(String response) {
+        JSONObject jsonObject = JSONObject.parseObject(response);
+        JSONArray jsonArray = jsonObject.getJSONArray("obj");
+        if (jsonArray == null)
+            return jsonObject;
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject status = jsonArray.getJSONObject(i);
+            Object oil = status.get("oil");
+            status.put("oil", oil.toString());
+            jsonArray.set(i, status);
+        }
+        jsonObject.put("obj", jsonArray);
+        return jsonObject;
+    }
+
+    /**
+     * 处理返回msg
+     *
+     * @param response
+     * @param resultDto
+     * @return
+     */
+    private boolean checkResponse(String response, AdasResultDto<?> resultDto) {
+        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
+            log.error(
+                    "vehicle api->?->api调用返回失败消息，msg:{},response:{}",
+                    resultDto.getMsg(),
+                    response
+            );
+            //直接异常
+            return false;
+        }
+        return true;
+    }
 
     /**
      * 查询车辆信息
@@ -69,10 +123,9 @@ public class VehicleApi implements IVehicle {
     public List<VehicleBean> list() {
         Map<String, Object> params = new HashMap<>(2);
         params.put("key", thirdApiConfig.getKey());
-        HttpUtils httpUtils = new HttpUtils();
 
-        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/deviceData/vehicleBaseInfo.do", params);
-        System.out.println("返回结果==" + result);
+        String result = HttpUtil.get(thirdApiConfig.getAuthIp() + "/deviceData/vehicleBaseInfo.do", params);
+        System.out.println("list->:" + result);
 
         List<VehicleBean> vehicleBeans = null;
         if (result != null) {
@@ -80,6 +133,7 @@ public class VehicleApi implements IVehicle {
             String obj = jsonObject.getString("obj");
             if (obj != null) {
                 vehicleBeans = JSONObject.parseArray(obj, VehicleBean.class);
+
             } else {
                 log.error("来源云查询车辆列表异常");
                 vehicleBeans = new ArrayList<>();
@@ -241,53 +295,59 @@ public class VehicleApi implements IVehicle {
      */
     @Override
     public List<TrackBean> queryTrackData(String id, Long startTime, Long endTime) {
-        List<TrackBean> trackBeanList = new ArrayList<>();
         Map<String, Object> params = new HashMap<>(5);
         params.put("key", thirdApiConfig.getKey());
         params.put("type", "1");
         params.put("id", id);
         params.put("startTime", String.valueOf(startTime));
         params.put("endTime", String.valueOf(endTime));
-        HttpUtils httpUtils = new HttpUtils();
-        String result = httpUtils.doGet(thirdApiConfig.getAuthIp() + "/track/queryTrackData.do", params);
-        System.out.println("返回结果==" + result);
-        if (result != null) {
-            JSONObject jsonObject = JSONObject.parseObject(result);
-            JSONArray jsonArray = jsonObject.getJSONArray("obj");
-            for (int i = 0; i < jsonArray.size(); i++) {
-                TrackBean trackBean = new TrackBean();
-                JSONObject jb = jsonArray.getJSONObject(i);
-                trackBean.setDevTime(jb.getString("devTime"));
-                trackBean.setLon(Double.parseDouble(jb.getString("lon")));
-                trackBean.setLat(Double.parseDouble(jb.getString("lat")));
-        /*trackBean.setAlarm(jb.getString("alarm"));
-        trackBean.setIsRealTime(jb.getString("isRealTime"));
-        trackBean.setMileage(jb.getString("mileage"));
-        trackBean.setIsAcc(jb.getString("isAcc"));
-        trackBean.setSpeed(jb.getString("speed"));
-        trackBean.setIsPos(jb.getString("isPos"));
-        trackBean.setStopTime(jb.getString("stopTime"));
-        trackBean.setStopState(jb.getString("stopState"));
-        trackBean.setOil(jb.getString("oil"));
-        trackBean.setSensorSpeed(jb.getString("sensorSpeed"));
-        trackBean.setTemperature(jb.getString("temperature"));
-        trackBean.setScale(jb.getString("scale"));
-        ExtendBean extendBean = new ExtendBean();
-        JSONObject extendJson = jb.getJSONObject("extend");
-        extendBean.setAcSignal(extendJson.getString("acSignal"));
-        extendBean.setLbSignal(extendJson.getString("lbSignal"));
-        extendBean.setHbSignal(extendJson.getString("hbSignal"));
-        extendBean.setRtlSignal(extendJson.getString("rtlSignal"));
-        extendBean.setLtlSignal(extendJson.getString("ltlSignal"));
-        extendBean.setBrakeSignal(extendJson.getString("brakeSignal"));
-        extendBean.setRSignal(extendJson.getString("RSignal"));
-        extendBean.setHornSignal(extendJson.getString("hornSignal"));
-        extendBean.setTurnDir(extendJson.getString("turnDir"));
-        trackBean.setExtend(extendBean);*/
-                trackBeanList.add(trackBean);
-            }
+        String result = HttpUtil.get(thirdApiConfig.getAuthIp() + "/track/queryTrackData.do", params);
+        System.out.println("response:"+result);
+        AdasResultDto<List<TrackBean>> resultDto = JSONObject.parseObject(
+                result,
+                new TypeReference<AdasResultDto<List<TrackBean>>>() {}
+        );
+        //检查返回msg
+        boolean b = checkResponse(result, resultDto);
+        if (!b) {
+            return new ArrayList<>();
         }
-        return trackBeanList;
+        return resultDto.getObj();
+        // List<String> jsonArray = resultDto.getObj();
+        // for (int i = 0; i < jsonArray.size(); i++) {
+        //     TrackBean trackBean = new TrackBean();
+        //     JSONObject jb = JSONObject.parseObject(jsonArray.get(i));
+        //     trackBean.setDevTime(jb.getString("devTime"));
+        //     trackBean.setLon(Double.parseDouble(jb.getString("lon")));
+        //     trackBean.setLat(Double.parseDouble(jb.getString("lat")));
+        //     trackBean.setSpeed(jb.getDouble("speed"));
+        // /*trackBean.setAlarm(jb.getString("alarm"));
+        // trackBean.setIsRealTime(jb.getString("isRealTime"));
+        // trackBean.setMileage(jb.getString("mileage"));
+        // trackBean.setIsAcc(jb.getString("isAcc"));
+        // trackBean.setSpeed(jb.getString("speed"));
+        // trackBean.setIsPos(jb.getString("isPos"));
+        // trackBean.setStopTime(jb.getString("stopTime"));
+        // trackBean.setStopState(jb.getString("stopState"));
+        // trackBean.setOil(jb.getString("oil"));
+        // trackBean.setSensorSpeed(jb.getString("sensorSpeed"));
+        // trackBean.setTemperature(jb.getString("temperature"));
+        // trackBean.setScale(jb.getString("scale"));
+        // ExtendBean extendBean = new ExtendBean();
+        // JSONObject extendJson = jb.getJSONObject("extend");
+        // extendBean.setAcSignal(extendJson.getString("acSignal"));
+        // extendBean.setLbSignal(extendJson.getString("lbSignal"));
+        // extendBean.setHbSignal(extendJson.getString("hbSignal"));
+        // extendBean.setRtlSignal(extendJson.getString("rtlSignal"));
+        // extendBean.setLtlSignal(extendJson.getString("ltlSignal"));
+        // extendBean.setBrakeSignal(extendJson.getString("brakeSignal"));
+        // extendBean.setRSignal(extendJson.getString("RSignal"));
+        // extendBean.setHornSignal(extendJson.getString("hornSignal"));
+        // extendBean.setTurnDir(extendJson.getString("turnDir"));
+        // trackBean.setExtend(extendBean);*/
+        //     trackBeanList.add(trackBean);
+        // }
+        // return trackBeanList;
     }
 
     /**
@@ -315,7 +375,7 @@ public class VehicleApi implements IVehicle {
                 JSONObject jb = jsonArray.getJSONObject(i);
                 vehicleBean.setTerminalNo(jb.getString("devTime"));
                 vehicleBean.setTerminalNo(jb.getString("terminalNo"));
-                vehicleBean.setPlateNo(jb.getString("plate"));
+                vehicleBean.setPlate(jb.getString("plate"));
                 vehicleBean.setVehicleDeviceId(jb.getString("id"));
                 vehicleBean.setTerminalNo(jb.getString("terminalType"));
                 vehicleBean.setIsPos(jb.getString("isPos"));
@@ -468,34 +528,6 @@ public class VehicleApi implements IVehicle {
             return resultDto.getObj();
         }
         return new ArrayList<>();
-    }
-
-    private JSONObject handleOilValue(String response) {
-        JSONObject jsonObject = JSONObject.parseObject(response);
-        JSONArray jsonArray = jsonObject.getJSONArray("obj");
-        if(jsonArray==null)
-            return jsonObject;
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JSONObject status = jsonArray.getJSONObject(i);
-            Object oil = status.get("oil");
-            status.put("oil", oil.toString());
-            jsonArray.set(i, status);
-        }
-        jsonObject.put("obj", jsonArray);
-        return jsonObject;
-    }
-
-    private boolean checkResponse(String response, AdasResultDto<?> resultDto) {
-        if (AdasResultDto.FLAG_ERROR == resultDto.getFlag()) {
-            log.error(
-                    "vehicle api->?->api调用返回失败消息，msg:{},response:{}",
-                    resultDto.getMsg(),
-                    response
-            );
-            //直接异常
-            return false;
-        }
-        return true;
     }
 
 

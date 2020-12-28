@@ -68,7 +68,7 @@ public class VehicleBean {
   /**
    * 车牌号
    */
-  private String plateNo;
+  private String plate;
 
   /**
    * 车辆管理列表前端显示

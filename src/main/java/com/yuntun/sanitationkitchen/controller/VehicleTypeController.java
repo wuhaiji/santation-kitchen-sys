@@ -44,7 +44,8 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/vehicleType")
-public class VehicleTypeController {
+public class
+VehicleTypeController {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
 
@@ -112,8 +113,8 @@ public class VehicleTypeController {
     @Limit("system:vehicleType:save")
     public Result<Object> save(VehicleTypeSaveDto dto) {
 
-        ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 16, "品牌不能为空");
-        ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 16, "名称不能为空");
+        ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 16, "品牌");
+        ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 16, "名称");
         ErrorUtil.isStringLengthOutOfRange(dto.getTrait(), 2, 100, "车辆特性");
 
         VehicleType vehicleType = new VehicleType().setCreator(UserIdHolder.get()).setUid(SnowflakeUtil.getUnionId());
@@ -131,7 +132,7 @@ public class VehicleTypeController {
     @Limit("system:vehicleType:update")
     public Result<Object> update(VehicleTypeUpdateDto dto) {
 
-        ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
+        ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid");
 
         VehicleType vehicleType = new VehicleType().setUpdator(UserIdHolder.get());
         BeanUtils.copyProperties(dto, vehicleType);

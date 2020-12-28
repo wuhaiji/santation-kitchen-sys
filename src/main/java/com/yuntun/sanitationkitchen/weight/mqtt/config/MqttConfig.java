@@ -46,7 +46,6 @@ public class MqttConfig {
         mqttConnectOptions.setServerURIs(new String[]{host});
         mqttConnectOptions.setUserName(username);
         mqttConnectOptions.setPassword(password.toCharArray());
-
         // 2秒
         mqttConnectOptions.setKeepAliveInterval(2);
         // 超时时间

@@ -61,7 +61,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     @Bean
     public Executor taskExecutor() {
         //可根据cpu核心数配置线程数
-        return Executors.newScheduledThreadPool(8);
+        return Executors.newScheduledThreadPool(2);
     }
 
 }
