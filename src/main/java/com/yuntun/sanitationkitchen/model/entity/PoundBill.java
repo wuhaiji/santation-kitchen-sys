@@ -55,6 +55,17 @@ public class PoundBill implements Serializable {
     private String numberPlate;
 
     /**
+     * 司机rfid
+     */
+    private String driverRfid;
+
+
+    /**
+     * 司机名称
+     */
+    private String driverName;
+
+    /**
      * 车辆id
      */
     private Long vehicleId;

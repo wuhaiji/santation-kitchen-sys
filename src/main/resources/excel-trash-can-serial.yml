@@ -7,6 +7,7 @@ trash-can-serial:
     - 垃圾桶RFID
     - 垃圾桶编号
     - 餐馆名称
+    - 司机名称
     - 重量
     - 创建时间
   columns:
@@ -14,5 +15,6 @@ trash-can-serial:
     - trashCanRfid
     - facilityCode
     - restaurantName
+    - driverName
     - weight
     - createTime

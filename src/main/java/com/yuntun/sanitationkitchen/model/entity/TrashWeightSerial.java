@@ -52,6 +52,15 @@ public class TrashWeightSerial implements Serializable {
     private String restaurantName;
 
     /**
+     * 司机rfid
+     */
+    private String driverRfid;
+    /**
+     * 司机rfid
+     */
+    private String driverName;
+
+    /**
      * 重量
      */
     private Double weight;

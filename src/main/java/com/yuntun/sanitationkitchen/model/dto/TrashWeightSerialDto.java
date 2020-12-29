@@ -25,4 +25,17 @@ public class TrashWeightSerialDto extends BasePageDto {
      */
     private String restaurantName;
 
+    /**
+     * 司机rfid
+     */
+    private String driverRfid;
+
+    /**
+     * 司机名称
+     */
+    private String driverName;
+
+
+
+
 }

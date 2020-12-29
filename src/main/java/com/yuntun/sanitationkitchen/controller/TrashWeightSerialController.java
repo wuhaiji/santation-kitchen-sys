@@ -46,6 +46,7 @@ public class TrashWeightSerialController {
         q.like(!StringUtils.isBlank(dto.getCode()),TrashWeightSerial::getFacilityCode,dto.getCode())
                 .like(!StringUtils.isBlank(dto.getRestaurantName()),TrashWeightSerial::getRestaurantName,dto.getRestaurantName())
                 .like(!StringUtils.isBlank(dto.getRfid()),TrashWeightSerial::getTrashCanRfid,dto.getRfid())
+                .like(!StringUtils.isBlank(dto.getDriverName()),TrashWeightSerial::getDriverName,dto.getDriverName())
                 .orderByDesc(TrashWeightSerial::getCreateTime);
         return q;
     }
@@ -77,7 +78,7 @@ public class TrashWeightSerialController {
                     trashCanSerialProperties.getHeaders(),
                     trashCanSerialProperties.getColumns());
         } catch (Exception e) {
-            log.error("export PoundBill err,{}",e);
+            log.error("export PoundBill err",e);
             throw new ServiceException(PoundBillCode.EXPORT_EXCEL);
         }
 
