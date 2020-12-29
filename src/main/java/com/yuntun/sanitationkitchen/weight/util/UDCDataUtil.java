@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
+import com.yuntun.sanitationkitchen.weight.propertise.RFIDDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.propertise.UDCDataPackageFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,10 @@ public class UDCDataUtil {
 
     @Autowired
     private UDCDataPackageFormat UDCDataPackageFormat;
+
+    @Autowired
+    private RFIDDataPackageFormat rfidDataPackageFormat;
+
 
     /**
      * 获取UDC标识：1字节
@@ -154,19 +159,38 @@ public class UDCDataUtil {
     }
 
     /**
-     * 获取数据体的rfid号：13字节
+     * 获取数据体的rfid
      *
      * @param bytes
      * @return
      */
-    public String getRFID(byte[] bytes) {
+    public byte[] getRFID(byte[] bytes) {
         byte[] dataBody = getDataBody(bytes);
-        Integer RFIDSize = UDCDataPackageFormat.getDataBody().getRfidSize();
+        Integer RFIDSize = rfidDataPackageFormat.getRfidSize();
 
         byte[] RFID = new byte[RFIDSize];
         System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
 
-        return new String(RFID).trim();
+        return RFID;
+    }
+
+    /**
+     * 获取数据体的rfid的epc号：12字节
+     *
+     * @param bytes
+     * @return
+     */
+    public String getEPC(byte[] bytes) {
+        // 获取rfid
+        byte[] RFID = getRFID(bytes);
+        Integer epcIndex = rfidDataPackageFormat.getEpcIndex();
+        Integer epcSize = rfidDataPackageFormat.getEpcSize();
+
+        // 获取rfid的epc号
+        byte[] EPC = new byte[epcSize];
+        System.arraycopy(RFID, epcIndex, EPC,0, epcSize);
+
+        return BitOperator.byteArrayToHex(EPC).trim();
     }
 
     /**
@@ -176,14 +200,7 @@ public class UDCDataUtil {
      * @return
      */
     public double getGrossWeight(byte[] bytes) {
-        byte[] dataBody = getDataBody(bytes);
-        Integer RFIDSize = UDCDataPackageFormat.getDataBody().getRfidSize();
-        Integer grossWeightSize = UDCDataPackageFormat.getDataBody().getGrossWeight();
-
-        byte[] grossWeight = new byte[grossWeightSize];
-        System.arraycopy(dataBody, RFIDSize, grossWeight,0, grossWeightSize);
-
-       return BitOperator.bytesToDouble(grossWeight);
+        return Byte.valueOf("0");
     }
 
     /**
@@ -193,14 +210,6 @@ public class UDCDataUtil {
      * @return
      */
     public double getTare(byte[] bytes) {
-        byte[] dataBody = getDataBody(bytes);
-        Integer RFIDSize = UDCDataPackageFormat.getDataBody().getRfidSize();
-        Integer grossWeightSize = UDCDataPackageFormat.getDataBody().getGrossWeight();
-        Integer tareSize = UDCDataPackageFormat.getDataBody().getTare();
-
-        byte[] tare = new byte[tareSize];
-        System.arraycopy(dataBody, RFIDSize+grossWeightSize, tare,0, tareSize);
-
-        return BitOperator.bytesToDouble(tare);
+        return Byte.valueOf("0");
     }
 }

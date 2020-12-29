@@ -27,15 +27,6 @@ public class G780Data {
     // 设备端口
     private Integer port;
 
-    // rfid
-    private String rfid;
-
-    // 毛重
-    private Double grossWeight;
-
-//    // 皮重
-//    private Double tare;
-
     public G780Data() {
     }
 
@@ -43,7 +34,5 @@ public class G780Data {
         this.flag = udcDataUtil.getFlag(bytes);
         this.dataPackageType = udcDataUtil.getDataPackageType(bytes);
         this.deviceNumber = udcDataUtil.getDeviceNumber(bytes);
-        this.rfid = udcDataUtil.getRFID(bytes);
-        this.grossWeight = udcDataUtil.getGrossWeight(bytes);
     }
 }

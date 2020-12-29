@@ -24,9 +24,6 @@ public class UDCDataPackageFormat {
     // 数据头
     private G780DataHeader dataHeader;
 
-    // 数据体
-    private DataBody dataBody;
-
     @Data
     public static class G780DataFlag {
 
@@ -63,19 +60,6 @@ public class UDCDataPackageFormat {
 
         private Integer portSize;
 
-    }
-
-    @Data
-    public static class DataBody {
-
-        // rfid大小
-        private Integer rfidSize;
-
-        // 毛重大小
-        private Integer grossWeight;
-
-        // 皮重大小
-        private Integer tare;
     }
 
 }

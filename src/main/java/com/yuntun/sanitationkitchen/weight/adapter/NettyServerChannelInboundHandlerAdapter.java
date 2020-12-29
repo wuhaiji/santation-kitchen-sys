@@ -103,8 +103,12 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 System.out.println("登录响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
             }
+
             // 判断它是否是数据上报
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
+                // 解析数据?????????????
+
+
                 String rfidType = myService.getRFIDType(bytes);
                 // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
                 if (myService.VEHICLE.equals(rfidType)) {
@@ -116,6 +120,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     myService.generatePoundBill(g780Data);
                     MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
                 }
+
                 if (myService.TRASH.equals(rfidType)) {
                     // 垃圾桶--车辆 业务处理
                     G780Data g780Data = new G780Data(bytes);

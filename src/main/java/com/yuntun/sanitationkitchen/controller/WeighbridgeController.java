@@ -70,17 +70,12 @@ public class WeighbridgeController {
     @RequestMapping("/update")
     @Limit("facilitiesAndEquipment:weighbridge:update")
     public Result<Object> update(@RequestBody WeighbridgeDto dto) {
-        ErrorUtil.isObjectNullContent(dto, "地磅信息");
-        ErrorUtil.isObjectNull(dto.getUid(), "地磅uid");
         ErrorUtil.isStringLengthOutOfRange(dto.getDeviceCode(), 2, 30, "设备编号");
         ErrorUtil.isStringLengthOutOfRange(dto.getDeviceName(), 2, 30, "设备名称");
-        ErrorUtil.isObjectNull(dto.getSanitationOfficeId(), "所属机构");
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
-        ErrorUtil.isObjectNull(dto.getMaxWeighing(), "最大称重量(kg)");
         ErrorUtil.isStringLengthOutOfRange(dto.getFacilityCode(), 2, 30, "设施编号");
-        ErrorUtil.isObjectNull(dto.getStatus(), "状态");
-        ErrorUtil.isObjectNull(dto.getCreateTime(), "创建时间");
+
         return Result.ok(iWeighbridgeService.updateWeighbridge(dto));
     }
 

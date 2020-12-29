@@ -46,7 +46,12 @@ public class CommonService {
     private TrashWeightSerialMapper trashWeightSerialMapper;
 
     @Autowired
+    private DriverMapper driverMapper;
+
+    @Autowired
     private UDCDataUtil udcDataUtil;
+
+    public static final String DRIVER = "driver";
 
     public static final String VEHICLE = "vehicle";
 
@@ -55,25 +60,33 @@ public class CommonService {
 
 
     /**
-     * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据）
+     * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据、驾驶员）
      *
      * @param bytes
      * @return
      */
     public String getRFIDType(byte[] bytes) {
-        String rfid = udcDataUtil.getRFID(bytes);
-        if (rfid == null) {
-            throw new ServiceException("rfid不能为空");
+
+        String epc = udcDataUtil.getEPC(bytes);
+        if (epc == null) {
+            throw new ServiceException("rfid的epc号不能为空");
         }
-        Integer vehicleCount = vehicleMapper.selectCount(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, rfid));
+
+        Integer driverCount = driverMapper.selectCount(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
+        if (driverCount != null && driverCount != 0) {
+            return DRIVER;
+        }
+
+        Integer vehicleCount = vehicleMapper.selectCount(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
         if (vehicleCount != null && vehicleCount != 0) {
             return VEHICLE;
         }
-        Integer trashCanCount = trashCanMapper.selectCount(new QueryWrapper<TrashCan>().lambda().eq(TrashCan::getRfid, rfid));
+
+        Integer trashCanCount = trashCanMapper.selectCount(new QueryWrapper<TrashCan>().lambda().eq(TrashCan::getRfid, epc));
         if (trashCanCount != null && trashCanCount != 0) {
             return TRASH;
         }
-        return rfid;
+        return epc;
     }
 
     // 生成榜单

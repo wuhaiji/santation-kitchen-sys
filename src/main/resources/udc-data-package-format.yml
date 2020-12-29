@@ -21,8 +21,18 @@ udc-data-package-format:
     # 端口
     port-index: 19
     port-size: 2
-  # 数据体
-  data-body:
-    rfid-size: 13
-    gross_weight: 8
-#    tare: 8
+
+
+# RFID读卡器数据配置
+rfid:
+  rfid-size: 18
+  epc-index: 4
+  epc-Size: 12
+  CRC-size: 2
+
+# 垃圾桶数据配置
+trash:
+
+
+# 地磅数据
+weight:

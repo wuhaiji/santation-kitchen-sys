@@ -78,6 +78,35 @@ public class BitOperator {
     }
 
     /**
+     * 将一个字节转为16进制的整形
+     *
+     * @param data
+     * @return
+     */
+    public static String byteToHex(byte data) {
+        int value = data & 0xFF;
+        String hex = Integer.toHexString(value).toUpperCase();
+        if (hex.length() < 2) {
+            hex = "0"+hex;
+        }
+        return hex;
+    }
+
+    /**
+     * 将字节数组转为16进制字符串
+     *
+     * @param data
+     * @return
+     */
+    public static String byteArrayToHex(byte[] data) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (byte b:data) {
+            stringBuilder.append(byteToHex(b));
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
      * 把byte[]转化位整形,通常为指令用
      *
      * @param value
