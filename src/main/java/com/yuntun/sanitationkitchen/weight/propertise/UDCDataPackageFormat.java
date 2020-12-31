@@ -24,6 +24,9 @@ public class UDCDataPackageFormat {
     // 数据头
     private G780DataHeader dataHeader;
 
+    // 数据体
+    private G780DataBody dataBody;
+
     @Data
     public static class G780DataFlag {
 
@@ -34,6 +37,8 @@ public class UDCDataPackageFormat {
 
     @Data
     public static class G780DataHeader {
+
+        private Integer size;
 
         // 数据包类型
         private Integer typeIndex;
@@ -60,6 +65,12 @@ public class UDCDataPackageFormat {
 
         private Integer portSize;
 
+    }
+
+    @Data
+    public static class G780DataBody {
+
+        private Integer index;
     }
 
 }

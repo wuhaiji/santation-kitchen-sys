@@ -98,8 +98,9 @@ public class MqttConfig {
         adapter.addTopics(new String[]{
                 MqttTopicConst.VEHICLE_MESSAGE,
                 MqttTopicConst.TRASH_MESSAGE,
+                MqttTopicConst.TICKET_MACHINE,
                 MqttTopicConst.UDC_DIED
-        } , new int[]{1,1,1});
+        } , new int[]{1,1,1,1});
         adapter.setConverter(new DefaultPahoMessageConverter());
         adapter.setQos(1);
         adapter.setOutputChannel(inBoundChannel());

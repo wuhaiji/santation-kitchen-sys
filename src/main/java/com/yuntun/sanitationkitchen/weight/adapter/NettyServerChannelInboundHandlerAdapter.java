@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.weight.adapter;
 import com.alibaba.fastjson.JSONObject;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
+import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
 import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
@@ -91,9 +92,18 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
         ByteBuf bytebuf = (ByteBuf) msg;
         byte[] bytes = new byte[bytebuf.readableBytes()];
         bytebuf.readBytes(bytes);
-        System.out.println("msg:" +bytes);
-        for (byte b:bytes) {
-            System.out.println("byte:"+b);
+        for (int i = 0; i < bytes.length; i++) {
+            if (i == 0) {
+                System.out.print("{ ");
+            }
+
+            System.out.print(bytes[i]);
+            if (i + 1 == bytes.length) {
+                System.out.println(" }");
+            } else {
+                System.out.print(", ");
+            }
+
         }
 
         // 判断它是否是UDC协议
@@ -106,30 +116,32 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
             // 判断它是否是数据上报
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
-                // 解析数据?????????????
+                System.out.println("数据上报！");
+                // 解析数据
+                SKDataBody resolve = myService.resolve(udcDataUtil.getDataBody(bytes));
 
-
-                String rfidType = myService.getRFIDType(bytes);
-                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
-                if (myService.VEHICLE.equals(rfidType)) {
-                    // 车辆--地磅 业务处理
-                    G780Data g780Data = new G780Data(bytes);
-                    String g780DataStr = JSONObject.toJSONString(g780Data);
-                    System.out.println("解析地磅设备上传数据:"+g780DataStr);
-                    // 生成榜单
-                    myService.generatePoundBill(g780Data);
-                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
-                }
-
-                if (myService.TRASH.equals(rfidType)) {
-                    // 垃圾桶--车辆 业务处理
-                    G780Data g780Data = new G780Data(bytes);
-                    String g780DataStr = JSONObject.toJSONString(g780Data);
-                    System.out.println("解析车辆设备上传数据:"+g780DataStr);
-                    // 生成垃圾桶流水
-                    myService.generateTrashWeightSerial(g780Data);
-                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TRASH_MESSAGE, g780DataStr);
-                }
+                System.out.println("resolve:"+resolve);
+//                String rfidType = myService.getRFIDType(bytes);
+//                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
+//                if (myService.VEHICLE.equals(rfidType)) {
+//                    // 车辆--地磅 业务处理
+//                    G780Data g780Data = new G780Data(bytes);
+//                    String g780DataStr = JSONObject.toJSONString(g780Data);
+//                    System.out.println("解析地磅设备上传数据:"+g780DataStr);
+//                    // 生成榜单
+//                    myService.generatePoundBill(g780Data);
+//                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
+//                }
+//
+//                if (myService.TRASH.equals(rfidType)) {
+//                    // 垃圾桶--车辆 业务处理
+//                    G780Data g780Data = new G780Data(bytes);
+//                    String g780DataStr = JSONObject.toJSONString(g780Data);
+//                    System.out.println("解析车辆设备上传数据:"+g780DataStr);
+//                    // 生成垃圾桶流水
+//                    myService.generateTrashWeightSerial(g780Data);
+//                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TRASH_MESSAGE, g780DataStr);
+//                }
             }
 
             // 判断它是否是心跳

@@ -51,7 +51,7 @@ public class UDCDataUtil {
     }
 
     /**
-     * 获取UDC协议 数据头长度+首尾标识长度
+     * 获取UDC协议 数据头长度+首尾标识长度+数据体
      *
      * @param bytes
      * @return
@@ -146,11 +146,14 @@ public class UDCDataUtil {
      * @return
      */
     public byte[] getDataBody(byte[] bytes) {
-        // 获取数据头长度+首尾标识长度
+        // 获取数据包长度
         int dataPackageLength = getDataPackageLength(bytes);
 
-        Integer dataBodyIndex = dataPackageLength-1;
-        Integer dataBodySize = bytes.length-dataPackageLength;
+        Integer dataBodyIndex = UDCDataPackageFormat.getDataBody().getIndex();
+        Integer flagSize = UDCDataPackageFormat.getFlag().getSize();
+        Integer dataHeaderSize = UDCDataPackageFormat.getDataHeader().getSize();
+        // 数据体长度 = 数据包长度-2*标志位长度-数据头长度
+        Integer dataBodySize = dataPackageLength-2*flagSize-dataHeaderSize;
 
         byte[] dataBody = new byte[dataBodySize];
         System.arraycopy(bytes, dataBodyIndex, dataBody,0, dataBodySize);
@@ -175,7 +178,7 @@ public class UDCDataUtil {
     }
 
     /**
-     * 获取数据体的rfid的epc号：12字节
+     * 获取数据体的rfid的epc号：12字节(16进制字符串显示)
      *
      * @param bytes
      * @return

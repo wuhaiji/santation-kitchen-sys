@@ -13,6 +13,9 @@ public class MqttTopicConst {
     // 垃圾桶消息
     public static final String TRASH_MESSAGE="trash";
 
+    //
+    public static final String TICKET_MACHINE="print";
+
     // UDC 遗言
     public static final String UDC_DIED="died";
 
