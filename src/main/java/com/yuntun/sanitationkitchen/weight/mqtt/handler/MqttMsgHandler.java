@@ -32,6 +32,10 @@ public class MqttMsgHandler implements MessageHandler {
                 System.out.println("mqtt发送设备离线消息！");
             }
 
+            if (MqttTopicConst.TICKET_MACHINE.equals(topic)) {
+                System.out.println("mqtt发送小票机设备消息！");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
+import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
+import com.yuntun.sanitationkitchen.weight.mqtt.MqttSender;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
 import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
@@ -121,6 +123,21 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 SKDataBody resolve = myService.resolve(udcDataUtil.getDataBody(bytes));
 
                 System.out.println("resolve:"+resolve);
+
+                for (String epc:resolve.getEpcs()) {
+                    String rfidType = myService.getRFIDType(epc);
+                    System.out.println("rfidType:"+rfidType);
+
+                    if (rfidType == myService.DRIVER) {
+                        TicketBill ticketBill = myService.getTicketBill(epc);
+                        ticketBill.setCardNo(udcDataUtil.getDeviceNumber(bytes));
+                        ticketBill.setWeight("0.0kg");
+                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
+                        System.out.println("ticketBillStr:"+ticketBillStr);
+                        MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+                    }
+                }
+
 //                String rfidType = myService.getRFIDType(bytes);
 //                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
 //                if (myService.VEHICLE.equals(rfidType)) {

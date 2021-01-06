@@ -17,7 +17,7 @@ package com.yuntun.sanitationkitchen.weight.util;
  *
  * @author wujihong
  */
-public class CRC16 {
+public class RFIDCRC16 {
 
     /**
      * 计算CRC16校验码
@@ -51,9 +51,11 @@ public class CRC16 {
      */
     public static String getCRC(byte[] bytes) {
         //CRC寄存器全为1
+//        int CRC = 0x0000ffff;
         int CRC = 0xffff;
         //多项式校验值
-        int POLYNOMIAL = 0xA001;
+//        int POLYNOMIAL = 0x0000a001;
+        int POLYNOMIAL = 0x8408;
         int i, j;
         for (i = 0; i < bytes.length; i++) {
             CRC ^= ((int) bytes[i] & 0x000000ff);
@@ -85,9 +87,11 @@ public class CRC16 {
      */
     public static byte[] getCRCByteArray(byte[] bytes) {
         //CRC寄存器全为1
+//        int CRC = 0x0000ffff;
         int CRC = 0xffff;
         //多项式校验值
-        int POLYNOMIAL = 0xA001;
+//        int POLYNOMIAL = 0x0000a001;
+        int POLYNOMIAL = 0x8408;
         int i, j;
         for (i = 0; i < bytes.length; i++) {
             CRC ^= ((int) bytes[i] & 0x000000ff);
@@ -101,6 +105,8 @@ public class CRC16 {
             }
         }
         //结果转换为字节数组
-        return BitOperator.integerTo2Bytes(CRC);
+        byte[] result = BitOperator.integerTo2Bytes(CRC);
+
+        return result;
     }
 }

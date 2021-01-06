@@ -161,40 +161,40 @@ public class UDCDataUtil {
         return dataBody;
     }
 
-    /**
-     * 获取数据体的rfid
-     *
-     * @param bytes
-     * @return
-     */
-    public byte[] getRFID(byte[] bytes) {
-        byte[] dataBody = getDataBody(bytes);
-        Integer RFIDSize = rfidDataPackageFormat.getRfidSize();
-
-        byte[] RFID = new byte[RFIDSize];
-        System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
-
-        return RFID;
-    }
-
-    /**
-     * 获取数据体的rfid的epc号：12字节(16进制字符串显示)
-     *
-     * @param bytes
-     * @return
-     */
-    public String getEPC(byte[] bytes) {
-        // 获取rfid
-        byte[] RFID = getRFID(bytes);
-        Integer epcIndex = rfidDataPackageFormat.getEpcIndex();
-        Integer epcSize = rfidDataPackageFormat.getEpcSize();
-
-        // 获取rfid的epc号
-        byte[] EPC = new byte[epcSize];
-        System.arraycopy(RFID, epcIndex, EPC,0, epcSize);
-
-        return BitOperator.byteArrayToHex(EPC).trim();
-    }
+//    /**
+//     * 获取数据体的rfid
+//     *
+//     * @param bytes
+//     * @return
+//     */
+//    public byte[] getRFID(byte[] bytes) {
+//        byte[] dataBody = getDataBody(bytes);
+//        Integer RFIDSize = rfidDataPackageFormat.getRfidSize();
+//
+//        byte[] RFID = new byte[RFIDSize];
+//        System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
+//
+//        return RFID;
+//    }
+//
+//    /**
+//     * 获取数据体的rfid的epc号：12字节(16进制字符串显示)
+//     *
+//     * @param bytes
+//     * @return
+//     */
+//    public String getEPC(byte[] bytes) {
+//        // 获取rfid
+//        byte[] RFID = getRFID(bytes);
+//        Integer epcIndex = rfidDataPackageFormat.getEpcIndex();
+//        Integer epcSize = rfidDataPackageFormat.getEpcSize();
+//
+//        // 获取rfid的epc号
+//        byte[] EPC = new byte[epcSize];
+//        System.arraycopy(RFID, epcIndex, EPC,0, epcSize);
+//
+//        return BitOperator.byteArrayToHex(EPC).trim();
+//    }
 
     /**
      * 获取毛重数据

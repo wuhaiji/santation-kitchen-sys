@@ -5,6 +5,8 @@ import com.yuntun.sanitationkitchen.weight.propertise.RFIDDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.util.BitOperator;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +21,10 @@ import java.util.Set;
 @Component
 public class ResolveRFID implements ResolveProtocol {
 
+    public static Logger logger = LoggerFactory.getLogger(ResolveRFID.class);
+
     @Autowired
     private RFIDDataPackageFormat rfidDataPackageFormat;
-
-//    public static RFIDDataPackageFormat rfidDataPackageFormat = SpringUtil.getBean(RFIDDataPackageFormat.class);
 
     // 1.rfid读卡器 解析
     public Boolean isResolve(byte[] dataBody) {
@@ -32,10 +34,8 @@ public class ResolveRFID implements ResolveProtocol {
         // rfid的第一位字节为数据包的长度（但不包括len本身）
         int len = dataBody[0] & 0xFF;
         if (length >= rfidSize && len == rfidSize-1) {
-            System.out.println("isResolve true");
             return true;
         }
-        System.out.println("isResolve false");
         return false;
     }
 
@@ -67,9 +67,8 @@ public class ResolveRFID implements ResolveProtocol {
 
     @Override
     public SKDataBody resolveAll(byte[] dataBody) {
-        System.out.println("开始解析数据！...resolveAll");
         SKDataBody skDataBody = new SKDataBody();
-        Set<String> epcs = skDataBody.getEpcs();
+        Set<String> epcs = new HashSet<>();
         int length = dataBody.length;
         int rfidSize = rfidDataPackageFormat.getRfidSize();
 
@@ -81,15 +80,16 @@ public class ResolveRFID implements ResolveProtocol {
         while (i < count) {
             // 判断是否能被解析
             if (isResolve(dataBody)) {
-                System.out.println("epc :"+getEPC(dataBody));
-                epcs.add(getEPC(dataBody));
-                skDataBody.setEpcs(epcs);
+                String epc = getEPC(dataBody);
+                logger.info("epc：{}", epc);
+                epcs.add(epc);
             }
             dataBody = getNewDataBody(dataBody);
             i++;
         }
 
-        System.out.println("数据："+skDataBody);
+        skDataBody.setEpcs(epcs);
+        logger.info("获取RFID：{}", skDataBody);
         return skDataBody;
     }
 

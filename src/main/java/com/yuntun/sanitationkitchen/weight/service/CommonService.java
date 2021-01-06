@@ -7,6 +7,7 @@ import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
+import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
 import com.yuntun.sanitationkitchen.weight.resolve.ResolveProtocol;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
@@ -69,17 +70,19 @@ public class CommonService {
     /**
      * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据、驾驶员）
      *
-     * @param bytes
+     * @param epc
      * @return
      */
-    public String getRFIDType(byte[] bytes) {
+    public String getRFIDType(String epc) {
 
-        String epc = udcDataUtil.getEPC(bytes);
+//        String epc = udcDataUtil.getEPC(bytes);
         if (epc == null) {
             throw new ServiceException("rfid的epc号不能为空");
         }
 
+        System.out.println("epc--"+epc);
         Integer driverCount = driverMapper.selectCount(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
+        System.out.println("driverCount--"+driverCount);
         if (driverCount != null && driverCount != 0) {
             return DRIVER;
         }
@@ -96,6 +99,18 @@ public class CommonService {
         return epc;
     }
 
+    public TicketBill getTicketBill(String epc) {
+        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
+        TicketBill ticketBill = new TicketBill();
+        ticketBill.setDriverName(driver.getName());
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getDriverName, driver.getName()).
+                eq(Vehicle::getDriverPhone, driver.getPhone()));
+        ticketBill.setPlateNo(vehicle.getNumberPlate());
+        ticketBill.setTime(LocalDateTime.now());
+        return ticketBill;
+    }
+
+
     public SKDataBody resolve(byte[] dataBody) {
         System.out.println("开始解析数据！...resolve");
         SKDataBody skDataBody = new SKDataBody();
@@ -106,6 +121,8 @@ public class CommonService {
 
         return skDataBody;
     }
+
+
 
     // 生成榜单
     public void generatePoundBill (G780Data g780Data) {
