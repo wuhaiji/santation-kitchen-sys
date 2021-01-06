@@ -48,11 +48,10 @@ public class PermissionController {
 
     private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
 
-
     @Autowired
     IPermissionService iPermissionService;
 
-    @Limit("permission:query")
+    @Limit("system:permission:query")
     @GetMapping("/list")
     public Result<Object> list(PermissionListPageDto dto) {
 
@@ -78,7 +77,7 @@ public class PermissionController {
         return Result.ok(data);
     }
 
-    @Limit("permission:query")
+    @Limit("system:permission:query")
     @GetMapping("/options/tree")
     public Result<Object> listTree() {
 
@@ -136,7 +135,7 @@ public class PermissionController {
 
     }
 
-    @Limit("permission:query")
+    @Limit("system:permission:query")
     @GetMapping("/options")
     public Result<Object> options(PermissionOptionsDto dto) {
 
@@ -160,9 +159,8 @@ public class PermissionController {
 
     }
 
-
+    @Limit("system:permission:query")
     @GetMapping("/get/{uid}")
-    @Limit("Permission:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         Permission Permission = iPermissionService.getOne(new QueryWrapper<Permission>().eq("uid", uid));
@@ -171,8 +169,8 @@ public class PermissionController {
         return Result.error(PermissionCode.GET_ERROR);
     }
 
+    @Limit("system:permission:save")
     @PostMapping("/save")
-    @Limit("permission:save")
     public Result<Object> save(PermissionSaveDto dto) {
 
         ErrorUtil.isObjectNull(dto.getParentId(), "父级id");
@@ -196,8 +194,9 @@ public class PermissionController {
         return Result.error(PermissionCode.SAVE_ERROR);
 
     }
+
+    @Limit("system:permission:update")
     @PostMapping("/update")
-    @Limit("permission:update")
     public Result<Object> update(PermissionUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "权限uid不能为空");
