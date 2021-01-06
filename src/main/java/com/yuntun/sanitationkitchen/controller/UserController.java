@@ -170,7 +170,6 @@ public class UserController {
     }
 
     @GetMapping("/list/permission/{uid}")
-    @Limit("system:user:query")
     public Result<Object> listPermission(@PathVariable Long uid) {
 
         ErrorUtil.isObjectNull(uid, "用户id");

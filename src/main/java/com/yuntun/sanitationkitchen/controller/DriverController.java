@@ -46,7 +46,7 @@ public class DriverController {
     @Autowired
     IDriverService iDriverService;
 
-    @Limit("Driver:list")
+    @Limit("vehicle:driver:query")
     @GetMapping("/list")
     public Result<Object> list(VehicleListDto dto) {
 
@@ -62,9 +62,8 @@ public class DriverController {
         RowData<DriverListVo> data = new RowData<DriverListVo>().setRows(vos).setTotal(iPage.getTotal()).setTotalPages(iPage.getTotal());
         return Result.ok(data);
     }
-
+    @Limit("vehicle:driver:query")
     @GetMapping("/options")
-    @Limit("system:Driver:query")
     public Result<Object> options() {
         List<Driver> list = iDriverService.list();
         List<OptionsVo> optionsVos = list
@@ -73,9 +72,8 @@ public class DriverController {
                 .collect(Collectors.toList());
         return Result.ok(optionsVos);
     }
-
+    @Limit("vehicle:driver:query")
     @GetMapping("/get/{uid}")
-    @Limit("system:Driver:query")
     public Result<Object> get(@PathVariable("uid") Long uid) {
         ErrorUtil.isObjectNull(uid, "参数");
         Driver byId = iDriverService.getOne(new QueryWrapper<Driver>().eq("uid", uid));
@@ -89,8 +87,8 @@ public class DriverController {
         return Result.ok(DriverGetVo);
     }
 
+    @Limit("vehicle:driver:save")
     @PostMapping("/save")
-    @Limit("system:Driver:save")
     public Result<Object> save(DriverSaveDto dto) {
 
         ErrorUtil.isStringLengthOutOfRange(dto.getName(), 2, 30, "名称");
@@ -119,8 +117,8 @@ public class DriverController {
         return Result.ok();
     }
 
+    @Limit("vehicle:driver:update")
     @PostMapping("/update")
-    @Limit("system:Driver:update")
     public Result<Object> update(DriverUpdateDto dto) {
 
         ErrorUtil.isObjectNull(dto.getUid(), "车辆类型uid不能为空");
@@ -138,8 +136,8 @@ public class DriverController {
 
     }
 
+    @Limit("vehicle:driver:delete")
     @PostMapping("/delete/{uid}")
-    @Limit("system:Driver:delete")
     public Result<Object> delete(@PathVariable("uid") Long uid) {
 
         Driver Driver = iDriverService.getOne(new QueryWrapper<Driver>().eq("uid", uid));
@@ -158,8 +156,8 @@ public class DriverController {
 
     }
 
+    @Limit("vehicle:driver:delete")
     @PostMapping("/delete/batch")
-    @Limit("system:Driver:delete")
     public Result<Object> deleteBatch(@RequestParam(value = "ids", required = false) List<Long> ids) {
         ErrorUtil.isCollectionEmpty(ids, "ids");
         boolean b = iDriverService.remove(new QueryWrapper<Driver>().in("uid", ids));

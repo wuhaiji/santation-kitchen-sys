@@ -26,7 +26,9 @@ public class RolePermissionServiceImpl extends ServiceImpl<RolePermissionMapper,
     public boolean allotPermission(List<RolePermission> collect, Long roleId) {
         //先删除所有的存在的权限
         baseMapper.delete(new QueryWrapper<RolePermission>().eq("role_id", roleId));
-        Boolean aBoolean = baseMapper.insertBatch(collect);
-        return aBoolean;
+        if(collect.size()==0){
+            return true;
+        }
+        return baseMapper.insertBatch(collect);
     }
 }
