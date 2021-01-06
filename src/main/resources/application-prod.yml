@@ -44,7 +44,7 @@ spring:
     host: redis
     port: 6379
     timeout: 5000
-    password: YTqwe+_)
+    password: Q3dKQ2
 
 # sql 打印
 mybatis-plus:

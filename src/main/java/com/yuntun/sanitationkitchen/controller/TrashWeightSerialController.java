@@ -4,6 +4,7 @@ package com.yuntun.sanitationkitchen.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.PoundBillCode;
 import com.yuntun.sanitationkitchen.model.dto.BasePageDto;
@@ -51,7 +52,7 @@ public class TrashWeightSerialController {
         return q;
     }
 
-
+    @Limit("data:trashWeightSerial:query")
     @RequestMapping("/page")
     public Result page(TrashWeightSerialDto dto){
         IPage<TrashWeightSerial> page=new Page<>();
@@ -66,6 +67,7 @@ public class TrashWeightSerialController {
         return Result.ok(pageBean);
     }
 
+    @Limit("data:trashWeightSerial:export")
     @RequestMapping("/export")
     public void export(TrashWeightSerialDto dto, HttpServletResponse response){
 
