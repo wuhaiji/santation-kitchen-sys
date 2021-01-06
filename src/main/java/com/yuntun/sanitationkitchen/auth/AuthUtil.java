@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
 import java.util.Random;
 import java.util.UUID;
 
@@ -147,6 +148,11 @@ public class AuthUtil {
         }
         //将承载的字符转换成字符串
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        String randomString = getRandomString(16);
+        System.out.println(Base64.getEncoder().encodeToString(randomString.getBytes()));
     }
 
     /**
