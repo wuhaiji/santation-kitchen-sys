@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -48,7 +49,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public List<Permission> getUserPermissionList(Long userId) {
         //查询用户表
         User user = iUserService.getOne(new QueryWrapper<User>().eq("uid", userId));
-
+        //查询角色类型
+        if (user == null){
+            throw new ServiceException(UserCode.USER_DOES_NOT_EXIST);
+        }
+        Role role = iRoleService.getOne(new LambdaQueryWrapper<Role>().eq(EptUtil.isNotEmpty(user), Role::getUid, user.getRoleId()));
+        if (role.getRoleType().equals(Role.SUPER_ADMIN)) {
+            return new ArrayList<Permission>() {{
+                add(new Permission().setPermissionTag("allPermission"));
+            }};
+        }
         //查询角色权限关联表
         List<RolePermission> rolePermissionList;
         try {
@@ -87,9 +97,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<Long> roleIds = userRoleList.parallelStream()
                 .map(UserRole::getRoleId).collect(Collectors.toList());
 
-        List<Role> roleList = iRoleService.list(new QueryWrapper<Role>().in("uid", roleIds));
-
-        return roleList;
+        return iRoleService.list(new QueryWrapper<Role>().in("uid", roleIds));
     }
 
     @Override
