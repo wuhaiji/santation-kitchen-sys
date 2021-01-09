@@ -82,7 +82,6 @@ public class CommonService {
 
         System.out.println("epc--"+epc);
         Integer driverCount = driverMapper.selectCount(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
-        System.out.println("driverCount--"+driverCount);
         if (driverCount != null && driverCount != 0) {
             return DRIVER;
         }
@@ -116,7 +115,11 @@ public class CommonService {
         SKDataBody skDataBody = new SKDataBody();
 
         for (ResolveProtocol resolveProtocol:resolveProtocolList) {
-            BeanUtils.copyProperties(resolveProtocol.resolveAll(dataBody),skDataBody);
+            SKDataBody resolve = resolveProtocol.resolveAll(dataBody);
+            if (!resolve.equals(new SKDataBody())) {
+                skDataBody = resolve;
+                System.out.println("resolveData:"+skDataBody);
+            }
         }
 
         return skDataBody;

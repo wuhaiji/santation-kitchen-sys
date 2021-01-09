@@ -58,7 +58,6 @@ public class UDCDataResponse {
         return offlineResponseBytes;
     }
 
-
     /**
      * 根据指定请求头类型获取服务器响应设备数据
      *
@@ -66,32 +65,35 @@ public class UDCDataResponse {
      * @param headerType
      * @return
      */
-    public static byte[] response (byte[] bytes, int headerType) {
+    public static byte[] response (byte[] bytes, int headerType, byte... dataBody) {
         List<Byte> ResponseList = new ArrayList<>();
-        // 1.开始标识位
         byte flag = (byte)udcDataUtil.getFlag(bytes);
+        // 1.标识位
         ResponseList.add(flag);
 
-        // 2.数据头类型
         byte type = (byte)headerType;
+        // 2.数据头类型
         ResponseList.add(type);
 
-        // 3.获取设备号
-        byte[] deviceNumberBytes = udcDataUtil.getDeviceNumberBytes(bytes);
-
-        // 4.数据包长度（减去数据体长度,但因为没有数据体）:两个*标识位(1)+数据头类型(1)+设备号(11)+数据包长度(2)
+        // 数据包长度=两个*标识位(1)+数据头类型(1)+数据包表示长度(2)+设备号(11)+数据体(?)
         Integer flagSize = udcDataPackageFormat.getFlag().getSize();
         Integer typeSize = udcDataPackageFormat.getDataHeader().getTypeSize();
+        Integer packageLengthSize = udcDataPackageFormat.getDataHeader().getPackageLengthSize();
         Integer deviceNumberSize = udcDataPackageFormat.getDataHeader().getDeviceNumberSize();
-        Integer lengthSize = udcDataPackageFormat.getDataHeader().getLengthSize();
-
-        Integer dataPackageLength = 2*flagSize+typeSize+deviceNumberSize+lengthSize;
+        Integer dataBodySize = dataBody.length;
+        Integer dataPackageLength = 2*flagSize + typeSize + packageLengthSize + deviceNumberSize + dataBodySize;
         byte[] dataPackageBytes = BitOperator.integerTo2Bytes(dataPackageLength);
+        // 3.数据包长度
         byteArrayToList(ResponseList, dataPackageBytes);
 
+        byte[] deviceNumberBytes = udcDataUtil.getDeviceNumberBytes(bytes);
+        // 4.获取设备号
         byteArrayToList(ResponseList, deviceNumberBytes);
 
-        // 5.结束标识位
+        // 5.数据体
+        byteArrayToList(ResponseList, dataBody);
+
+        // 6.结束标识位
         ResponseList.add(flag);
         byte[] ResponseBytes = new byte[ResponseList.size()];
 

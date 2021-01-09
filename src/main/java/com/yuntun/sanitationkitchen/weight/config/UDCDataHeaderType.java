@@ -36,4 +36,8 @@ public class UDCDataHeaderType {
 
     // 下线响应 数据包类型
     public static final int OFFLINE_RESPONSE_PACKAGE = 0X02;
+
+    // 垃圾桶数据采集指令
+    public static final byte[] trashCollectOrder = {1, 3, 0, 0, 0 , 2, -60, 11};
+
 }

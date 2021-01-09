@@ -187,7 +187,7 @@ public class RedisUtils {
     }
 
     /**
-     * 获取键的存活剩余时间 -2表示不存在 ，-1 key 存在但没有设置剩余生存时间时
+     * 获取键的存活剩余时间 -2表示key不存在和已过期 ，-1 key 存在但没有设置剩余生存时间时
      *
      * @param key 键
      * @return 对象
@@ -202,17 +202,29 @@ public class RedisUtils {
     }
 
     /**
-     * 获取键的存活剩余时间 -2表示不存在 ，-1 key 存在但没有设置剩余生存时间时 单位秒
+     * 获取键的存活剩余时间 -2表示key不存在和已过期 ，-1 key 存在但没有设置过期时间 单位秒
      *
      * @param key 键
      * @return 对象
      */
     public static Long getExpireTTl(final String key) {
         Long ttl = redisTemplate.execute((RedisCallback<Long>) redisConnection -> redisConnection.ttl(key.getBytes()));
-
+        System.out.println("ttl:"+ttl);
         if (ttl == null || ttl == -2) {
             return null;
         }
+
+        return ttl;
+    }
+
+    /**
+     * 获取键的存活剩余时间 -2表示key不存在和已过期 ，-1 key 存在但没有设置过期时间 单位秒
+     *
+     * @param key 键
+     * @return 对象
+     */
+    public static Long getTTl(final String key) {
+        Long ttl = redisTemplate.execute((RedisCallback<Long>) redisConnection -> redisConnection.ttl(key.getBytes()));
         return ttl;
     }
 

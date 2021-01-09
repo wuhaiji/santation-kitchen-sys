@@ -33,6 +33,7 @@ public class MqttMsgHandler implements MessageHandler {
             }
 
             if (MqttTopicConst.TICKET_MACHINE.equals(topic)) {
+                System.out.println(payload);
                 System.out.println("mqtt发送小票机设备消息！");
             }
 

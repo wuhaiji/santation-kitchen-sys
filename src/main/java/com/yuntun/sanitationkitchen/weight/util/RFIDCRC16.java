@@ -104,9 +104,13 @@ public class RFIDCRC16 {
                 }
             }
         }
-        //结果转换为字节数组
+        System.out.println("crc: "+CRC);
+        // 结果转换为字节数组
         byte[] result = BitOperator.integerTo2Bytes(CRC);
-
+        // 交换顺序
+        byte b = result[0];
+        result[0] = result[1];
+        result[1] = b;
         return result;
     }
 }

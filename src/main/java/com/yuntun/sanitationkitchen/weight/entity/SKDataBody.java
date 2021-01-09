@@ -14,6 +14,6 @@ public class SKDataBody {
 
     private Set<String> epcs;
 
-    private double weight;
+    private Double weight;
 
 }

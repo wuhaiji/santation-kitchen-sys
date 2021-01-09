@@ -57,8 +57,8 @@ public class UDCDataUtil {
      * @return
      */
     public int getDataPackageLength(byte[] bytes) {
-        Integer lengthIndex = UDCDataPackageFormat.getDataHeader().getLengthIndex();
-        Integer lengthSize = UDCDataPackageFormat.getDataHeader().getLengthSize();
+        Integer lengthIndex = UDCDataPackageFormat.getDataHeader().getPackageLengthIndex();
+        Integer lengthSize = UDCDataPackageFormat.getDataHeader().getPackageLengthSize();
 
         byte[] length = new byte[lengthSize];
         System.arraycopy(bytes, lengthIndex, length,0, lengthSize);

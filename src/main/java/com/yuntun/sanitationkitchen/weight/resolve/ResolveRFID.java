@@ -3,13 +3,13 @@ package com.yuntun.sanitationkitchen.weight.resolve;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.propertise.RFIDDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.util.BitOperator;
-import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
-import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
+import com.yuntun.sanitationkitchen.weight.util.RFIDCRC16;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +34,12 @@ public class ResolveRFID implements ResolveProtocol {
         // rfid的第一位字节为数据包的长度（但不包括len本身）
         int len = dataBody[0] & 0xFF;
         if (length >= rfidSize && len == rfidSize-1) {
-            return true;
+            // CRC校验
+            byte[] nocrcrfid = getNOCRCRFID(dataBody);
+            byte[] crcByteArray = RFIDCRC16.getCRCByteArray(nocrcrfid);
+
+            byte[] crc = getCRC(dataBody);
+            return Arrays.equals(crcByteArray, crc);
         }
         return false;
     }
@@ -88,7 +93,10 @@ public class ResolveRFID implements ResolveProtocol {
             i++;
         }
 
-        skDataBody.setEpcs(epcs);
+        if (epcs.size() > 0) {
+            skDataBody.setEpcs(epcs);
+        }
+
         logger.info("获取RFID：{}", skDataBody);
         return skDataBody;
     }
@@ -106,6 +114,22 @@ public class ResolveRFID implements ResolveProtocol {
         System.arraycopy(dataBody, 0, RFID,0, RFIDSize);
 
         return RFID;
+    }
+
+    public byte[] getNOCRCRFID(byte[] dataBody) {
+        Integer NOCRCRFIDSize = rfidDataPackageFormat.getRfidSize()-rfidDataPackageFormat.getCRCSize();
+
+        byte[] NOCRCRFID = new byte[NOCRCRFIDSize];
+        System.arraycopy(dataBody, 0, NOCRCRFID,0, NOCRCRFIDSize);
+
+        return NOCRCRFID;
+    }
+
+    public byte[] getCRC(byte[] dataBody) {
+        byte[] rfid = getRFID(dataBody);
+        int rfidSize = rfidDataPackageFormat.getRfidSize();
+        int crcIndex = rfidDataPackageFormat.getCRCIndex();
+       return Arrays.copyOfRange(rfid, crcIndex, rfidSize);
     }
 
     /**

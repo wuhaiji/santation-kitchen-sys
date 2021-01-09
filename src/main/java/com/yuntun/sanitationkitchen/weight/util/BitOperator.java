@@ -1,13 +1,21 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
+import com.yuntun.sanitationkitchen.util.RedisUtils;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author wujihong
  * 位操作工具类
  */
 public class BitOperator {
+
     /**
      * 把一个整形该为byte
      *
@@ -453,4 +461,5 @@ public class BitOperator {
         sb = new StringBuilder(tmp);
         return Integer.parseInt(sb.reverse().toString(), 2);
     }
+
 }

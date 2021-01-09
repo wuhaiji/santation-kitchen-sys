@@ -46,9 +46,9 @@ public class UDCDataPackageFormat {
         private Integer typeSize;
 
         // 数据包长度（不包括数据体）
-        private Integer lengthIndex;
+        private Integer packageLengthIndex;
 
-        private Integer lengthSize;
+        private Integer packageLengthSize;
 
         // 设备号
         private Integer deviceNumberIndex;

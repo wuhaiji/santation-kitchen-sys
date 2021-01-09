@@ -16,4 +16,19 @@ import org.springframework.stereotype.Component;
 @PropertySource(value = {"classpath:udc-data-package-format.yml"}, factory = YamlConfigFactory.class)
 @Data
 public class TrashDataPackageFormat {
+
+    private Integer trashSize;
+
+    private Integer validDataIndex;
+
+    private Integer validDataSize;
+
+    private Integer dataIndex;
+
+    private Integer dataSize;
+
+    private Integer CRCIndex;
+
+    private Integer CRCSize;
+
 }

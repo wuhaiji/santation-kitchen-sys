@@ -29,6 +29,9 @@ public class RFIDDataPackageFormat {
     // epc号长度
     private Integer epcSize;
 
+    // CRC校验码开始索引
+    private Integer CRCIndex;
+
     // CRC校验码大小
     private Integer CRCSize;
 }

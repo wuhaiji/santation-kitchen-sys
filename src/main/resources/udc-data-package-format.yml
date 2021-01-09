@@ -8,14 +8,14 @@ udc-data-package-format:
   data-header:
     # 数据头开始索引
     index: 1
-    # 数据头大小
+    # 数据头大小(未计算 移动内网的IP 4byte、端口 2byte，6个字节)
     size: 14
     # 数据包类型
     type-index: 1
     type-size: 1
     # 数据包长度
-    length-index: 2
-    length-size: 2
+    package-length-index: 2
+    package-length-size: 2
     # 设备号
     device-number-index: 4
     device-number-size: 11
@@ -36,11 +36,22 @@ rfid:
   rfid-size: 18
   epc-index: 4
   epc-Size: 12
+  CRC-index: 16
   CRC-size: 2
 
-# 垃圾桶数据配置
-trash:
 
+# 垃圾桶数据配置
+  #01 03 04 FF 65 FF FF DB 88
+trash:
+  # 单位（字节）
+  trash-size: 9
+  # 单位（字节）
+  valid-data-index: 2
+  valid-data-size: 1
+  data-index: 3
+  data-size: 2
+  CRC-index: 7
+  CRC-size: 2
 
 # 地磅数据
 weight:
