@@ -2,7 +2,6 @@ package com.yuntun.sanitationkitchen.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
@@ -142,7 +141,7 @@ public class FuelCountController {
     //     ExcelUtil.excelExport(response, "油耗统计.xlsx", "油耗统计", fuelCountListVos, Arrays.asList(headers), Arrays.asList(keys));
     // }
 
-    @Limit("data:fuelCount")
+    @Limit("data:fuelCount:query")
     @GetMapping("/list")
     public Result<Object> list(FuelCountListDto dto) {
         ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
@@ -152,7 +151,7 @@ public class FuelCountController {
                         .setPageNo(dto.getPageNo())
                         .setPageSize(dto.getPageSize())
                         .setNumberPlate(dto.getNumberPlate()
-                )
+                        )
 
         );
 
@@ -173,7 +172,7 @@ public class FuelCountController {
 
 
         List<VehicleRealTimeStatus> vehicleRealTimeStatuses = new ArrayList<>();
-        if(plates.size()<=0){
+        if (plates.size() <= 0) {
             vehicleRealTimeStatuses = iVehicleRealTimeStatusService.list(
                     new QueryWrapper<VehicleRealTimeStatus>()
                             .in("plate", plates)
@@ -182,7 +181,6 @@ public class FuelCountController {
                             .orderByAsc("create_time")
             );
         }
-
 
 
         //把车的状态的历史记录按车分类
@@ -254,7 +252,7 @@ public class FuelCountController {
     }
 
 
-    @Limit("data:fuelCount")
+    @Limit("data:fuelCount:export")
     @PostMapping("/export")
     public void export(FuelCountListDto dto, HttpServletResponse response) throws Exception {
 

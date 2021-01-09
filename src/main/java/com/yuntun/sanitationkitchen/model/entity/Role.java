@@ -3,7 +3,6 @@ package com.yuntun.sanitationkitchen.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -34,6 +33,9 @@ public class Role implements Serializable {
      * uuid
      */
     private Long uid;
+
+    public static final Boolean SUPER_ADMIN = true;
+    public static final Boolean ADMIN = false;
 
     /**
      * 是否是超级管理员
