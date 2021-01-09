@@ -223,6 +223,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                     }, 0, 1, TimeUnit.SECONDS);
                     task.put(deviceNumber, scheduledFuture);
+//                    future = task.get(deviceNumber);
                     System.out.println("task2 ："+future);
                 }
 //                String rfidType = myService.getRFIDType(bytes);
