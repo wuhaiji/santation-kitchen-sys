@@ -64,10 +64,16 @@ public class Weighbridge implements Serializable {
      */
     private Integer maxWeighing;
 
+//    /**
+//     * 设施编号（可能是DTU编号、地磅编号）
+//     */
+//    private String facilityCode;
+
     /**
-     * 设施编号（可能是DTU编号、地磅编号）
+     * 网络设备编号（特指DTU编号）
+     * 最大11位
      */
-    private String facilityCode;
+    private String netDeviceCode;
 
     /**
      * 设备状态0.在线 1.离线

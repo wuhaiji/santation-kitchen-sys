@@ -61,7 +61,7 @@ public class WeighbridgeController {
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
         ErrorUtil.isObjectNull(dto.getMaxWeighing(), "最大称重量(kg)");
-        ErrorUtil.isStringLengthOutOfRange(dto.getFacilityCode(), 2, 30, "设施编号");
+        ErrorUtil.isStringLengthOutOfRange(dto.getNetDeviceCode(), 2, 11, "网络设备编号");
         ErrorUtil.isObjectNull(dto.getStatus(), "状态");
 
         return Result.ok(iWeighbridgeService.insertWeighbridge(dto));
@@ -74,7 +74,7 @@ public class WeighbridgeController {
         ErrorUtil.isStringLengthOutOfRange(dto.getDeviceName(), 2, 30, "设备名称");
         ErrorUtil.isStringLengthOutOfRange(dto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(dto.getModel(), 2, 30, "型号");
-        ErrorUtil.isStringLengthOutOfRange(dto.getFacilityCode(), 2, 30, "设施编号");
+        ErrorUtil.isStringLengthOutOfRange(dto.getNetDeviceCode(), 2, 11, "网络设备编号");
 
         return Result.ok(iWeighbridgeService.updateWeighbridge(dto));
     }

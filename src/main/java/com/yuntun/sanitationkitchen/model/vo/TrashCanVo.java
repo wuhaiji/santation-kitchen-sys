@@ -37,6 +37,12 @@ public class TrashCanVo {
      */
     private Integer facilityType;
 
+
+    /**
+     * 垃圾桶重量（单位：kg）
+     */
+    private Double weight;
+
     /**
      * 容量 单位升
      */

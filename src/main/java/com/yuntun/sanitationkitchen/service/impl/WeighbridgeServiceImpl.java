@@ -125,12 +125,12 @@ public class WeighbridgeServiceImpl extends ServiceImpl<WeighbridgeMapper, Weigh
         uids.forEach(uid -> {
             // 1.判断地磅是否存在
             Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().eq("uid", uid));
-            if (weighbridge == null && weighbridge.getFacilityCode() == null) {
+            if (weighbridge == null && weighbridge.getNetDeviceCode() == null) {
                 log.error("删除地磅异常,必要数据存在空值");
                 throw new ServiceException(VehicleCode.ID_NOT_EXIST);
             } else {
                 // 2.判断地磅是否可以删除（有无绑定小票机设备）
-                Integer count = ticketMachineMapper.selectCount(new QueryWrapper<TicketMachine>().eq("unique_code", weighbridge.getFacilityCode()));
+                Integer count = ticketMachineMapper.selectCount(new QueryWrapper<TicketMachine>().eq("unique_code", weighbridge.getNetDeviceCode()));
                 if (count != null && count > 0) {
                     log.error("不能删除，已绑定了小票机的地磅");
                     throw new ServiceException("不能删除，已绑定了小票机的地磅");

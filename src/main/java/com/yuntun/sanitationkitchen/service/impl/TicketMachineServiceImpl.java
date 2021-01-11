@@ -76,9 +76,9 @@ public class TicketMachineServiceImpl extends ServiceImpl<TicketMachineMapper, T
 
         // 4.地磅
         List<WeighbridgeValue> weighbridgeList = weighbridgeMapper.selectList(new QueryWrapper<Weighbridge>().
-                select("uid", "device_name", "facility_code")).stream().map(weighbridge -> {
+                select("uid", "device_name", "net_device_code")).stream().map(weighbridge -> {
             WeighbridgeValue weighbridgeValue = new WeighbridgeValue();
-            weighbridgeValue.setWeighbridgeCode(weighbridge.getFacilityCode());
+            weighbridgeValue.setWeighbridgeCode(weighbridge.getNetDeviceCode());
             weighbridgeValue.setWeighbridgeName(weighbridge.getDeviceName());
             return weighbridgeValue;
         }).collect(Collectors.toList());

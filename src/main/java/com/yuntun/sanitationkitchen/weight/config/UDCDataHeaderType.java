@@ -40,4 +40,7 @@ public class UDCDataHeaderType {
     // 垃圾桶数据采集指令
     public static final byte[] trashCollectOrder = {1, 3, 0, 0, 0 , 2, -60, 11};
 
+    // 地磅数据采集指令（默认仪表通讯地址为 01）毛重
+    public static final byte[] BoundCollectOrder = {0x02, 0x41 ,0x42 ,0x30 ,0x33 ,0x03};
+
 }

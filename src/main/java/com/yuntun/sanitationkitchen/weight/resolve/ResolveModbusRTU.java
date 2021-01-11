@@ -71,7 +71,7 @@ public class ResolveModbusRTU implements ResolveProtocol {
             if (isResolve(dataBody)) {
                 Double trashWeight = getTrashWeight(dataBody);
                 logger.info("获取垃圾桶weight：{}", trashWeight);
-                skDataBody.setWeight(trashWeight);
+                skDataBody.setTrashWeight(trashWeight);
                 break;
             }
             dataBody = getNewDataBody(dataBody);

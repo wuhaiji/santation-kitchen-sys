@@ -12,8 +12,13 @@ import java.util.Set;
 @Data
 public class SKDataBody {
 
+    // epc
     private Set<String> epcs;
 
-    private Double weight;
+    // 垃圾桶重量
+    private Double trashWeight;
+
+    // 地磅称重 车辆
+    private Double boundWeight;
 
 }

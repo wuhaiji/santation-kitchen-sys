@@ -66,6 +66,53 @@ public class CommonService {
     public static final String TRASH = "trash";
 
 
+    /**
+     * 根据rfid的epc号查询
+     * 获取垃圾桶信息
+     *
+     * @return
+     */
+    public TrashCan getTrashCanInfo(String epc) {
+        // 获取垃圾桶信息
+        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().eq(epc != null, TrashCan::getRfid, epc));
+        if (trashCan == null) {
+            log.error("垃圾桶的RFID无效！");
+            throw new ServiceException("垃圾桶的RFID无效！");
+        }
+        return trashCan;
+    }
+
+    /**
+     * 根据rfid的epc号查询
+     * 获取车辆信息
+     *
+     * @return
+     */
+    public Vehicle getVehicleInfo(String epc) {
+        // 获取垃圾桶信息
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
+        if (vehicle == null) {
+            log.error("车辆的RFID无效！");
+            throw new ServiceException("车辆的RFID无效！");
+        }
+        return vehicle;
+    }
+
+    /**
+     * 根据dtu的设备号查询
+     * 获取地磅信息
+     *
+     * @return
+     */
+    public Weighbridge getWeighbridgeInfo(String deviceNumber) {
+        // 获取地磅信息
+        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().eq("facility_code", deviceNumber));
+        if (weighbridge == null) {
+            log.error("地磅表中的设备编号无效！");
+            throw new ServiceException("地磅表中的设备编号无效！");
+        }
+        return weighbridge;
+    }
 
     /**
      * 获取RFID的数据类型（车辆[地磅]数据、垃圾桶[车辆]数据、驾驶员）
@@ -98,12 +145,23 @@ public class CommonService {
         return epc;
     }
 
-    public TicketBill getTicketBill(String epc) {
+    public TicketBill getTrashTicketBill(String epc) {
         Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
-        TicketBill ticketBill = new TicketBill();
-        ticketBill.setDriverName(driver.getName());
         Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getDriverName, driver.getName()).
                 eq(Vehicle::getDriverPhone, driver.getPhone()));
+        TicketBill ticketBill = new TicketBill();
+        ticketBill.setDriverName(driver.getName());
+        ticketBill.setPlateNo(vehicle.getNumberPlate());
+        ticketBill.setTime(LocalDateTime.now());
+        return ticketBill;
+    }
+
+    public TicketBill getBoundTicketBill(String epc) {
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
+//        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getName, vehicle.getDriverName()).
+//                eq(Driver::getPhone,vehicle.getDriverPhone()));
+        TicketBill ticketBill = new TicketBill();
+        ticketBill.setDriverName(vehicle.getDriverName());
         ticketBill.setPlateNo(vehicle.getNumberPlate());
         ticketBill.setTime(LocalDateTime.now());
         return ticketBill;

@@ -55,3 +55,23 @@ trash:
 
 # 地磅数据
 weight:
+  size: 12
+  # 开始标志
+  begin-flag: 2
+  # 地磅称重数据
+  data:
+    size: 8
+    # 符号位
+    symbol-index: 1
+    symbol-size: 1
+    # 整数部分
+    integer-index: 2
+    integer-size: 6
+    # 小数部分
+    decimal-index: 8
+    decimal-size: 1
+  # 异或校验
+  verify-index: 9
+  verify-size: 2
+  # 结束标志
+  end-flag: 3

@@ -146,8 +146,10 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     String rfidType = myService.getRFIDType(epc);
                     System.out.println("rfidType:"+rfidType);
 
+                    // 司机
                     if (rfidType == myService.DRIVER) {
-                        TicketBill ticketBill = myService.getTicketBill(epc);
+                        // 垃圾桶小票机信息
+                        TicketBill ticketBill = myService.getTrashTicketBill(epc);
                         ticketBill.setCardNo(deviceNumber);
                         String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
                         System.out.println("ticketBillStr:"+ticketBillStr);
@@ -155,29 +157,57 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         RedisUtils.setValue(deviceNumber+"ticketBill", ticketBillStr);
                     }
 
+                    // 垃圾桶
                     if (rfidType == myService.TRASH) {
-                        System.out.println("deviceNumber:"+deviceNumber+" 垃圾桶下发数据采集指令！");
+                        System.out.println("deviceNumber:"+deviceNumber+" 对垃圾桶下发数据采集指令！");
                         // 垃圾桶数据采集指令
                         ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
                     }
+
+                    // 车辆
+                    if (rfidType == myService.VEHICLE) {
+                        // 地磅小票机信息
+                        TicketBill ticketBill = myService.getBoundTicketBill(epc);
+                        ticketBill.setCardNo(deviceNumber);
+                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
+                        System.out.println("ticketBillStr:"+ticketBillStr);
+                        RedisUtils.setValue(deviceNumber+"ticketBill", ticketBillStr);
+
+                        // 对地磅下发数据采集指令（读取毛重）
+                        System.out.println("deviceNumber:"+deviceNumber+" 对地磅下发数据采集指令！");
+                        ctx.write(Unpooled.copiedBuffer(UDCDataHeaderType.BoundCollectOrder));
+                    }
                 }
 
-
-                if (resolve.getWeight() != null) {
+                // 垃圾桶重量
+                Double trashWeight = resolve.getTrashWeight();
+                if (trashWeight != null) {
                     // 将垃圾桶重量存储到redis,并设置有效时间10s（超过时间后，就算完成称重）
                     RedisUtils.setValue(deviceNumber, "valid");
                     RedisUtils.expireSeconds(deviceNumber, 10);
-                    RedisUtils.listPush(deviceNumber+"weight",resolve.getWeight());
+                    RedisUtils.listPush(deviceNumber+"weight",trashWeight);
 
                     List<Double> weightList = RedisUtils.listGetAll(deviceNumber + "weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
                             .boxed().collect(Collectors.toList());
-                    System.out.println("缓存区中的重量："+weightList);
+                    System.out.println("缓存区中的垃圾桶重量："+weightList);
+                }
+
+                // 地磅车辆重量
+                Double boundWeight = resolve.getBoundWeight();
+                if (boundWeight != null) {
+                    String bill = RedisUtils.getString(deviceNumber+"ticketBill");
+                    TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
+                    ticketBill.setWeight(boundWeight+"t");
+                    System.out.println("地磅称重结果："+ticketBill);
+                    String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
+                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+                    // 清空此次地磅称重数据
+                    RedisUtils.delKey(deviceNumber+"ticketBill");
                 }
 
                 ScheduledFuture future = task.get(deviceNumber);
                 List<Object> redisWeight = RedisUtils.listGetAll(deviceNumber + "weight");
                 Object redisTicketBill = RedisUtils.getValue(deviceNumber + "ticketBill");
-                System.out.println("task1 ："+future);
 
                 // 当垃圾桶重量和车辆人员信息都不为空时，在执行（完成垃圾桶的称重）
                 if (redisWeight != null && redisWeight.size() != 0 && redisTicketBill != null && future == null) {
@@ -195,13 +225,8 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                         // 当expire = -2，一种是：redis不存在key；一种是：该key过期了
                         if ( expire == -2 ) {
-                            System.out.println("垃圾桶称重结果...1--"+bill);
                             TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
-
-                            System.out.println("垃圾桶称重结果...2--"+weightResult+"kg");
                             ticketBill.setWeight(weightResult+"kg");
-
-                            System.out.println("垃圾桶称重结果...3--"+ticketBill);
                             String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
 
                             System.out.println("垃圾桶称重结果："+ticketBillStr);
@@ -214,17 +239,13 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                             task.remove(deviceNumber);
                             // 取消任务(完成称重)
-                            if (future != null) {
-                                future.cancel(false);
+                            if (task.get(deviceNumber) != null) {
+                                task.get(deviceNumber).cancel(false);
                             }
-                            System.out.println("垃圾桶称重 结束！");
-
                         }
 
                     }, 0, 1, TimeUnit.SECONDS);
                     task.put(deviceNumber, scheduledFuture);
-//                    future = task.get(deviceNumber);
-                    System.out.println("task2 ："+future);
                 }
 //                String rfidType = myService.getRFIDType(bytes);
 //                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
