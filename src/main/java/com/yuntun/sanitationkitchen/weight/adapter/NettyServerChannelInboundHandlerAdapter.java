@@ -174,6 +174,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         ticketBill.setCardNo(deviceNumber);
                         String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
                         System.out.println("ticketBillStr:"+ticketBillStr);
+                        RedisUtils.setValue(deviceNumber+"vehicleEPC", epc);
                         RedisUtils.setValue(deviceNumber+"ticketBill", ticketBillStr);
 
                         // 对地磅下发数据采集指令（读取毛重）
@@ -203,8 +204,15 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     ticketBill.setWeight(boundWeight+"t");
                     System.out.println("地磅称重结果："+ticketBill);
                     String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
+                    // 发送打印小票机请求
                     MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+
+                    // 生成地磅流水
+                    String vehicleEPC = RedisUtils.getString(deviceNumber + "vehicleEPC");
+                    myService.generatePoundBill(deviceNumber,vehicleEPC,boundWeight);
+
                     // 清空此次地磅称重数据
+                    RedisUtils.delKey(deviceNumber+"vehicleEPC");
                     RedisUtils.delKey(deviceNumber+"ticketBill");
                 }
 

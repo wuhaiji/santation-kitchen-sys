@@ -159,8 +159,6 @@ public class CommonService {
 
     public TicketBill getBoundTicketBill(String epc) {
         Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
-//        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getName, vehicle.getDriverName()).
-//                eq(Driver::getPhone,vehicle.getDriverPhone()));
         TicketBill ticketBill = new TicketBill();
         ticketBill.setDriverName(vehicle.getDriverName());
         ticketBill.setPlateNo(vehicle.getNumberPlate());
@@ -187,50 +185,47 @@ public class CommonService {
 
 
     // 生成榜单
-    public void generatePoundBill (G780Data g780Data) {
-//        if (g780Data == null) {
-//            log.error("地磅设备上传的信息为空！");
-//            throw new ServiceException("地磅设备上传的信息为空！");
-//        }
-//        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, g780Data.getRfid()));
-//
-//        String format = dtf.format(LocalDateTime.now());
-//        PoundBill poundBill = new PoundBill();
-//        // 获取流水号
-//        poundBill.setSerialCode(vehicle.getNumberPlate()+"-"+format);
-//
-//        // 获取所属机构信息
-//        // 根据地磅的设备号去查询地磅所属机构信息
-//        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().select("sanitation_office_id").
-//                eq("device_code", g780Data.getDeviceNumber()));
-//        if (weighbridge == null) {
-//            log.error("地磅表中的设备编号无效！");
-//            throw new ServiceException("地磅表中的设备编号无效！");
-//        }
-//        SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("uid", "name").
-//                eq("uid", weighbridge.getSanitationOfficeId()));
-//        if (sanitationOffice == null) {
-//            log.error("地磅表中的机构id无效！");
-//            throw new ServiceException("地磅表中的机构id无效！");
-//        }
-//        poundBill.setSanitationOfficeId(sanitationOffice.getUid());
-//        poundBill.setSanitationOfficeName(sanitationOffice.getName());
-//
-//        // 获取车牌号
-//        poundBill.setVehicleId(vehicle.getUid());
-//        poundBill.setNumberPlate(vehicle.getNumberPlate());
-//
-//        // 获取毛重(单位：kg)
-//        poundBill.setGrossWeight(0D);
-//
-//        // 获取皮重(单位：kg)
-//        poundBill.setTare(Double.valueOf(vehicle.getWeight().toString()));
-//
-//        // 获取净重(单位：kg)
-//        poundBill.setNetWeight(poundBill.getGrossWeight()-poundBill.getTare());
-//
-//        poundBill.setUid(SnowflakeUtil.getUnionId());
-//        poundBillMapper.insert(poundBill);
+    public void generatePoundBill (String deviceNumber, String vehicleEPC, Double boundWeight) {
+        PoundBill poundBill = new PoundBill();
+
+        Vehicle vehicleInfo = getVehicleInfo(vehicleEPC);
+
+        String format = dtf.format(LocalDateTime.now());
+        // 获取流水号
+        poundBill.setSerialCode(vehicleInfo.getNumberPlate()+"-"+format);
+
+        // 获取所属机构信息
+        // 根据地磅的设备号去查询地磅所属机构信息
+        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().select("sanitation_office_id").
+                eq("net_device_code", deviceNumber));
+        if (weighbridge == null) {
+            log.error("地磅表中的网络设备编号无效！");
+            throw new ServiceException("地磅表中的网络设备编号无效！");
+        }
+        SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("uid", "name").
+                eq("uid", weighbridge.getSanitationOfficeId()));
+        if (sanitationOffice == null) {
+            log.error("地磅表中的机构id无效！");
+            throw new ServiceException("地磅表中的机构id无效！");
+        }
+        poundBill.setSanitationOfficeId(sanitationOffice.getUid());
+        poundBill.setSanitationOfficeName(sanitationOffice.getName());
+
+        // 获取车牌号
+        poundBill.setVehicleId(vehicleInfo.getUid());
+        poundBill.setNumberPlate(vehicleInfo.getNumberPlate());
+
+        // 获取毛重(单位：kg)
+        poundBill.setGrossWeight(boundWeight);
+
+        // 获取皮重(单位：kg)
+        poundBill.setTare(Double.valueOf(vehicleInfo.getWeight().toString()));
+
+        // 获取净重(单位：kg)
+        poundBill.setNetWeight(boundWeight-poundBill.getTare());
+
+        poundBill.setUid(SnowflakeUtil.getUnionId());
+        poundBillMapper.insert(poundBill);
 
     }
 
