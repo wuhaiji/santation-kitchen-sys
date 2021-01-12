@@ -37,7 +37,7 @@ public class VehicleApi implements IVehicle {
     public static final String CUSTOMER_KEY = "customerKey";
     public static final String TYPE = "type";
 
-    @Autowired
+    // @Autowired
     ThirdApiConfig thirdApiConfig
             = new ThirdApiConfig()
             .setAuthIp("http://120.77.112.76:6809")
@@ -51,11 +51,11 @@ public class VehicleApi implements IVehicle {
         //     add("13302690436");
         // }};
         // List<VehicleVideoDto> vehicleVideoDtoList = new VehicleApi().listVideoVehicle();
-        Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-        Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-
-        System.out.println("startTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,16,0,0)));
-        System.out.println("endTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,19,0,0)));
+        // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        // Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        //
+        // System.out.println("startTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,16,0,0)));
+        // System.out.println("endTime:"+LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,19,0,0)));
 
 
         // List<TrackBean> trackBeans = new VehicleApi().queryTrackData(
@@ -64,13 +64,14 @@ public class VehicleApi implements IVehicle {
         //         new Date(120, 7, 18).getTime()
         // );
 
-        List<TrackBean> trackBeans = new VehicleApi().queryTrackData(
-                "F6FA39393347F2B86E734D40396CDE93",
-                startTime,
-                endTime
-        );
-
-        System.out.println(JSONArray.toJSON(trackBeans));
+        // List<TrackBean> trackBeans = new VehicleApi().queryTrackData(
+        //         "F6FA39393347F2B86E734D40396CDE93",
+        //         startTime,
+        //         endTime
+        // );
+        VehicleApi vehicleApi = new VehicleApi();
+        List<VehicleBean> list = vehicleApi.list();
+        // System.out.println(JSONArray.toJSON(list));
     }
 
     /**
