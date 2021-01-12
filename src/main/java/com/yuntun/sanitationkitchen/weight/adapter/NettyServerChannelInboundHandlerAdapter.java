@@ -203,7 +203,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 if (boundWeight != null) {
                     String bill = RedisUtils.getString(deviceNumber+"ticketBill");
                     TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
-                    ticketBill.setWeight(boundWeight+"t");
+                    ticketBill.setWeight(boundWeight+"kg");
                     System.out.println("小票机打印地磅称重结果："+ticketBill);
                     String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
 
