@@ -24,4 +24,5 @@ public class TicketBill {
 
     // 车牌号
     private String plateNo;
+
 }

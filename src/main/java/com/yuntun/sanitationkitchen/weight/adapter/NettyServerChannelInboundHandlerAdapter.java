@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.weight.adapter;
 import com.alibaba.fastjson.JSONObject;
 import com.sun.el.stream.Stream;
 import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
+import com.yuntun.sanitationkitchen.model.entity.Driver;
 import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
@@ -156,6 +157,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         System.out.println("ticketBillStr:"+ticketBillStr);
                         // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
                         RedisUtils.setValue(deviceNumber+"ticketBill", ticketBillStr);
+                        RedisUtils.setValue(deviceNumber+"driverEPC", epc);
                     }
 
                     // 垃圾桶
@@ -202,10 +204,8 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     String bill = RedisUtils.getString(deviceNumber+"ticketBill");
                     TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
                     ticketBill.setWeight(boundWeight+"t");
-                    System.out.println("地磅称重结果："+ticketBill);
+                    System.out.println("小票机打印地磅称重结果："+ticketBill);
                     String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                    // 发送打印小票机请求
-                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
 
                     // 生成地磅流水
                     String vehicleEPC = RedisUtils.getString(deviceNumber + "vehicleEPC");
@@ -214,13 +214,23 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     // 清空此次地磅称重数据
                     RedisUtils.delKey(deviceNumber+"vehicleEPC");
                     RedisUtils.delKey(deviceNumber+"ticketBill");
+
+                    // 发送打印小票机请求
+                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
                 }
 
                 ScheduledFuture future = task.get(deviceNumber);
                 // trashCanTareWeight为垃圾桶皮重
                 String trashCanEPC = RedisUtils.getString(deviceNumber + "trashCanEPC");
+                String driverEPC = RedisUtils.getString(deviceNumber + "driverEPC");
                 List<Object> redisWeight = RedisUtils.listGetAll(deviceNumber + "weight");
+                System.out.println("trashCanEPC:"+trashCanEPC);
+                System.out.println("driverEPC:"+driverEPC);
+                System.out.println("future:"+future);
+
                 Object redisTicketBill = RedisUtils.getValue(deviceNumber + "ticketBill");
+                System.out.println("redisTicketBill:"+redisTicketBill);
+                System.out.println("redisWeight:"+redisWeight);
 
                 // 当垃圾桶重量和车辆人员信息都不为空时，在执行（完成垃圾桶的称重）
                 if (redisWeight != null && redisWeight.size() != 0 && redisTicketBill != null && future == null) {
@@ -235,8 +245,11 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                         // 当expire = -2，一种是：redis不存在key；一种是：该key过期了
                         if ( expire == -2 ) {
+                            System.out.println("垃圾桶集合："+weightList);
                             // 获取垃圾桶信息
                             TrashCan trashCanInfo = myService.getTrashCanInfo(trashCanEPC);
+                            // 获取司机信息
+                            Driver driverInfo = myService.getDriverInfo(driverEPC);
                             // 获取垃圾桶称重结果
                             Double weightResult = myService.getTrashWeight(weightList, trashCanInfo);
 
@@ -244,50 +257,30 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                             ticketBill.setWeight(weightResult+"kg");
                             String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
 
-                            System.out.println("垃圾桶称重结果："+ticketBillStr);
+                            System.out.println("小票机打印垃圾桶称重结果："+ticketBillStr);
                             // 发送打印小票机请求
                             MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
-
-                            // 生成垃圾桶流水单
-                            myService.generateTrashWeightSerial(weightList,trashCanInfo);
 
                             // 清空此次称重缓存
                             RedisUtils.delKey(deviceNumber);
                             RedisUtils.delKey(deviceNumber+"trashCanEPC");
+                            RedisUtils.delKey(deviceNumber+"driverEPC");
                             RedisUtils.delKey(deviceNumber+"weight");
                             RedisUtils.delKey(deviceNumber+"ticketBill");
 
-                            task.remove(deviceNumber);
                             // 取消任务(完成称重)
                             if (task.get(deviceNumber) != null) {
                                 task.get(deviceNumber).cancel(false);
                             }
+                            task.remove(deviceNumber);
+
+                            // 生成垃圾桶流水单
+                            myService.generateTrashWeightSerial(weightList,trashCanInfo, driverInfo);
                         }
 
                     }, 0, 1, TimeUnit.SECONDS);
                     task.put(deviceNumber, scheduledFuture);
                 }
-//                String rfidType = myService.getRFIDType(bytes);
-//                // 判断它是那种设备发过来的数据（车辆--地磅、垃圾桶--车辆）
-//                if (myService.VEHICLE.equals(rfidType)) {
-//                    // 车辆--地磅 业务处理
-//                    G780Data g780Data = new G780Data(bytes);
-//                    String g780DataStr = JSONObject.toJSONString(g780Data);
-//                    System.out.println("解析地磅设备上传数据:"+g780DataStr);
-//                    // 生成榜单
-//                    myService.generatePoundBill(g780Data);
-//                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.VEHICLE_MESSAGE, g780DataStr);
-//                }
-//
-//                if (myService.TRASH.equals(rfidType)) {
-//                    // 垃圾桶--车辆 业务处理
-//                    G780Data g780Data = new G780Data(bytes);
-//                    String g780DataStr = JSONObject.toJSONString(g780Data);
-//                    System.out.println("解析车辆设备上传数据:"+g780DataStr);
-//                    // 生成垃圾桶流水
-//                    myService.generateTrashWeightSerial(g780Data);
-//                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TRASH_MESSAGE, g780DataStr);
-//                }
             }
 
             // 判断它是否是心跳

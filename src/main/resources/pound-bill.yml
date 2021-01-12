@@ -7,7 +7,7 @@ pound-bill:
     - 流水号
     - 环卫机构
     - 车牌号
-    - 司机名称
+#    - 司机名称
     - 净重
     - 皮重
     - 毛重
@@ -17,8 +17,8 @@ pound-bill:
     - serialCode
     - sanitationOfficeName
     - numberPlate
+#    - driverName
     - netWeight
-    - driverName
     - tare
     - grossWeight
     - createTime

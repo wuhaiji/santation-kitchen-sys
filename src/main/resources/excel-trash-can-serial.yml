@@ -1,4 +1,4 @@
-# 地磅磅单的导出配置
+# 垃圾桶流水的导出配置
 trash-can-serial:
   file-name: 垃圾桶称重流水
   sheet-name: 导出垃圾桶称重流水

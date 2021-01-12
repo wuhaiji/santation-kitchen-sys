@@ -123,7 +123,7 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
         q.eq(!StringUtils.isBlank(dto.getSerialCode()),PoundBill::getSerialCode,dto.getSerialCode())
                 .eq(dto.getVehicleId()!=null,PoundBill::getVehicleId,dto.getVehicleId())
                 .eq(dto.getSanitationOfficeId()!=null,PoundBill::getSanitationOfficeId,dto.getSanitationOfficeId())
-                .like(EptUtil.isNotEmpty(dto.getDriverName()),PoundBill::getDriverName,dto.getDriverName())
+//                .like(EptUtil.isNotEmpty(dto.getDriverName()),PoundBill::getDriverName,dto.getDriverName())
                 .gt(dto.getBeginTime()!=null,PoundBill::getCreateTime,dto.getBeginTime())
                 .lt(dto.getEndTime()!=null,PoundBill::getCreateTime,dto.getEndTime());
         this.page(page,q);

@@ -69,6 +69,22 @@ public class CommonService {
 
     /**
      * 根据rfid的epc号查询
+     * 获取司机信息
+     *
+     * @return
+     */
+    public Driver getDriverInfo(String epc) {
+        // 获取垃圾桶信息
+        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(epc != null, Driver::getRfid, epc));
+        if (driver == null) {
+            log.error("司机的RFID无效！");
+            throw new ServiceException("司机的RFID无效！");
+        }
+        return driver;
+    }
+
+    /**
+     * 根据rfid的epc号查询
      * 获取垃圾桶信息
      *
      * @return
@@ -215,6 +231,12 @@ public class CommonService {
         poundBill.setVehicleId(vehicleInfo.getUid());
         poundBill.setNumberPlate(vehicleInfo.getNumberPlate());
 
+//        // 获取司机信息
+//        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().select("rfid", "name").
+//                eq("name", vehicleInfo.getDriverName()).eq("phone", vehicleInfo.getDriverPhone()));
+//        poundBill.setDriverRfid(driver.getRfid());
+//        poundBill.setDriverName(driver.getName());
+
         // 获取毛重(单位：kg)
         poundBill.setGrossWeight(boundWeight);
 
@@ -225,12 +247,13 @@ public class CommonService {
         poundBill.setNetWeight(boundWeight-poundBill.getTare());
 
         poundBill.setUid(SnowflakeUtil.getUnionId());
+        System.out.println("poundBill地磅流水:"+poundBill);
         poundBillMapper.insert(poundBill);
 
     }
 
     // 生成垃圾桶流水
-    public void generateTrashWeightSerial(List<Double> weightList, TrashCan trashCanInfo) {
+    public void generateTrashWeightSerial(List<Double> weightList, TrashCan trashCanInfo, Driver driverInfo) {
         TrashWeightSerial trashWeightSerial = new TrashWeightSerial();
 
         // 获取垃圾桶的称重结果
@@ -257,6 +280,11 @@ public class CommonService {
         // 获取垃圾桶重量
         trashWeightSerial.setWeight(weightResult);
 
+        // 获取司机信息
+        trashWeightSerial.setDriverRfid(driverInfo.getRfid());
+        trashWeightSerial.setDriverName(driverInfo.getName());
+
+        System.out.println("trashWeightSerial垃圾桶流水:"+trashWeightSerial);
         trashWeightSerialMapper.insert(trashWeightSerial);
     }
 
