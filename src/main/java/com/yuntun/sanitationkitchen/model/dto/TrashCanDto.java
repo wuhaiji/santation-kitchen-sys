@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -102,6 +103,11 @@ public class TrashCanDto extends BasePageDto {
      * 纬度
      */
     private Double latitude;
+
+    /**
+     * 经纬度
+     */
+    private List<Double> lnglat;
 
     /**
      * 创建人id

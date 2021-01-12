@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author wujihong
@@ -234,45 +235,42 @@ public class CommonService {
     }
 
     // 生成垃圾桶流水
-    public void generateTrashWeightSerial(G780Data g780Data) {
-//        if (g780Data == null) {
-//            log.error("车辆设备上传的信息为空！");
-//            throw new ServiceException("车辆设备上传的信息为空！");
-//        }
-//        String rfid = g780Data.getRfid();
-//        TrashWeightSerial trashWeightSerial = new TrashWeightSerial();
-//
-//        // 获取垃圾桶信息
-//        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().select(TrashCan::getFacilityCode, TrashCan::getRfid, TrashCan::getRestaurantId).
-//                eq(rfid != null, TrashCan::getRfid, rfid));
-//        if (trashCan == null) {
-//            log.error("垃圾桶的RFID无效！");
-//            throw new ServiceException("垃圾桶的RFID无效！");
-//        }
-//
-//        // 获取餐馆信息
-//        Restaurant restaurant = restaurantMapper.selectOne(new QueryWrapper<Restaurant>().lambda().select(Restaurant::getUid, Restaurant::getName).
-//                eq(trashCan.getRestaurantId() != null, Restaurant::getUid, trashCan.getRestaurantId()));
-//        if (restaurant == null) {
-//            log.error("餐馆的uid无效！");
-//            throw new ServiceException("餐馆的uid无效！");
-//        }
-//
-//        // 获取垃圾桶rfid
-//        trashWeightSerial.setTrashCanRfid(trashCan.getRfid());
-//
-//        // 获取垃圾桶设备编号
-//        trashWeightSerial.setFacilityCode(trashCan.getFacilityCode());
-//
-//        // 获取餐馆信息
-//        trashWeightSerial.setRestaurantId(restaurant.getUid());
-//        trashWeightSerial.setRestaurantName(restaurant.getName());
-//
-//        // 获取垃圾桶重量
-//        trashWeightSerial.setWeight(g780Data.getGrossWeight());
-//
-//        trashWeightSerialMapper.insert(trashWeightSerial);
+    public void generateTrashWeightSerial(List<Double> weightList, TrashCan trashCanInfo) {
+        TrashWeightSerial trashWeightSerial = new TrashWeightSerial();
 
+        // 获取垃圾桶的称重结果
+        Double weightResult = getTrashWeight(weightList, trashCanInfo);
+
+        // 获取餐馆信息
+        Restaurant restaurant = restaurantMapper.selectOne(new QueryWrapper<Restaurant>().lambda().select(Restaurant::getUid, Restaurant::getName).
+                eq(trashCanInfo.getRestaurantId() != null, Restaurant::getUid, trashCanInfo.getRestaurantId()));
+        if (restaurant == null) {
+            log.error("餐馆的uid无效！");
+            throw new ServiceException("餐馆的uid无效！");
+        }
+
+        // 获取垃圾桶rfid
+        trashWeightSerial.setTrashCanRfid(trashCanInfo.getRfid());
+
+        // 获取垃圾桶设备编号
+        trashWeightSerial.setFacilityCode(trashCanInfo.getFacilityCode());
+
+        // 获取餐馆信息
+        trashWeightSerial.setRestaurantId(restaurant.getUid());
+        trashWeightSerial.setRestaurantName(restaurant.getName());
+
+        // 获取垃圾桶重量
+        trashWeightSerial.setWeight(weightResult);
+
+        trashWeightSerialMapper.insert(trashWeightSerial);
+    }
+
+    public Double getTrashWeight(List<Double> weightList, TrashCan trashCanInfo) {
+        Double trashCanTareWeight = trashCanInfo.getWeight();
+        Double weightResult = weightList.stream().filter(weight -> weight > trashCanTareWeight).collect(Collectors.averagingDouble(x -> x-trashCanTareWeight));
+        System.out.println("称重结果："+weightResult+"kg");
+
+        return weightResult;
     }
 
 

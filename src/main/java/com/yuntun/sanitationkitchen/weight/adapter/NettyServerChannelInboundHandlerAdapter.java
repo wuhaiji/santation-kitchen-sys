@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.weight.adapter;
 import com.alibaba.fastjson.JSONObject;
 import com.sun.el.stream.Stream;
 import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
+import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
@@ -159,7 +160,9 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                     // 垃圾桶
                     if (rfidType == myService.TRASH) {
-                        System.out.println("deviceNumber:"+deviceNumber+" 对垃圾桶下发数据采集指令！");
+                        // 存储垃圾桶的epc
+                        RedisUtils.setValue(deviceNumber+"trashCanEPC", epc);
+                        System.out.println("deviceNumber为:"+deviceNumber+" 对垃圾桶下发数据采集指令！");
                         // 垃圾桶数据采集指令
                         ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
                     }
@@ -206,6 +209,8 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 }
 
                 ScheduledFuture future = task.get(deviceNumber);
+                // trashCanTareWeight为垃圾桶皮重
+                String trashCanEPC = RedisUtils.getString(deviceNumber + "trashCanEPC");
                 List<Object> redisWeight = RedisUtils.listGetAll(deviceNumber + "weight");
                 Object redisTicketBill = RedisUtils.getValue(deviceNumber + "ticketBill");
 
@@ -214,17 +219,19 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
                         List<Double> weightList = RedisUtils.listGetAll(deviceNumber + "weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
                                 .boxed().collect(Collectors.toList());
-                        // condition为筛选值
-                        int condition = 0;
-                        double weightResult = weightList.stream().filter(weight->weight > condition).mapToDouble(x->x).average().getAsDouble();
+
                         Long expire = RedisUtils.getTTl(deviceNumber);
                         String bill = RedisUtils.getString(deviceNumber+"ticketBill");
                         System.out.println("称重倒计时:"+expire);
-                        System.out.println("称重结果："+weightResult+"kg");
                         System.out.println("bill:"+bill);
 
                         // 当expire = -2，一种是：redis不存在key；一种是：该key过期了
                         if ( expire == -2 ) {
+                            // 获取垃圾桶信息
+                            TrashCan trashCanInfo = myService.getTrashCanInfo(trashCanEPC);
+                            // 获取垃圾桶称重结果
+                            Double weightResult = myService.getTrashWeight(weightList, trashCanInfo);
+
                             TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
                             ticketBill.setWeight(weightResult+"kg");
                             String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
@@ -232,8 +239,13 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                             System.out.println("垃圾桶称重结果："+ticketBillStr);
                             // 发送打印小票机请求
                             MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+
+                            // 生成垃圾桶流水单
+                            myService.generateTrashWeightSerial(weightList,trashCanInfo);
+
                             // 清空此次称重缓存
                             RedisUtils.delKey(deviceNumber);
+                            RedisUtils.delKey(deviceNumber+"trashCanEPC");
                             RedisUtils.delKey(deviceNumber+"weight");
                             RedisUtils.delKey(deviceNumber+"ticketBill");
 
