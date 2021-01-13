@@ -66,7 +66,6 @@ public class CommonService {
 
     public static final String TRASH = "trash";
 
-
     /**
      * 根据rfid的epc号查询
      * 获取司机信息
