@@ -177,11 +177,11 @@ public class VehicleController {
             }
         }
         List<TrackBean> trackBeans = new ArrayList<>();
-        // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.now()).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-        // Long endTime = LocalDateTime.now().toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-
-        Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
-        Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.now()).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        Long endTime = LocalDateTime.now().toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        //
+        // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
+        // Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 8,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         // Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         if (dto.getStartTime() == null && dto.getEndTime() == null) {
@@ -226,8 +226,6 @@ public class VehicleController {
     @Limit("vehicle:save")
     public Result<Object> save(VehicleSaveDto dto) {
 
-        ErrorUtil.isStringLengthOutOfRange(dto.getDriverName(), 2, 16, "司机名称");
-        ErrorUtil.isObjectNull(dto.getDriverPhone(), "电话");
         ErrorUtil.isObjectNull(dto.getNumberPlate(), "车牌");
         ErrorUtil.isObjectNull(dto.getPurchaseDate(), "购买日期");
         ErrorUtil.isObjectNull(dto.getRfid(), "RFID");
