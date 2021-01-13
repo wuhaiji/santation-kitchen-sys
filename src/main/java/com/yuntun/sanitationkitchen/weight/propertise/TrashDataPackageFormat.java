@@ -31,4 +31,7 @@ public class TrashDataPackageFormat {
 
     private Integer CRCSize;
 
+    // 称重等待最大时间（单位：s）
+    private Integer weightWaitTime;
+
 }

@@ -13,6 +13,7 @@ import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSender;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
 import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
+import com.yuntun.sanitationkitchen.weight.propertise.TrashDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
@@ -31,7 +32,6 @@ import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * JT808协议
@@ -40,6 +40,8 @@ import java.util.stream.IntStream;
 public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandlerAdapter {
 
     public static CommonService myService = SpringUtil.getBean(CommonService.class);
+
+    public static TrashDataPackageFormat trashDataPackageFormat = SpringUtil.getBean(TrashDataPackageFormat.class);
 
     public static UDCDataUtil udcDataUtil = SpringUtil.getBean(UDCDataUtil.class);
 
@@ -149,7 +151,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     System.out.println("rfidType:"+rfidType);
 
                     // 司机
-                    if (rfidType == myService.DRIVER) {
+                    if (CommonService.DRIVER.equals(rfidType)) {
                         // 垃圾桶小票机信息
                         TicketBill ticketBill = myService.getTrashTicketBill(epc);
                         ticketBill.setCardNo(deviceNumber);
@@ -161,7 +163,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     }
 
                     // 垃圾桶
-                    if (rfidType == myService.TRASH) {
+                    if (CommonService.TRASH.equals(rfidType)) {
                         // 存储垃圾桶的epc
                         RedisUtils.setValue(deviceNumber+"trashCanEPC", epc);
                         System.out.println("deviceNumber为:"+deviceNumber+" 对垃圾桶下发数据采集指令！");
@@ -170,7 +172,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     }
 
                     // 车辆
-                    if (rfidType == myService.VEHICLE) {
+                    if (CommonService.VEHICLE.equals(rfidType)) {
                         // 地磅小票机信息
                         TicketBill ticketBill = myService.getBoundTicketBill(epc);
                         ticketBill.setCardNo(deviceNumber);
@@ -190,7 +192,8 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 if (trashWeight != null) {
                     // 将垃圾桶重量存储到redis,并设置有效时间10s（超过时间后，就算完成称重）
                     RedisUtils.setValue(deviceNumber, "valid");
-                    RedisUtils.expireSeconds(deviceNumber, 10);
+                    Integer weightWaitTime = trashDataPackageFormat.getWeightWaitTime();
+                    RedisUtils.expireSeconds(deviceNumber, weightWaitTime);
                     RedisUtils.listPush(deviceNumber+"weight",trashWeight);
 
                     List<Double> weightList = RedisUtils.listGetAll(deviceNumber + "weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
