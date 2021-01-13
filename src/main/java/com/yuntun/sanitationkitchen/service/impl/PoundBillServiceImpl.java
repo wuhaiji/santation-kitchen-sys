@@ -140,8 +140,12 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
   }
 
   @Override
-  public Integer getDateTotal(PoundBillDto dto) {
-    return poundBillMapper.getDateTotal(dto);
+  public Integer getPoundDateTotal(PoundBillDto dto) {
+    if (poundBillMapper.getPoundDateTotal(dto) != null) {
+      return poundBillMapper.getPoundDateTotal(dto);
+    } else {
+      return 0;
+    }
   }
 
   @Override

@@ -126,7 +126,7 @@
   </select>
 
   <select
-    id="getDateTotal"
+    id="getPoundDateTotal"
     resultType="java.lang.Integer">
     SELECT SUM(net_weight) as total FROM `tb_sk_pound_bill` where create_time
     <if test="dto.beginTime != null">

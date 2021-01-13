@@ -54,15 +54,15 @@ public class PoundBillController {
 
 
   /**
-   * 分页查询地磅磅单
+   * 当天地磅磅单
    *
    * @param poundBillDto
    * @return
    */
   @Limit("data:poundBill:query")
   @RequestMapping("/date")
-  public Result getDateTotal(PoundBillDto poundBillDto) {
-    return Result.ok(iPoundBillService.getDateTotal(poundBillDto));
+  public Result getPoundDateTotal(PoundBillDto poundBillDto) {
+    return Result.ok(iPoundBillService.getPoundDateTotal(poundBillDto));
   }
 
   /**

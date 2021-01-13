@@ -41,5 +41,5 @@ public interface PoundBillMapper extends BaseMapper<PoundBill> {
    * @param poundBillDto
    * @return
    */
-  Integer getDateTotal(@Param("dto") PoundBillDto poundBillDto);
+  Integer getPoundDateTotal(@Param("dto") PoundBillDto poundBillDto);
 }

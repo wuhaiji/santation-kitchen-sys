@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yuntun.sanitationkitchen.mapper.TrashWeightSerialMapper">
+  <select
+    id="getTrashDateTotal"
+    resultType="java.lang.Double">
+    SELECT SUM(weight) as total FROM `tb_sk_trash_weight_serial` where create_time
+    <if test="dto.beginTime != null">
+      between #{dto.beginTime}
+    </if>
+    <if test="dto.endTime != null">
+      and #{dto.endTime}
+    </if>
+  </select>
 
 </mapper>
