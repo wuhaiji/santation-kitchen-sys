@@ -5,6 +5,7 @@ import com.sun.el.stream.Stream;
 import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.model.entity.Driver;
 import com.yuntun.sanitationkitchen.model.entity.TrashCan;
+import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
@@ -27,8 +28,11 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -150,18 +154,6 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                     String rfidType = myService.getRFIDType(epc);
                     System.out.println("rfidType:"+rfidType);
 
-                    // 司机
-                    if (CommonService.DRIVER.equals(rfidType)) {
-                        // 垃圾桶小票机信息
-                        TicketBill ticketBill = myService.getTrashTicketBill(epc);
-                        ticketBill.setCardNo(deviceNumber);
-                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                        System.out.println("ticketBillStr:"+ticketBillStr);
-                        // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
-                        RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBillStr);
-                        RedisUtils.setValue("sk:"+deviceNumber+"_driverEPC", epc);
-                    }
-
                     // 垃圾桶
                     if (CommonService.TRASH.equals(rfidType)) {
                         // 存储垃圾桶的epc
@@ -173,17 +165,31 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                     // 车辆
                     if (CommonService.VEHICLE.equals(rfidType)) {
-                        // 地磅小票机信息
-                        TicketBill ticketBill = myService.getBoundTicketBill(epc);
+                        // 根据车辆EPC，去生成小票机
+                        TicketBill ticketBill = myService.getTicketBillByVehicleEPC(epc);
                         ticketBill.setCardNo(deviceNumber);
-                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                        System.out.println("ticketBillStr:"+ticketBillStr);
+                        System.out.println("ticketBill:"+ticketBill);
                         RedisUtils.setValue("sk:"+deviceNumber+"_vehicleEPC", epc);
-                        RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBillStr);
+                        RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
 
                         // 对地磅下发数据采集指令（读取毛重）
                         System.out.println("deviceNumber:"+deviceNumber+" 对地磅下发数据采集指令！");
                         ctx.write(Unpooled.copiedBuffer(UDCDataHeaderType.BoundCollectOrder));
+                    }
+
+                    // 司机
+                    if (CommonService.DRIVER.equals(rfidType)) {
+                        // 根据司机EPC，去生成小票机
+                        TicketBill ticketBill = myService.getTicketBillByDriverEPC(epc);
+                        ticketBill.setCardNo(deviceNumber);
+
+                        // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
+                        TicketBill redisTicketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+                        if (redisTicketBill != null) {
+                            BeanUtils.copyProperties(redisTicketBill, ticketBill);
+                        }
+                        RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
+                        RedisUtils.setValue("sk:"+deviceNumber+"_driverEPC", epc);
                     }
                 }
 
@@ -205,23 +211,25 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 Double boundWeight = resolve.getBoundWeight();
                 if (boundWeight != null) {
                     RedisUtils.setValue("sk:"+deviceNumber+"_boundWeight", boundWeight);
+                    TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
 
-                    String bill = RedisUtils.getString("sk:"+deviceNumber+"_ticketBill");
-                    TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
                     ticketBill.setWeight(boundWeight+"kg");
-                    String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                    System.out.println("地磅称重结果："+ticketBillStr);
+                    System.out.println("地磅称重结果："+ticketBill);
 
-                    RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBillStr);
+                    RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
 
                 }
-                String redisBoundWeight = RedisUtils.getString("sk:" + deviceNumber + "_boundWeight");
+
+                String redisBoundWeight = RedisUtils.getValue("sk:" + deviceNumber + "_boundWeight").toString();
                 if (redisBoundWeight != null) {
                     // 生成地磅流水
                     String vehicleEPC = RedisUtils.getString("sk:"+deviceNumber + "_vehicleEPC");
                     String driverEPC = RedisUtils.getString("sk:" + deviceNumber + "_driverEPC");
                     if (vehicleEPC != null && driverEPC != null) {
-                        String ticketBillStr = RedisUtils.getString("sk:"+deviceNumber+"_ticketBill");
+                        String driverName = myService.getDriverInfo(driverEPC).getName();
+                        TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+                        ticketBill.setDriverName(driverName);
+                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
                         myService.generatePoundBill(deviceNumber,vehicleEPC,driverEPC,Double.valueOf(redisBoundWeight));
 
                         // 清空此次地磅称重数据
@@ -256,21 +264,23 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                                 .boxed().collect(Collectors.toList());
 
                         Long expire = RedisUtils.getTTl("sk:"+deviceNumber);
-                        String bill = RedisUtils.getString("sk:"+deviceNumber+"_ticketBill");
+
+                        TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                         System.out.println("称重倒计时:"+expire);
-                        System.out.println("bill:"+bill);
+                        System.out.println("bill:"+ticketBill);
 
                         // 当expire = -2，一种是：redis不存在key；一种是：该key过期了
                         if ( expire == -2 ) {
                             System.out.println("垃圾桶集合："+weightList);
+                            // 根据DTU设备号，获取车牌号
+                            String numberPlate = myService.getVehicleByDTU(deviceNumber).getNumberPlate();
+                            ticketBill.setPlateNo(numberPlate);
                             // 获取垃圾桶信息
                             TrashCan trashCanInfo = myService.getTrashCanInfo(trashCanEPC);
                             // 获取司机信息
                             Driver driverInfo = myService.getDriverInfo(driverEPC);
                             // 获取垃圾桶称重结果
                             Double weightResult = myService.getTrashWeight(weightList, trashCanInfo);
-
-                            TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
                             ticketBill.setWeight(weightResult+"kg");
                             String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
 

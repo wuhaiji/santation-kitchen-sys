@@ -35,15 +35,15 @@ public class VehicleGetVo {
 
     private String sanitationOfficeName;
 
-    /**
-     * 司机名称
-     */
-    private String driverName;
-
-    /**
-     * 司机手机号
-     */
-    private String driverPhone;
+//    /**
+//     * 司机名称
+//     */
+//    private String driverName;
+//
+//    /**
+//     * 司机手机号
+//     */
+//    private String driverPhone;
 
     /**
      * 燃油余量

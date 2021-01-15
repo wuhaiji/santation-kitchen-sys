@@ -58,6 +58,9 @@ public class CommonService {
     private DriverMapper driverMapper;
 
     @Autowired
+    private TicketMachineMapper ticketMachineMapper;
+
+    @Autowired
     private UDCDataUtil udcDataUtil;
 
     public static final String DRIVER = "driver";
@@ -67,14 +70,69 @@ public class CommonService {
     public static final String TRASH = "trash";
 
     /**
-     * 根据rfid的epc号查询
+     * 根据dtu的设备号查询
+     * 获取车辆信息
+     *
+     * @return
+     */
+    public Vehicle getVehicleByDTU(String deviceNumber) {
+        // 根据DTU设备号查询小票机信息
+        TicketMachine ticketMachine = getTicketMachineByDTU(deviceNumber);
+        // 根据小票机的唯一编号，去获取车辆信息
+        // 唯一编号（两种情况）：
+        // * 1.对应车辆表的rfid
+        // * 2.对应地磅表的net_device_code
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().
+                eq(Vehicle::getRfid, ticketMachine.getUniqueCode()));
+        if (vehicle == null) {
+            log.error("车辆的rfid无效！");
+            throw new ServiceException("车辆的rfid无效！");
+        }
+        return vehicle;
+    }
+
+    /**
+     * 根据dtu的设备号查询
+     * 获取小票机信息
+     *
+     * @return
+     */
+    public TicketMachine getTicketMachineByDTU(String deviceNumber) {
+        // 根据DTU设备号查询小票机信息
+        TicketMachine ticketMachine = ticketMachineMapper.selectOne(new QueryWrapper<TicketMachine>().lambda().
+                eq(TicketMachine::getNetDeviceCode, deviceNumber));
+        if (ticketMachine == null) {
+            log.error("小票机的网络设备编号无效！");
+            throw new ServiceException("小票机的网络设备编号无效！");
+        }
+        return ticketMachine;
+    }
+
+    /**
+     * 根据dtu的设备号查询
+     * 获取地磅信息
+     *
+     * @return
+     */
+    public Weighbridge getWeighbridgeByDTU(String deviceNumber) {
+        // 获取地磅信息
+        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().lambda().eq(Weighbridge::getNetDeviceCode, deviceNumber));
+        if (weighbridge == null) {
+            log.error("地磅表中的网络设备编号无效！");
+            throw new ServiceException("地磅表中的网络设备编号无效！");
+        }
+        return weighbridge;
+    }
+
+    /**
+     * 根据司机rfid的epc号查询
      * 获取司机信息
      *
      * @return
      */
-    public Driver getDriverInfo(String epc) {
+    public Driver getDriverInfo(String driverEPC) {
         // 获取垃圾桶信息
-        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(epc != null, Driver::getRfid, epc));
+        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(driverEPC != null, Driver::getRfid, driverEPC));
         if (driver == null) {
             log.error("司机的RFID无效！");
             throw new ServiceException("司机的RFID无效！");
@@ -83,14 +141,14 @@ public class CommonService {
     }
 
     /**
-     * 根据rfid的epc号查询
+     * 根据垃圾桶rfid的epc号查询
      * 获取垃圾桶信息
      *
      * @return
      */
-    public TrashCan getTrashCanInfo(String epc) {
+    public TrashCan getTrashCanInfo(String trashCanEPC) {
         // 获取垃圾桶信息
-        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().eq(epc != null, TrashCan::getRfid, epc));
+        TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().eq(trashCanEPC != null, TrashCan::getRfid, trashCanEPC));
         if (trashCan == null) {
             log.error("垃圾桶的RFID无效！");
             throw new ServiceException("垃圾桶的RFID无效！");
@@ -104,30 +162,14 @@ public class CommonService {
      *
      * @return
      */
-    public Vehicle getVehicleInfo(String epc) {
+    public Vehicle getVehicleInfo(String vehicleEPC) {
         // 获取垃圾桶信息
-        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, vehicleEPC));
         if (vehicle == null) {
             log.error("车辆的RFID无效！");
             throw new ServiceException("车辆的RFID无效！");
         }
         return vehicle;
-    }
-
-    /**
-     * 根据dtu的设备号查询
-     * 获取地磅信息
-     *
-     * @return
-     */
-    public Weighbridge getWeighbridgeInfo(String deviceNumber) {
-        // 获取地磅信息
-        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().eq("facility_code", deviceNumber));
-        if (weighbridge == null) {
-            log.error("地磅表中的设备编号无效！");
-            throw new ServiceException("地磅表中的设备编号无效！");
-        }
-        return weighbridge;
     }
 
     /**
@@ -161,26 +203,23 @@ public class CommonService {
         return epc;
     }
 
-    public TicketBill getTrashTicketBill(String epc) {
-        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
-        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getDriverName, driver.getName()).
-                eq(Vehicle::getDriverPhone, driver.getPhone()));
+    // 根据司机EPC，去生成小票机
+    public TicketBill getTicketBillByDriverEPC(String driverEPC) {
+        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, driverEPC));
         TicketBill ticketBill = new TicketBill();
         ticketBill.setDriverName(driver.getName());
-        ticketBill.setPlateNo(vehicle.getNumberPlate());
         ticketBill.setTime(LocalDateTime.now());
         return ticketBill;
     }
 
-    public TicketBill getBoundTicketBill(String epc) {
-        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, epc));
+    // 根据车辆EPC，去生成小票机
+    public TicketBill getTicketBillByVehicleEPC(String vehicleEPC) {
+        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, vehicleEPC));
         TicketBill ticketBill = new TicketBill();
-        ticketBill.setDriverName(vehicle.getDriverName());
         ticketBill.setPlateNo(vehicle.getNumberPlate());
         ticketBill.setTime(LocalDateTime.now());
         return ticketBill;
     }
-
 
     public SKDataBody resolve(byte[] dataBody) {
         System.out.println("开始解析数据！...resolve");
@@ -197,8 +236,6 @@ public class CommonService {
         return skDataBody;
     }
 
-
-
     // 生成榜单
     public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) {
         PoundBill poundBill = new PoundBill();
@@ -210,13 +247,8 @@ public class CommonService {
         poundBill.setSerialCode(vehicleInfo.getNumberPlate()+"-"+format);
 
         // 获取所属机构信息
-        // 根据地磅的设备号去查询地磅所属机构信息
-        Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().select("sanitation_office_id").
-                eq("net_device_code", deviceNumber));
-        if (weighbridge == null) {
-            log.error("地磅表中的网络设备编号无效！");
-            throw new ServiceException("地磅表中的网络设备编号无效！");
-        }
+        // 根据地磅的网络设备编号去查询地磅所属机构信息
+        Weighbridge weighbridge = getWeighbridgeByDTU(deviceNumber);
         SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("uid", "name").
                 eq("uid", weighbridge.getSanitationOfficeId()));
         if (sanitationOffice == null) {
@@ -231,8 +263,7 @@ public class CommonService {
         poundBill.setNumberPlate(vehicleInfo.getNumberPlate());
 
         // 获取司机信息
-        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().select("rfid", "name").
-                eq("rfid", driverEPC));
+        Driver driver = getDriverInfo(driverEPC);
         poundBill.setDriverRfid(driver.getRfid());
         poundBill.setDriverName(driver.getName());
 
