@@ -1,8 +1,10 @@
 package com.yuntun.sanitationkitchen.weight.mqtt.config;
 
+import com.yuntun.sanitationkitchen.properties.MqttProperties;
 import com.yuntun.sanitationkitchen.weight.mqtt.MqttSender;
 import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,16 +28,10 @@ import java.util.UUID;
 @Configuration
 public class MqttConfig {
 
-    @Value("${mqtt.host}")
-    private String host;
+    @Autowired
+    MqttProperties mqttProperties;
 
-    @Value("${mqtt.username}")
-    private String username;
-
-    @Value("${mqtt.password}")
-    private String password;
-
-    private String clientIdPrefix= UUID.randomUUID().toString();
+    private final String clientIdPrefix= UUID.randomUUID().toString();
 
 
 /*-------------------------------------客户端工厂----------------------------------------*/
@@ -43,9 +39,9 @@ public class MqttConfig {
     @Bean
     public MqttConnectOptions mqttConnectOptions(){
         MqttConnectOptions mqttConnectOptions=new MqttConnectOptions();
-        mqttConnectOptions.setServerURIs(new String[]{host});
-        mqttConnectOptions.setUserName(username);
-        mqttConnectOptions.setPassword(password.toCharArray());
+        mqttConnectOptions.setServerURIs(new String[]{mqttProperties.getHost()});
+        mqttConnectOptions.setUserName(mqttProperties.getUsername());
+        mqttConnectOptions.setPassword(mqttProperties.getPassword().toCharArray());
         // 2秒
         mqttConnectOptions.setKeepAliveInterval(2);
         // 超时时间

@@ -14,18 +14,10 @@ spring:
   application:
     name: calendar_sys
   jackson:
-    #    time-zone: GMT+8
-    #    date-format: yyyy-MM-dd HH:mm:ss
     # springboot响应json null值过滤
     default-property-inclusion: non_null
     generator:
       write_numbers_as_strings: true
-    # 对前台传过来的json做日期处理
-  #    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-  #    time-zone: GMT+8
-  #    local-date-time-format: yyyy-MM-dd HH:mm:ss
-  #    local-date-format: yyyy-MM-dd
-  #    local-time-format: HH:mm:ss
   # 数据库
   datasource:
     username: root
@@ -70,6 +62,7 @@ mqtt:
   host: tcp://192.168.0.108:1883
   username: xxx
   password: xxx
+
 lyy:
   api:
     authIp: http://120.77.112.76:6809
