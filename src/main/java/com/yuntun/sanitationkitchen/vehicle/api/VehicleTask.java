@@ -34,7 +34,6 @@ public class VehicleTask implements ScheduledTask {
 
     @Override
     public void execute() {
-
         List<Vehicle> vehicles = iVehicleService.list();
         List<String> vehiclePates = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
         List<VehicleRealtimeStatusAdasDto> realtimeStatuses = iVehicle.ListVehicleRealtimeStatusByPlates(vehiclePates);
