@@ -21,5 +21,5 @@ public interface ITrashWeightSerialService extends IService<TrashWeightSerial> {
    */
   Double getTrashDateTotal(TrashWeightSerialDto dto);
 
-  Integer countCurrentWeight(TrashWeightSerialDto dto);
+  Double countCurrentWeight(TrashWeightSerialDto dto);
 }

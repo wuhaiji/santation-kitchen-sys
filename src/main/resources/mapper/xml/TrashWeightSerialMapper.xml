@@ -5,10 +5,10 @@
   <sql id="query">
     <if test="dto != null">
       <if test="dto.rfid != null and dto.rfid != '' ">
-        and t.rfid = #{dto.rfid}
+        and t.trash_can_rfid = #{dto.rfid}
       </if>
       <if test="dto.code != null ">
-        and t.code = #{dto.code}
+        and t.facility_code = #{dto.code}
       </if>
       <if test="dto.restaurantName != null">
         and t.restaurant_name = #{dto.restaurantName}
@@ -37,7 +37,7 @@
     </if>
   </select>
 
-  <select id="countCurrentWeight" resultType="java.lang.Integer">
+  <select id="countCurrentWeight" resultType="java.lang.Double">
     SELECT SUM(weight) as total FROM `tb_sk_trash_weight_serial` t
     <where>
       <include refid="query"/>
