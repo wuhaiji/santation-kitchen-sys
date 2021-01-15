@@ -2,6 +2,7 @@ package com.yuntun.sanitationkitchen.controller;
 
 
 import cn.hutool.core.date.LocalDateTimeUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
@@ -158,7 +159,7 @@ public class VehicleController {
             if (vehicleVideoDto != null) {
                 BeanUtils.copyProperties(vehicleVideoDto, vehicleVideoListVo);
             }
-            vehicleVideoListVo.setDriverName(i.getDriverName()).setDriverPhone(i.getDriverPhone()).setPlate(i.getNumberPlate());
+            vehicleVideoListVo.setPlate(i.getNumberPlate());
             return vehicleVideoListVo;
         }).collect(Collectors.toList());
 
