@@ -42,4 +42,12 @@ public interface PoundBillMapper extends BaseMapper<PoundBill> {
    * @return
    */
   Integer getPoundDateTotal(@Param("dto") PoundBillDto poundBillDto);
+
+  /**
+   * 根据条件，查询垃圾重量
+   *
+   * @param dto
+   * @return
+   */
+  Integer countCurrentWeight(@Param("dto") PoundBillDto dto);
 }

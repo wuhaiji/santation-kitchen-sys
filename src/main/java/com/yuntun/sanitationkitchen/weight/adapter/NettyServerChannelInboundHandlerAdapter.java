@@ -204,22 +204,36 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 // 地磅车辆重量
                 Double boundWeight = resolve.getBoundWeight();
                 if (boundWeight != null) {
+                    RedisUtils.setValue("sk:"+deviceNumber+"_boundWeight", boundWeight);
+
                     String bill = RedisUtils.getString("sk:"+deviceNumber+"_ticketBill");
                     TicketBill ticketBill = JSONObject.parseObject(bill, TicketBill.class);
                     ticketBill.setWeight(boundWeight+"kg");
-                    System.out.println("小票机打印地磅称重结果："+ticketBill);
                     String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
+                    System.out.println("地磅称重结果："+ticketBillStr);
 
+                    RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBillStr);
+
+                }
+                String redisBoundWeight = RedisUtils.getString("sk:" + deviceNumber + "_boundWeight");
+                if (redisBoundWeight != null) {
                     // 生成地磅流水
                     String vehicleEPC = RedisUtils.getString("sk:"+deviceNumber + "_vehicleEPC");
-                    myService.generatePoundBill(deviceNumber,vehicleEPC,boundWeight);
+                    String driverEPC = RedisUtils.getString("sk:" + deviceNumber + "_driverEPC");
+                    if (vehicleEPC != null && driverEPC != null) {
+                        String ticketBillStr = RedisUtils.getString("sk:"+deviceNumber+"_ticketBill");
+                        myService.generatePoundBill(deviceNumber,vehicleEPC,driverEPC,Double.valueOf(redisBoundWeight));
 
-                    // 清空此次地磅称重数据
-                    RedisUtils.delKey("sk:"+deviceNumber+"_vehicleEPC");
-                    RedisUtils.delKey("sk:"+deviceNumber+"_ticketBill");
+                        // 清空此次地磅称重数据
+                        RedisUtils.delKey("sk:"+deviceNumber+"_vehicleEPC");
+                        RedisUtils.delKey("sk:"+deviceNumber+"_driverEPC");
+                        RedisUtils.delKey("sk:"+deviceNumber+"_ticketBill");
+                        RedisUtils.delKey("sk:" + deviceNumber + "_boundWeight");
 
-                    // 发送打印小票机请求
-                    MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+                        // 发送打印小票机请求
+                        MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+                    }
+
                 }
 
                 ScheduledFuture future = task.get(deviceNumber);

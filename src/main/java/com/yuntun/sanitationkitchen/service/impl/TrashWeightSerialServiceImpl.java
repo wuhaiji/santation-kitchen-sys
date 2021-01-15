@@ -31,4 +31,14 @@ public class TrashWeightSerialServiceImpl extends ServiceImpl<TrashWeightSerialM
     }
   }
 
+  @Override
+  public Integer countCurrentWeight(TrashWeightSerialDto dto) {
+    Integer total = weightSerialMapper.countCurrentWeight(dto);
+    if (total != null) {
+      return total;
+    } else {
+      return 0;
+    }
+  }
+
 }

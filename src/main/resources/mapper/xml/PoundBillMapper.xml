@@ -13,6 +13,9 @@
       <if test="dto.sanitationOfficeId != null">
         and t.sanitation_office_id = #{dto.sanitationOfficeId}
       </if>
+      <if test="dto.driverName != null">
+        and t.driver_name = #{dto.driverName}
+      </if>
       <if test="dto.beginTime != null">
         and t.create_time &gt; #{dto.beginTime}
       </if>
@@ -143,5 +146,12 @@
     select count(*) from tb_sk_pound_bill t
     where 1
     <include refid="query"/>
+  </select>
+
+  <select id="countCurrentWeight" resultType="java.lang.Integer">
+    SELECT SUM(net_weight) as total FROM `tb_sk_pound_bill` t
+    <where>
+      <include refid="query"/>
+    </where>
   </select>
 </mapper>

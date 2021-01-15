@@ -200,7 +200,7 @@ public class CommonService {
 
 
     // 生成榜单
-    public void generatePoundBill (String deviceNumber, String vehicleEPC, Double boundWeight) {
+    public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) {
         PoundBill poundBill = new PoundBill();
 
         Vehicle vehicleInfo = getVehicleInfo(vehicleEPC);
@@ -230,11 +230,11 @@ public class CommonService {
         poundBill.setVehicleId(vehicleInfo.getUid());
         poundBill.setNumberPlate(vehicleInfo.getNumberPlate());
 
-//        // 获取司机信息
-//        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().select("rfid", "name").
-//                eq("name", vehicleInfo.getDriverName()).eq("phone", vehicleInfo.getDriverPhone()));
-//        poundBill.setDriverRfid(driver.getRfid());
-//        poundBill.setDriverName(driver.getName());
+        // 获取司机信息
+        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().select("rfid", "name").
+                eq("rfid", driverEPC));
+        poundBill.setDriverRfid(driver.getRfid());
+        poundBill.setDriverName(driver.getName());
 
         // 获取毛重(单位：kg)
         poundBill.setGrossWeight(boundWeight);

@@ -8,7 +8,7 @@ trash-can-serial:
     - 垃圾桶编号
     - 餐馆名称
     - 司机名称
-    - 重量
+    - 重量（kg）
     - 创建时间
   columns:
     - number
