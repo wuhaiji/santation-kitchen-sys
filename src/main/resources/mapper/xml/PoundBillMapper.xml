@@ -2,88 +2,146 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yuntun.sanitationkitchen.mapper.PoundBillMapper">
 
-    <sql id="query">
-        <if test="dto != null">
-            <if test="dto.serialCode != null and dto.serialCode != '' ">
-                and t.serial_code = #{dto.serialCode}
-            </if>
-            <if test="dto.vehicleId != null ">
-                and t.vehicle_id = #{dto.vehicleId}
-            </if>
-            <if test="dto.sanitationOfficeId != null">
-                and t.sanitation_office_id = #{dto.sanitationOfficeId}
-            </if>
-            <if test="dto.beginTime != null">
-                and t.create_time &gt; #{dto.beginTime}
-            </if>
-            <if test="dto.endTime != null">
-                and t.create_time &lt; #{dto.endTime}
-            </if>
-        </if>
-    </sql>
+  <sql id="query">
+    <if test="dto != null">
+      <if test="dto.serialCode != null and dto.serialCode != '' ">
+        and t.serial_code = #{dto.serialCode}
+      </if>
+      <if test="dto.vehicleId != null ">
+        and t.vehicle_id = #{dto.vehicleId}
+      </if>
+      <if test="dto.sanitationOfficeId != null">
+        and t.sanitation_office_id = #{dto.sanitationOfficeId}
+      </if>
+      <if test="dto.beginTime != null">
+        and t.create_time &gt; #{dto.beginTime}
+      </if>
+      <if test="dto.endTime != null">
+        and t.create_time &lt; #{dto.endTime}
+      </if>
+    </if>
+  </sql>
 
-    <resultMap id="joinType" type="com.yuntun.sanitationkitchen.bean.PoundBillBean">
-        <id column="id" property="id"/>
-        <result column="uid" property="uid"/>
-        <result column="serial_code" property="serialCode"/>
-        <result column="sanitation_office_id" property="sanitationOfficeId"/>
-        <result column="sanitation_office_name" property="sanitationOfficeName"/>
-        <result column="number_plate" property="numberPlate"/>
-        <result column="vehicle_id" property="vehicleId"/>
-        <result column="trash_can_id" property="trashCanId"/>
-        <result column="trash_can_code" property="trashCanCode"/>
-        <result column="gross_weight" property="grossWeight"/>
-        <result column="tare" property="tare"/>
-        <result column="net_weight" property="netWeight"/>
-        <result column="create_time" property="createTime"/>
-        <!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 -->
-        <collection property="trashWeightSerials" ofType="com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial" columnPrefix="d_">
-            <id column="id" property="id"/>
-            <result column="serial_code" property="serialCode"/>
-            <result column="trash_can_rfid" property="trashCanRfid"/>
-            <result column="facility_code" property="facilityCode"/>
-            <result column="weight" property="weight"/>
-        </collection>
-    </resultMap>
 
-    <select id="listPoundBill" resultMap="joinType" >
-        select
-        t.id,
-        t.uid,
-        t.serial_code,
-        t.sanitation_office_id,
-        t.sanitation_office_name,
-        t.number_plate,
-        t.vehicle_id,
-        t.trash_can_id,
-        t.trash_can_code,
-        t.gross_weight,
-        t.tare,
-        t.net_weight,
-        t.create_time,
-        d.id d_id,
-        d.serial_code d_serial_code,
-        d.trash_can_rfid d_trash_can_rfid,
-        d.facility_code d_facility_code,
-        d.weight d_weight
-        from
-        (
-            select * from tb_sk_pound_bill t
-            where 1
-            <include refid="query"/>
-            order by create_time desc
+  <resultMap
+    id="joinType"
+    type="com.yuntun.sanitationkitchen.bean.PoundBillBean">
+    <id
+      column="id"
+      property="id"/>
+    <result
+      column="uid"
+      property="uid"/>
+    <result
+      column="serial_code"
+      property="serialCode"/>
+    <result
+      column="sanitation_office_id"
+      property="sanitationOfficeId"/>
+    <result
+      column="sanitation_office_name"
+      property="sanitationOfficeName"/>
+    <result
+      column="number_plate"
+      property="numberPlate"/>
+    <result
+      column="vehicle_id"
+      property="vehicleId"/>
+    <result
+      column="trash_can_id"
+      property="trashCanId"/>
+    <result
+      column="trash_can_code"
+      property="trashCanCode"/>
+    <result
+      column="gross_weight"
+      property="grossWeight"/>
+    <result
+      column="tare"
+      property="tare"/>
+    <result
+      column="net_weight"
+      property="netWeight"/>
+    <result
+      column="create_time"
+      property="createTime"/>
+    <!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 -->
+    <collection
+      property="trashWeightSerials"
+      ofType="com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial"
+      columnPrefix="d_">
+      <id
+        column="id"
+        property="id"/>
+      <result
+        column="serial_code"
+        property="serialCode"/>
+      <result
+        column="trash_can_rfid"
+        property="trashCanRfid"/>
+      <result
+        column="facility_code"
+        property="facilityCode"/>
+      <result
+        column="weight"
+        property="weight"/>
+    </collection>
+  </resultMap>
 
-            <if test="dto.pageNo != null and dto.pageSize != null">
-                limit ${(dto.pageNo - 1) * dto.pageSize}, #{dto.pageSize}
+  <select
+    id="listPoundBill"
+    resultMap="joinType">
+    select
+    t.id,
+    t.uid,
+    t.serial_code,
+    t.sanitation_office_id,
+    t.sanitation_office_name,
+    t.number_plate,
+    t.vehicle_id,
+    t.trash_can_id,
+    t.trash_can_code,
+    t.gross_weight,
+    t.tare,
+    t.net_weight,
+    t.create_time,
+    d.id d_id,
+    d.serial_code d_serial_code,
+    d.trash_can_rfid d_trash_can_rfid,
+    d.facility_code d_facility_code,
+    d.weight d_weight
+    from
+    (
+    select * from tb_sk_pound_bill t
+    where 1
+    <include refid="query"/>
+    order by create_time desc
 
-            </if>
-        ) t
-        left join tb_sk_trash_weight_serial d on t.serial_code=d.serial_code
-    </select>
+    <if test="dto.pageNo != null and dto.pageSize != null">
+      limit ${(dto.pageNo - 1) * dto.pageSize}, #{dto.pageSize}
 
-    <select id="countPoundBill" resultType="java.lang.Long">
-        select count(*) from tb_sk_pound_bill t
-        where 1
-        <include refid="query"/>
-    </select>
+    </if>
+    ) t
+    left join tb_sk_trash_weight_serial d on t.serial_code=d.serial_code
+  </select>
+
+  <select
+    id="getPoundDateTotal"
+    resultType="java.lang.Integer">
+    SELECT SUM(net_weight) as total FROM `tb_sk_pound_bill` where create_time
+    <if test="dto.beginTime != null">
+      between #{dto.beginTime}
+    </if>
+    <if test="dto.endTime != null">
+      and #{dto.endTime}
+    </if>
+  </select>
+
+  <select
+    id="countPoundBill"
+    resultType="java.lang.Long">
+    select count(*) from tb_sk_pound_bill t
+    where 1
+    <include refid="query"/>
+  </select>
 </mapper>

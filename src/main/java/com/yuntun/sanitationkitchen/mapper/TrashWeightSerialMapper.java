@@ -1,7 +1,9 @@
 package com.yuntun.sanitationkitchen.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yuntun.sanitationkitchen.model.dto.TrashWeightSerialDto;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
+import org.apache.ibatis.annotations.Param;
 
 
 /**
@@ -14,4 +16,9 @@ import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
  */
 public interface TrashWeightSerialMapper extends BaseMapper<TrashWeightSerial> {
 
+  /**
+   * @param dto
+   * @return
+   */
+  Double getTrashDateTotal(@Param("dto") TrashWeightSerialDto dto);
 }

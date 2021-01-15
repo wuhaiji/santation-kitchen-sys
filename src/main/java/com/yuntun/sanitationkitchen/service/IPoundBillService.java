@@ -31,7 +31,15 @@ public interface IPoundBillService extends IService<PoundBill> {
      */
     RowData<PoundBill> pagePoundBill(PoundBillDto poundBillDto);
 
-    void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
+  /**
+   * 单日磅单总量
+   * @param poundBillDto
+   */
+
+   Integer getPoundDateTotal(PoundBillDto poundBillDto);
+
+
+  void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
 
 
 }

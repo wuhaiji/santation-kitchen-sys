@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yuntun.sanitationkitchen.model.dto.TrashWeightSerialDto;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
 
 /**
@@ -13,4 +14,10 @@ import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
  */
 public interface ITrashWeightSerialService extends IService<TrashWeightSerial> {
 
+  /**
+   * 单日垃圾桶总量
+   * @param dto
+   * @return
+   */
+  Double getTrashDateTotal(TrashWeightSerialDto dto);
 }
