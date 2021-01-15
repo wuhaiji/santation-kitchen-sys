@@ -39,12 +39,8 @@ public class TicketMachineDto extends BasePageDto {
   private Long sanitationOfficeId;
 
   /**
-   * 设备所属机构名
-   */
-//    private String sanitationOfficeName;
-
-  /**
    * 网络设备编号（特指DTU编号,最大11位---sim卡号）
+   * 设备卡号
    * SIM卡号（小票机绑定SIM卡号）
    */
   private String netDeviceCode;

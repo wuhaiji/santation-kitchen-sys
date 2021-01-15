@@ -51,6 +51,17 @@ public class PoundBillVo extends BasePageDto {
     private Long vehicleId;
 
     /**
+     * 司机rfid
+     */
+    private String driverRfid;
+
+
+    /**
+     * 司机名称
+     */
+    private String driverName;
+
+    /**
      * 垃圾箱
      */
     private Long trashCanId;

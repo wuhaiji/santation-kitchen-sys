@@ -31,6 +31,8 @@ public interface IPoundBillService extends IService<PoundBill> {
      */
     RowData<PoundBill> pagePoundBill(PoundBillDto poundBillDto);
 
+    Integer countCurrentWeight(PoundBillDto poundBillDto);
+
   /**
    * 单日磅单总量
    * @param poundBillDto
@@ -40,6 +42,4 @@ public interface IPoundBillService extends IService<PoundBill> {
 
 
   void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
-
-
 }

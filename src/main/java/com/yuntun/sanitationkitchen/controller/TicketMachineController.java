@@ -74,6 +74,8 @@ public class TicketMachineController {
     public Result save(@RequestBody TicketMachineDto ticketMachineDto) {
         ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceCode(), 2, 30, "设备编号");
+        ErrorUtil.notPhoneFormat(ticketMachineDto.getNetDeviceCode(), "设备卡号");
+
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceName(), 2, 30, "设备名称");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");
@@ -95,6 +97,8 @@ public class TicketMachineController {
         ErrorUtil.isObjectNullContent(ticketMachineDto, "小票机信息");
         ErrorUtil.isObjectNull(ticketMachineDto.getUid(), "uid");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceCode(), 2, 30, "设备编号");
+        ErrorUtil.notPhoneFormat(ticketMachineDto.getNetDeviceCode(), "设备卡号");
+
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getDeviceName(), 2, 30, "设备名称");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getBrand(), 2, 30, "品牌");
         ErrorUtil.isStringLengthOutOfRange(ticketMachineDto.getModel(), 2, 30, "型号");

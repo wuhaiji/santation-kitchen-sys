@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.PoundBillCode;
+import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.dto.TrashWeightSerialDto;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
 import com.yuntun.sanitationkitchen.model.response.Result;
@@ -62,6 +63,18 @@ public class TrashWeightSerialController {
         .setTotal(page.getTotal());
 
     return Result.ok(pageBean);
+  }
+
+  /**
+   * 根据查询条件，统计垃圾重量
+   *
+   * @param dto
+   * @return
+   */
+  @Limit("data:poundBill:query")
+  @RequestMapping("/count/current/weight")
+  public Result countCurrentWeight(TrashWeightSerialDto dto) {
+    return Result.ok(trashWeightSerialService.countCurrentWeight(dto));
   }
 
   /**

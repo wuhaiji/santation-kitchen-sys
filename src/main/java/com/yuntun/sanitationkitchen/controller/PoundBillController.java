@@ -52,6 +52,18 @@ public class PoundBillController {
     //return Result.ok(iPoundBillService.findPoundBillList(poundBillDto));
   }
 
+  /**
+   * 根据查询条件，统计垃圾重量
+   *
+   * @param poundBillDto
+   * @return
+   */
+  @Limit("data:poundBill:query")
+  @RequestMapping("/count/current/weight")
+  public Result countCurrentWeight(PoundBillDto poundBillDto) {
+    return Result.ok(iPoundBillService.countCurrentWeight(poundBillDto));
+  }
+
 
   /**
    * 当天地磅磅单

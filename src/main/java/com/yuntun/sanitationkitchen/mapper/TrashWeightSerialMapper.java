@@ -21,4 +21,6 @@ public interface TrashWeightSerialMapper extends BaseMapper<TrashWeightSerial> {
    * @return
    */
   Double getTrashDateTotal(@Param("dto") TrashWeightSerialDto dto);
+
+  Double countCurrentWeight(@Param("dto") TrashWeightSerialDto dto);
 }

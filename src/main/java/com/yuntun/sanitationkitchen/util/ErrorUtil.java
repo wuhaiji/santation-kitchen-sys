@@ -21,7 +21,7 @@ public class ErrorUtil {
     /**
      * 手机号格式
      */
-    private static final String PHONE_REGEX="^1[0-9]{10}$";
+    private static final String PHONE_REGEX="^1[3-9]\\d{9}$";
 
     /**
      * 验证手机号是否合法
@@ -35,9 +35,20 @@ public class ErrorUtil {
     }
 
     /**
-     *
-     * Latitude:纬度
-     * Longitude:经度
+     * 验证手机号是否合法
+     * 长度在2-16之间
+     * @param obj   目标字符串
+     */
+    public static void notPhoneFormat(String obj, String msg) {
+        if (!obj.matches(PHONE_REGEX) ){
+            throw new ServiceException("PARAM_ERROR", "输入的" + msg + "不合法!");
+        }
+    }
+
+    /**
+     * @author wujihong
+     * @param latitude:纬度
+     * @param longitude:经度
      */
     public static void verifyLatitudeAndLongitude(Double longitude, Double latitude) {
         if (longitude != null && latitude != null) {
@@ -232,6 +243,23 @@ public class ErrorUtil {
             throw new ServiceException("PARAM_ERROR", msg + "不能为空");
         }
         if (integer <= i) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能小于等于" + i);
+        }
+    }
+
+    /**
+     * 异常检查，目标数值不能小于等于给定值
+     *
+     * @author wujihong
+     * @param number 目标数值
+     * @param i       给定值
+     * @param msg     异常信息
+     */
+    public static void isNumberValue(Number number, int i, String msg) {
+        if (number == null) {
+            throw new ServiceException("PARAM_ERROR", msg + "不能为空");
+        }
+        if (number.doubleValue() <= i) {
             throw new ServiceException("PARAM_ERROR", msg + "不能小于等于" + i);
         }
     }

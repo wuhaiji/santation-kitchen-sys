@@ -78,12 +78,13 @@ public class TrashCanController {
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getRfid(), 2, 30, "RFID");
         ErrorUtil.isObjectNull(trashCanDto.getRestaurantId(), "所属机构");
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getAddress(), 2, 30, "地址");
-        ErrorUtil.isObjectNull(trashCanDto.getWeight(), "垃圾桶皮重");
-        ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
+        ErrorUtil.isNumberValue(trashCanDto.getWeight(), 0,"垃圾桶皮重");
+        ErrorUtil.isNumberValue(trashCanDto.getCapacity(), 0,"容量");
+
         ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getManufacturer(), 2, 30, "生产厂家");
         ErrorUtil.isObjectNull(trashCanDto.getManufacturer(), "联系人");
-        ErrorUtil.notIllegalPhone(trashCanDto.getContactPersonPhone());
+        ErrorUtil.notPhoneFormat(trashCanDto.getContactPersonPhone(), "联系人电话");
         return Result.ok(iTrashCanService.insertTrashCan(trashCanDto));
     }
 
@@ -103,13 +104,14 @@ public class TrashCanController {
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getRfid(), 2, 30, "RFID");
         ErrorUtil.isObjectNull(trashCanDto.getRestaurantId(), "所属机构");
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getAddress(), 2, 30, "地址");
-        ErrorUtil.isObjectNull(trashCanDto.getWeight(), "垃圾桶皮重");
-        ErrorUtil.isObjectNull(trashCanDto.getCapacity(), "容量");
+        ErrorUtil.isNumberValue(trashCanDto.getWeight(), 0,"垃圾桶皮重");
+        ErrorUtil.isNumberValue(trashCanDto.getCapacity(), 0,"容量");
+
         ErrorUtil.isObjectNull(trashCanDto.getCreateTime(), "创建时间");
         ErrorUtil.verifyLatitudeAndLongitude(trashCanDto.getLongitude(), trashCanDto.getLatitude());
         ErrorUtil.isStringLengthOutOfRange(trashCanDto.getManufacturer(), 2, 30, "生产厂家");
         ErrorUtil.isObjectNull(trashCanDto.getManufacturer(), "联系人");
-        ErrorUtil.notIllegalPhone(trashCanDto.getContactPersonPhone());
+        ErrorUtil.notPhoneFormat(trashCanDto.getContactPersonPhone(), "联系人电话");
         return Result.ok(iTrashCanService.updateTrashCan(trashCanDto));
     }
 

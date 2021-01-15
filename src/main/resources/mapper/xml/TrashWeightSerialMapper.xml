@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yuntun.sanitationkitchen.mapper.TrashWeightSerialMapper">
+
+  <sql id="query">
+    <if test="dto != null">
+      <if test="dto.rfid != null and dto.rfid != '' ">
+        and t.trash_can_rfid = #{dto.rfid}
+      </if>
+      <if test="dto.code != null ">
+        and t.facility_code = #{dto.code}
+      </if>
+      <if test="dto.restaurantName != null">
+        and t.restaurant_name = #{dto.restaurantName}
+      </if>
+      <if test="dto.driverName != null">
+        and t.driver_name = #{dto.driverName}
+      </if>
+      <if test="dto.beginTime != null">
+        and t.create_time &gt; #{dto.beginTime}
+      </if>
+      <if test="dto.endTime != null">
+        and t.create_time &lt; #{dto.endTime}
+      </if>
+    </if>
+  </sql>
+
   <select
     id="getTrashDateTotal"
     resultType="java.lang.Double">
@@ -11,6 +35,13 @@
     <if test="dto.endTime != null">
       and #{dto.endTime}
     </if>
+  </select>
+
+  <select id="countCurrentWeight" resultType="java.lang.Double">
+    SELECT SUM(weight) as total FROM `tb_sk_trash_weight_serial` t
+    <where>
+      <include refid="query"/>
+    </where>
   </select>
 
 </mapper>
