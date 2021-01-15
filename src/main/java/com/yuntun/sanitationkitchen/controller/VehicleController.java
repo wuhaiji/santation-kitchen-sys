@@ -94,8 +94,6 @@ public class VehicleController {
             vehicleRealtimeStatusAdasDtoList = iVehicle
                     .ListVehicleRealtimeStatusByPlates(plateNos);
         }
-        log.info("车辆实时状态列表：{}", vehicleRealtimeStatusAdasDtoList);
-
         //查询所属单位名称
         List<Long> sanitationOfficeIds = records.parallelStream().map(Vehicle::getSanitationOfficeId).collect(Collectors.toList());
 
@@ -414,16 +412,13 @@ public class VehicleController {
     @GetMapping("/online/rate")
     @Limit("vehicle:query")
     public Result<?> onlineRate() {
-
         List<Vehicle> vehicles = iVehicleService.list();
-
         // 获取车辆实时信息
         List<String> plateNos = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
         List<VehicleRealtimeStatusAdasDto> realtimeStatuses = new ArrayList<>();
         if (plateNos.size() > 0) {
             realtimeStatuses = iVehicle.ListVehicleRealtimeStatusByPlates(plateNos);
         }
-        log.info("车辆实时状态列表：{}", realtimeStatuses);
         //0：从未上线 1：行驶 2：停车 3：离线 4：服务到期
         List<VehicleRealtimeStatusAdasDto> onlineList = realtimeStatuses.parallelStream().filter(i -> {
             Integer vehicleStatus = i.getVehicleStatus();
