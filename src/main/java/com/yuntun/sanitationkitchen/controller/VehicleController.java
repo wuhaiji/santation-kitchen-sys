@@ -119,6 +119,8 @@ public class VehicleController {
                     String oil = status.getOil();
                     if (EptUtil.isEmpty(oil)) {
                         vehicleListVo.setFuelRemaining(0.0);
+                    }else{
+                        vehicleListVo.setFuelRemaining(Double.valueOf(oil));
                     }
                 }
             }
