@@ -2,7 +2,6 @@ package com.yuntun.sanitationkitchen.controller;
 
 
 import cn.hutool.core.date.LocalDateTimeUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.yuntun.sanitationkitchen.auth.Limit;
@@ -10,6 +9,7 @@ import com.yuntun.sanitationkitchen.auth.UserIdHolder;
 import com.yuntun.sanitationkitchen.bean.TrackBean;
 import com.yuntun.sanitationkitchen.bean.VehicleBean;
 import com.yuntun.sanitationkitchen.config.ThirdApiConfig;
+import com.yuntun.sanitationkitchen.constant.VehicleStatus;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.model.code.code40000.VehicleCode;
 import com.yuntun.sanitationkitchen.model.dto.VehicleListDto;
@@ -140,6 +140,8 @@ public class VehicleController {
         return Result.ok(data);
     }
 
+
+
     @GetMapping("/list/video")
     @Limit("vehicle:query")
     public Result<Object> videos() {
@@ -185,7 +187,7 @@ public class VehicleController {
         // Long startTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,17,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         // Long endTime = LocalDateTimeUtil.beginOfDay(LocalDateTime.of(2020, 7,18,0,0)).toInstant(ZoneOffset.ofHours(8)).toEpochMilli();
         if (dto.getStartTime() == null && dto.getEndTime() == null) {
-            if(bean!=null){
+            if (bean != null) {
                 trackBeans = iVehicle.queryTrackData(
                         bean.getId(),
                         startTime,
@@ -281,8 +283,6 @@ public class VehicleController {
             throw new ServiceException(VehicleCode.RFID_PLATE_ALREADY_EXISTS);
         }
     }
-
-
 
 
     @GetMapping("/get/video/key")
@@ -410,6 +410,28 @@ public class VehicleController {
             return Result.ok();
         return Result.error(VehicleCode.DELETE_ERROR);
 
+    }
+    @GetMapping("/online/rate")
+    @Limit("vehicle:query")
+    public Result<?> onlineRate() {
+
+        List<Vehicle> vehicles = iVehicleService.list();
+
+        // 获取车辆实时信息
+        List<String> plateNos = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
+        List<VehicleRealtimeStatusAdasDto> realtimeStatuses = new ArrayList<>();
+        if (plateNos.size() > 0) {
+            realtimeStatuses = iVehicle.ListVehicleRealtimeStatusByPlates(plateNos);
+        }
+        log.info("车辆实时状态列表：{}", realtimeStatuses);
+        //0：从未上线 1：行驶 2：停车 3：离线 4：服务到期
+        List<VehicleRealtimeStatusAdasDto> onlineList = realtimeStatuses.parallelStream().filter(i -> {
+            Integer vehicleStatus = i.getVehicleStatus();
+            return vehicleStatus.equals(VehicleStatus.driving.value()) || vehicleStatus.equals(VehicleStatus.parking.value());
+        }).collect(Collectors.toList());
+        int rate = onlineList.size() * 100 / plateNos.size();
+
+        return Result.ok(rate);
     }
 
     @Accessors(chain = true)
