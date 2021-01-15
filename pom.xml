@@ -12,6 +12,7 @@
     <artifactId>sanitation-kitchen</artifactId>
     <version>0.0.1</version>
     <name>sanitation-kitchen</name>
+    <packaging>jar</packaging>
     <description>环卫厨余垃圾管理系统</description>
 
     <properties>

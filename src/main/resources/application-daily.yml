@@ -20,12 +20,9 @@ spring:
       write_numbers_as_strings: true
   # 数据库
   datasource:
-#    username: root
-#    password: 123456
-#    url: jdbc:mysql://192.168.0.108:3306/sanitation-kitchen?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: YT0864
-    url: jdbc:mysql://47.99.73.177:3306/sanitation-kitchen?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    password: 123456
+    url: jdbc:mysql://192.168.0.108:3306/sanitation-kitchen?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
@@ -65,6 +62,7 @@ mqtt:
   host: tcp://192.168.0.108:1883
   username: xxx
   password: xxx
+
 lyy:
   api:
     authIp: http://120.77.112.76:6809
