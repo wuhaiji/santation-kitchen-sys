@@ -33,9 +33,9 @@ public class VehicleServiceImpl extends ServiceImpl<VehicleMapper, Vehicle> impl
                         .setSize(dto.getPageSize())
                         .setCurrent(dto.getPageNo()),
                 new QueryWrapper<Vehicle>()
-                        .like(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
+//                        .like(EptUtil.isNotEmpty(dto.getDriverName()), "driver_name", dto.getDriverName())
                         .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-                        .like(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
+//                        .like(EptUtil.isNotEmpty(dto.getDriverPhone()), "driver_phone", dto.getDriverPhone())
                         .likeRight(EptUtil.isNotEmpty(dto.getPurchaseDate()), "purchase_date",dto.getPurchaseDate())
                         .eq(EptUtil.isNotEmpty(dto.getSanitationOfficeId()), "sanitation_office_Id", dto.getSanitationOfficeId())
                         .orderByDesc("create_time")

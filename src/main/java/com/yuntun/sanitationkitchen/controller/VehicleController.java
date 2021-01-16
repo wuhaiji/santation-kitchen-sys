@@ -252,13 +252,13 @@ public class VehicleController {
 
         Vehicle role = new Vehicle()
                 .setUid(SnowflakeUtil.getUnionId())
-                .setDriverName(dto.getDriverName())
+//                .setDriverName(dto.getDriverName())
                 .setPurchaseDate(dto.getPurchaseDate())
                 .setRfid(dto.getRfid())
                 .setSanitationOfficeId(dto.getSanitationOfficeId())
                 .setSanitationOfficeName(sanitationOffice.getName())
                 .setNumberPlate(dto.getNumberPlate())
-                .setDriverPhone(dto.getDriverPhone())
+//                .setDriverPhone(dto.getDriverPhone())
                 .setTypeId(dto.getTypeId())
                 .setWeight(dto.getWeight())
                 .setCreator(UserIdHolder.get());

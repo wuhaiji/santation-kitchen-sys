@@ -99,13 +99,17 @@ public class CommonService {
      */
     public TicketMachine getTicketMachineByDTU(String deviceNumber) {
         // 根据DTU设备号查询小票机信息
-        TicketMachine ticketMachine = ticketMachineMapper.selectOne(new QueryWrapper<TicketMachine>().lambda().
+        List<TicketMachine> ticketMachineList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().lambda().
                 eq(TicketMachine::getNetDeviceCode, deviceNumber));
-        if (ticketMachine == null) {
+        if (ticketMachineList == null || ticketMachineList.size() == 0) {
             log.error("小票机的网络设备编号无效！");
             throw new ServiceException("小票机的网络设备编号无效！");
         }
-        return ticketMachine;
+        if (ticketMachineList.size() > 1) {
+            log.error("一个DTU不能绑定在多个小票机上！");
+//            throw new ServiceException("一个DTU不能绑定在多个小票机上！");
+        }
+        return ticketMachineList.get(0);
     }
 
     /**

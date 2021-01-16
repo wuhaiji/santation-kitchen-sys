@@ -184,6 +184,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         ticketBill.setCardNo(deviceNumber);
 
                         // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
+                        System.out.println("这是司机-------------");
                         TicketBill redisTicketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                         if (redisTicketBill != null) {
                             BeanUtils.copyProperties(redisTicketBill, ticketBill);
@@ -220,7 +221,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
 
                 }
 
-                String redisBoundWeight = RedisUtils.getValue("sk:" + deviceNumber + "_boundWeight").toString();
+                Object redisBoundWeight = RedisUtils.getValue("sk:" + deviceNumber + "_boundWeight");
                 if (redisBoundWeight != null) {
                     // 生成地磅流水
                     String vehicleEPC = RedisUtils.getString("sk:"+deviceNumber + "_vehicleEPC");
@@ -230,7 +231,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                         ticketBill.setDriverName(driverName);
                         String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                        myService.generatePoundBill(deviceNumber,vehicleEPC,driverEPC,Double.valueOf(redisBoundWeight));
+                        myService.generatePoundBill(deviceNumber,vehicleEPC,driverEPC,Double.valueOf(redisBoundWeight.toString()));
 
                         // 清空此次地磅称重数据
                         RedisUtils.delKey("sk:"+deviceNumber+"_vehicleEPC");
@@ -273,8 +274,11 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         if ( expire == -2 ) {
                             System.out.println("垃圾桶集合："+weightList);
                             // 根据DTU设备号，获取车牌号
-                            String numberPlate = myService.getVehicleByDTU(deviceNumber).getNumberPlate();
-                            ticketBill.setPlateNo(numberPlate);
+                            Vehicle vehicleByDTU = myService.getVehicleByDTU(deviceNumber);
+                            if (vehicleByDTU != null) {
+                                ticketBill.setPlateNo(vehicleByDTU.getNumberPlate());
+                            }
+
                             // 获取垃圾桶信息
                             TrashCan trashCanInfo = myService.getTrashCanInfo(trashCanEPC);
                             // 获取司机信息
