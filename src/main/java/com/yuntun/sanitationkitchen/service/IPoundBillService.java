@@ -1,9 +1,9 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yuntun.sanitationkitchen.bean.PoundBillBean;
 import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.entity.PoundBill;
+import com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.PoundBillVo;
 import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
@@ -36,9 +36,10 @@ public interface IPoundBillService extends IService<PoundBill> {
   /**
    * 单日磅单总量
    * @param poundBillDto
+   * @return
    */
 
-   Integer getPoundDateTotal(PoundBillDto poundBillDto);
+  PoundBillStatistic getPoundDateTotal(PoundBillDto poundBillDto);
 
 
   void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
