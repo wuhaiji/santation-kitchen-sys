@@ -3,6 +3,7 @@ package com.yuntun.sanitationkitchen.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yuntun.sanitationkitchen.model.dto.TrashWeightSerialDto;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
+import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerialStatistic;
 
 /**
  * <p>
@@ -19,7 +20,7 @@ public interface ITrashWeightSerialService extends IService<TrashWeightSerial> {
    * @param dto
    * @return
    */
-  Double getTrashDateTotal(TrashWeightSerialDto dto);
+  TrashWeightSerialStatistic getTrashDateTotal(TrashWeightSerialDto dto);
 
   Double countCurrentWeight(TrashWeightSerialDto dto);
 }

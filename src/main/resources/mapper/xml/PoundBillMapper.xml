@@ -130,8 +130,9 @@
 
   <select
     id="getPoundDateTotal"
-    resultType="java.lang.Integer">
-    SELECT SUM(net_weight) as total FROM `tb_sk_pound_bill` where create_time
+    resultType="com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic">
+    SELECT SUM(net_weight) as totalWeight, count(*)
+    as dayCount FROM `tb_sk_pound_bill` where create_time
     <if test="dto.beginTime != null">
       between #{dto.beginTime}
     </if>

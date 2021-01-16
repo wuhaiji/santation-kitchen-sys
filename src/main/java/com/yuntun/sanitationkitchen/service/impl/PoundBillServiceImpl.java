@@ -13,6 +13,7 @@ import com.yuntun.sanitationkitchen.mapper.VehicleMapper;
 import com.yuntun.sanitationkitchen.model.code.code40000.PoundBillCode;
 import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.entity.PoundBill;
+import com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic;
 import com.yuntun.sanitationkitchen.model.entity.SanitationOfficeValue;
 import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.entity.TrashCanValue;
@@ -127,7 +128,7 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
     q.eq(!StringUtils.isBlank(dto.getSerialCode()), PoundBill::getSerialCode, dto.getSerialCode())
         .eq(dto.getVehicleId() != null, PoundBill::getVehicleId, dto.getVehicleId())
         .eq(dto.getSanitationOfficeId() != null, PoundBill::getSanitationOfficeId, dto.getSanitationOfficeId())
-        .like(EptUtil.isNotEmpty(dto.getDriverName()),PoundBill::getDriverName,dto.getDriverName())
+        .like(EptUtil.isNotEmpty(dto.getDriverName()), PoundBill::getDriverName, dto.getDriverName())
         .gt(dto.getBeginTime() != null, PoundBill::getCreateTime, dto.getBeginTime())
         .lt(dto.getEndTime() != null, PoundBill::getCreateTime, dto.getEndTime());
     this.page(page, q);
@@ -150,11 +151,12 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
   }
 
   @Override
-  public Integer getPoundDateTotal(PoundBillDto dto) {
-    if (poundBillMapper.getPoundDateTotal(dto) != null) {
+  public PoundBillStatistic getPoundDateTotal(PoundBillDto dto) {
+    PoundBillStatistic poundBillStatistic = poundBillMapper.getPoundDateTotal(dto);
+    if (poundBillStatistic != null) {
       return poundBillMapper.getPoundDateTotal(dto);
     } else {
-      return 0;
+      return null;
     }
   }
 

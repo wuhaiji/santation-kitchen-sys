@@ -77,6 +77,19 @@ public class PoundBillController {
     return Result.ok(iPoundBillService.getPoundDateTotal(poundBillDto));
   }
 
+
+  /**
+   * 周地磅磅单数量
+   *
+   * @param poundBillDto
+   * @return
+   */
+  @Limit("data:poundBill:query")
+  @RequestMapping("/week")
+  public Result getPoundWeekTotal(PoundBillDto poundBillDto) {
+    return Result.ok(iPoundBillService.getPoundDateTotal(poundBillDto));
+  }
+
   /**
    * 用excel的形式导出榜单
    *

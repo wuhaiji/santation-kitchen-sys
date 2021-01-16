@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yuntun.sanitationkitchen.bean.PoundBillBean;
 import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.entity.PoundBill;
+import com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -41,7 +42,7 @@ public interface PoundBillMapper extends BaseMapper<PoundBill> {
    * @param poundBillDto
    * @return
    */
-  Integer getPoundDateTotal(@Param("dto") PoundBillDto poundBillDto);
+  PoundBillStatistic getPoundDateTotal(@Param("dto") PoundBillDto poundBillDto);
 
   /**
    * 根据条件，查询垃圾重量

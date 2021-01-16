@@ -27,8 +27,9 @@
 
   <select
     id="getTrashDateTotal"
-    resultType="java.lang.Double">
-    SELECT SUM(weight) as total FROM `tb_sk_trash_weight_serial` where create_time
+    resultType="com.yuntun.sanitationkitchen.model.entity.TrashWeightSerialStatistic">
+    SELECT SUM(weight) as totalWeight, count(*)
+    as dayCount FROM `tb_sk_trash_weight_serial` where create_time
     <if test="dto.beginTime != null">
       between #{dto.beginTime}
     </if>
