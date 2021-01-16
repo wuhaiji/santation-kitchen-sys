@@ -11,6 +11,7 @@ import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
 import com.yuntun.sanitationkitchen.weight.resolve.ResolveProtocol;
+import com.yuntun.sanitationkitchen.weight.util.ObjectCopy;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
@@ -243,10 +244,8 @@ public class CommonService {
 
         for (ResolveProtocol resolveProtocol:resolveProtocolList) {
             SKDataBody resolve = resolveProtocol.resolveAll(dataBody);
-            if (!resolve.equals(new SKDataBody())) {
-                skDataBody = resolve;
-                log.info("resolveData:{}", skDataBody);
-            }
+            // 拷贝
+            ObjectCopy.copyNotNullObject(resolve, skDataBody);
         }
 
         return skDataBody;
