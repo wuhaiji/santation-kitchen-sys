@@ -1,6 +1,8 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
 import com.yuntun.sanitationkitchen.exception.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -14,21 +16,34 @@ import java.util.Objects;
  */
 public class ObjectCopy {
 
+    public static Logger logger = LoggerFactory.getLogger(ObjectCopy.class);
+
     // 用于拷贝对象赋值（将source的内容拷贝到target中，source中的空值不处理）
     public static <T> void copyNotNullObject(T source, T target) {
-        System.out.println("source:"+source);
-        System.out.println("target:"+target);
+        logger.info("source:{}", source);
+        logger.info("target:{}", target);
         Objects.requireNonNull(source,"source null");
         Objects.requireNonNull(target,"target null");
-
-        if (EmptyUtil.isEmpty(source)) {
-            throw new ServiceException("source的内容为空！");
-        }
         Class<?> sourceClass = source.getClass();
         Class<?> targetClass = target.getClass();
+
+        // 判断类型是否一致
         if (sourceClass != targetClass) {
-            throw new ServiceException("要求：两个参数为同一类型！");
+            throw new ServiceException("要求：两个参数类型一致！");
         }
+
+        // 判断两者内容是否相等
+        if (source.equals(target)) {
+            logger.warn("source content equals target content！");
+            return;
+        }
+
+        // 判断前者内容是否为空
+        if (EmptyUtil.isEmpty(source)) {
+            logger.warn("source isEmpty！");
+            return;
+        }
+
         Field[] fields = sourceClass.getDeclaredFields();
         String getMethodName;
         String setMethodName;
