@@ -1,6 +1,7 @@
 package com.yuntun.sanitationkitchen.weight.entity;
 
 import lombok.Data;
+import org.springframework.data.annotation.Transient;
 
 import java.util.Set;
 

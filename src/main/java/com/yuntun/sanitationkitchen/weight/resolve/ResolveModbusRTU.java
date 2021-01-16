@@ -70,8 +70,8 @@ public class ResolveModbusRTU implements ResolveProtocol {
             // 判断是否能被解析
             if (isResolve(dataBody)) {
                 Double trashWeight = getTrashWeight(dataBody);
-                logger.info("获取垃圾桶weight：{}", trashWeight);
                 skDataBody.setTrashWeight(trashWeight);
+                logger.info("解析垃圾桶数据：{}", skDataBody);
                 break;
             }
             dataBody = getNewDataBody(dataBody);

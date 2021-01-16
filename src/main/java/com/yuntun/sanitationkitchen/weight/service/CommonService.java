@@ -4,21 +4,29 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.*;
 import com.yuntun.sanitationkitchen.model.entity.*;
+import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
+import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
 import com.yuntun.sanitationkitchen.weight.resolve.ResolveProtocol;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
+import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -60,9 +68,6 @@ public class CommonService {
     @Autowired
     private TicketMachineMapper ticketMachineMapper;
 
-    @Autowired
-    private UDCDataUtil udcDataUtil;
-
     public static final String DRIVER = "driver";
 
     public static final String VEHICLE = "vehicle";
@@ -77,7 +82,14 @@ public class CommonService {
      */
     public Vehicle getVehicleByDTU(String deviceNumber) {
         // 根据DTU设备号查询小票机信息
-        TicketMachine ticketMachine = getTicketMachineByDTU(deviceNumber);
+        TicketMachine ticketMachine = null;
+        try {
+            ticketMachine = getTicketMachineByDTU(deviceNumber);
+        } catch (ServiceException ex) {
+            return null;
+        }
+
+        log.info("根据dtu的设备号:{}--查询小票机信息:{}", deviceNumber, ticketMachine);
         // 根据小票机的唯一编号，去获取车辆信息
         // 唯一编号（两种情况）：
         // * 1.对应车辆表的rfid
@@ -85,7 +97,6 @@ public class CommonService {
         Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().
                 eq(Vehicle::getRfid, ticketMachine.getUniqueCode()));
         if (vehicle == null) {
-            log.error("车辆的rfid无效！");
             throw new ServiceException("车辆的rfid无效！");
         }
         return vehicle;
@@ -102,11 +113,11 @@ public class CommonService {
         List<TicketMachine> ticketMachineList = ticketMachineMapper.selectList(new QueryWrapper<TicketMachine>().lambda().
                 eq(TicketMachine::getNetDeviceCode, deviceNumber));
         if (ticketMachineList == null || ticketMachineList.size() == 0) {
-            log.error("小票机的网络设备编号无效！");
+            log.error("小票机的网络设备编号:{}--无效！", deviceNumber);
             throw new ServiceException("小票机的网络设备编号无效！");
         }
         if (ticketMachineList.size() > 1) {
-            log.error("一个DTU不能绑定在多个小票机上！");
+            log.error("DTU设备号为：{}--不能绑定在多个小票机上！", deviceNumber);
 //            throw new ServiceException("一个DTU不能绑定在多个小票机上！");
         }
         return ticketMachineList.get(0);
@@ -122,7 +133,7 @@ public class CommonService {
         // 获取地磅信息
         Weighbridge weighbridge = weighbridgeMapper.selectOne(new QueryWrapper<Weighbridge>().lambda().eq(Weighbridge::getNetDeviceCode, deviceNumber));
         if (weighbridge == null) {
-            log.error("地磅表中的网络设备编号无效！");
+            log.error("地磅表中的网络设备编号为：{}--无效！", deviceNumber);
             throw new ServiceException("地磅表中的网络设备编号无效！");
         }
         return weighbridge;
@@ -138,7 +149,6 @@ public class CommonService {
         // 获取垃圾桶信息
         Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(driverEPC != null, Driver::getRfid, driverEPC));
         if (driver == null) {
-            log.error("司机的RFID无效！");
             throw new ServiceException("司机的RFID无效！");
         }
         return driver;
@@ -154,7 +164,6 @@ public class CommonService {
         // 获取垃圾桶信息
         TrashCan trashCan = trashCanMapper.selectOne(new QueryWrapper<TrashCan>().lambda().eq(trashCanEPC != null, TrashCan::getRfid, trashCanEPC));
         if (trashCan == null) {
-            log.error("垃圾桶的RFID无效！");
             throw new ServiceException("垃圾桶的RFID无效！");
         }
         return trashCan;
@@ -170,7 +179,7 @@ public class CommonService {
         // 获取垃圾桶信息
         Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, vehicleEPC));
         if (vehicle == null) {
-            log.error("车辆的RFID无效！");
+            log.error("车辆的RFID为：{}--无效！", vehicleEPC);
             throw new ServiceException("车辆的RFID无效！");
         }
         return vehicle;
@@ -183,10 +192,8 @@ public class CommonService {
      * @return
      */
     public String getRFIDType(String epc) {
-
-//        String epc = udcDataUtil.getEPC(bytes);
-        if (epc == null) {
-            throw new ServiceException("rfid的epc号不能为空");
+        if (epc == null || epc.equals("")) {
+            throw new ServiceException("rfid的epc号不能为空！");
         }
 
         System.out.println("epc--"+epc);
@@ -204,44 +211,97 @@ public class CommonService {
         if (trashCanCount != null && trashCanCount != 0) {
             return TRASH;
         }
-        return epc;
+
+        throw new ServiceException("无效的EPC！");
     }
 
     // 根据司机EPC，去生成小票机
-    public TicketBill getTicketBillByDriverEPC(String driverEPC) {
-        Driver driver = driverMapper.selectOne(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, driverEPC));
+    public TicketBill getTicketBillByDriverEPC(String driverEPC, String deviceNumber) {
+        Driver driver = getDriverInfo(driverEPC);
         TicketBill ticketBill = new TicketBill();
         ticketBill.setDriverName(driver.getName());
+        ticketBill.setCardNo(deviceNumber);
         ticketBill.setTime(LocalDateTime.now());
+
         return ticketBill;
     }
 
     // 根据车辆EPC，去生成小票机
-    public TicketBill getTicketBillByVehicleEPC(String vehicleEPC) {
-        Vehicle vehicle = vehicleMapper.selectOne(new QueryWrapper<Vehicle>().lambda().eq(Vehicle::getRfid, vehicleEPC));
+    public TicketBill getTicketBillByVehicleEPC(String vehicleEPC, String deviceNumber) {
+        Vehicle vehicle = getVehicleInfo(vehicleEPC);
         TicketBill ticketBill = new TicketBill();
         ticketBill.setPlateNo(vehicle.getNumberPlate());
+        ticketBill.setCardNo(deviceNumber);
         ticketBill.setTime(LocalDateTime.now());
+
         return ticketBill;
     }
 
     public SKDataBody resolve(byte[] dataBody) {
-        System.out.println("开始解析数据！...resolve");
+        log.info("开始解析数据！...resolve");
         SKDataBody skDataBody = new SKDataBody();
 
         for (ResolveProtocol resolveProtocol:resolveProtocolList) {
             SKDataBody resolve = resolveProtocol.resolveAll(dataBody);
             if (!resolve.equals(new SKDataBody())) {
                 skDataBody = resolve;
-                System.out.println("resolveData:"+skDataBody);
+                log.info("resolveData:{}", skDataBody);
             }
         }
 
         return skDataBody;
     }
 
+    /**
+     * 根据EPC号 处理数据
+     *
+     * @param ctx
+     * @param bytes
+     * @param deviceNumber
+     * @param epc
+     * @param rfidType
+     */
+    public void disposeEPC(ChannelHandlerContext ctx, byte[] bytes, String deviceNumber, String epc ,String rfidType) {
+        // 垃圾桶
+        if (CommonService.TRASH.equals(rfidType)) {
+            // 存储垃圾桶的epc
+            RedisUtils.setValue("sk:"+deviceNumber+"_trashCanEPC", epc);
+            log.info("DTU设备号为:{} 对垃圾桶下发数据采集指令！", deviceNumber);
+            // 垃圾桶数据采集指令
+            ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
+        }
+
+        // 车辆
+        if (CommonService.VEHICLE.equals(rfidType)) {
+            // 根据车辆EPC，去生成小票机
+            TicketBill ticketBill = getTicketBillByVehicleEPC(epc, deviceNumber);
+            log.info("ticketBill:{}", ticketBill);
+            RedisUtils.setValue("sk:"+deviceNumber+"_vehicleEPC", epc);
+            RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
+
+            // 对地磅下发数据采集指令（读取毛重）
+            log.info("DTU设备号为:{} 对地磅下发数据采集指令！", deviceNumber);
+            ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.BoundCollectOrder)));
+        }
+
+        // 司机
+        if (CommonService.DRIVER.equals(rfidType)) {
+            // 根据司机EPC，去生成小票机
+            TicketBill ticketBill = getTicketBillByDriverEPC(epc, deviceNumber);
+
+            // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
+            log.info("这是司机-------------");
+            TicketBill redisTicketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+            if (redisTicketBill != null) {
+                BeanUtils.copyProperties(redisTicketBill, ticketBill);
+            }
+            RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
+            RedisUtils.setValue("sk:"+deviceNumber+"_driverEPC", epc);
+        }
+    }
+
     // 生成榜单
-    public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) {
+    public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) throws ServiceException {
         PoundBill poundBill = new PoundBill();
 
         Vehicle vehicleInfo = getVehicleInfo(vehicleEPC);
@@ -256,7 +316,7 @@ public class CommonService {
         SanitationOffice sanitationOffice = sanitationOfficeMapper.selectOne(new QueryWrapper<SanitationOffice>().select("uid", "name").
                 eq("uid", weighbridge.getSanitationOfficeId()));
         if (sanitationOffice == null) {
-            log.error("地磅表中的机构id无效！");
+            log.error("地磅表中的机构id为：{}--无效！", weighbridge.getSanitationOfficeId());
             throw new ServiceException("地磅表中的机构id无效！");
         }
         poundBill.setSanitationOfficeId(sanitationOffice.getUid());
@@ -281,13 +341,13 @@ public class CommonService {
         poundBill.setNetWeight(boundWeight-poundBill.getTare());
 
         poundBill.setUid(SnowflakeUtil.getUnionId());
-        System.out.println("poundBill地磅流水:"+poundBill);
+        log.info("poundBill地磅流水:{}", poundBill);
         poundBillMapper.insert(poundBill);
 
     }
 
     // 生成垃圾桶流水
-    public void generateTrashWeightSerial(List<Double> weightList, TrashCan trashCanInfo, Driver driverInfo) {
+    public void generateTrashWeightSerial(List<Double> weightList, TrashCan trashCanInfo, Driver driverInfo) throws ServiceException {
         TrashWeightSerial trashWeightSerial = new TrashWeightSerial();
 
         // 获取垃圾桶的称重结果
@@ -297,7 +357,7 @@ public class CommonService {
         Restaurant restaurant = restaurantMapper.selectOne(new QueryWrapper<Restaurant>().lambda().select(Restaurant::getUid, Restaurant::getName).
                 eq(trashCanInfo.getRestaurantId() != null, Restaurant::getUid, trashCanInfo.getRestaurantId()));
         if (restaurant == null) {
-            log.error("餐馆的uid无效！");
+            log.error("餐馆的uid为：{}--无效！", trashCanInfo.getRestaurantId());
             throw new ServiceException("餐馆的uid无效！");
         }
 
@@ -318,17 +378,15 @@ public class CommonService {
         trashWeightSerial.setDriverRfid(driverInfo.getRfid());
         trashWeightSerial.setDriverName(driverInfo.getName());
 
-        System.out.println("trashWeightSerial垃圾桶流水:"+trashWeightSerial);
+        log.info("垃圾桶流水:{}", trashWeightSerial);
         trashWeightSerialMapper.insert(trashWeightSerial);
     }
 
     public Double getTrashWeight(List<Double> weightList, TrashCan trashCanInfo) {
         Double trashCanTareWeight = trashCanInfo.getWeight();
         Double weightResult = weightList.stream().filter(weight -> weight > trashCanTareWeight).collect(Collectors.averagingDouble(x -> x-trashCanTareWeight));
-        System.out.println("称重结果："+weightResult+"kg");
-
+        log.info("称重结果：{}kg", weightResult);
         return weightResult;
     }
-
 
 }

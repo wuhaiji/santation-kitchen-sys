@@ -95,9 +95,9 @@ public class ResolveRFID implements ResolveProtocol {
 
         if (epcs.size() > 0) {
             skDataBody.setEpcs(epcs);
+            logger.info("解析RFID数据：{}", skDataBody);
         }
 
-        logger.info("获取RFID：{}", skDataBody);
         return skDataBody;
     }
 

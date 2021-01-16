@@ -71,8 +71,8 @@ public class ResolveWeight implements ResolveProtocol {
             // 判断是否能被解析
             if (isResolve(dataBody)) {
                 Double boundWeight = getBoundWeight(dataBody);
-                logger.info("获取地磅车辆weight：{}", boundWeight);
                 skDataBody.setBoundWeight(boundWeight);
+                logger.info("解析地磅数据：{}", skDataBody);
                 break;
             }
             dataBody = getNewDataBody(dataBody);
