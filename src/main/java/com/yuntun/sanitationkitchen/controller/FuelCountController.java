@@ -53,94 +53,6 @@ public class FuelCountController {
     @Autowired
     IVehicleRealTimeStatusService iVehicleRealTimeStatusService;
 
-    // @Limit("data:fuelCount")
-    // @GetMapping("/list")
-    // public Result<Object> list(FuelCountListDto dto) {
-    //     ErrorUtil.PageParamError(dto.getPageSize(), dto.getPageNo());
-    //     //先从数据库查询所有车辆牌号
-    //     IPage<Vehicle> vehicleIPage = iVehicleService.page(
-    //             new Page<Vehicle>()
-    //                     .setSize(dto.getPageSize())
-    //                     .setCurrent(dto.getPageNo()),
-    //             new QueryWrapper<Vehicle>()
-    //                     .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-    //     );
-    //
-    //     List<Vehicle> records = vehicleIPage.getRecords();
-    //
-    //     List<String> plates = records.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
-    //
-    //     List<VehicleRealtimeStatusAdasDto> list = iVehicle.ListVehicleRealtimeStatusByPlates(plates);
-    //     Map<String, VehicleRealtimeStatusAdasDto> realtimeStatusAdasDtoMap = list.parallelStream().collect(Collectors.toMap(VehicleRealtimeStatusAdasDto::getPlate, i -> i));
-    //
-    //     // List<FuelCountListVo> collect = list.parallelStream()
-    //     //         .map(i ->
-    //     //                 new FuelCountListVo()
-    //     //                         .setFuelRemaining(EptUtil.isEmpty(i.getOil()) ? String.valueOf(0) : i.getOil())
-    //     //                         .setNumberPlate(i.getPlate())
-    //     //                         .setUpdateTime(LocalDateTime.now())
-    //     //         )
-    //     //         .collect(Collectors.toList());
-    //     List<FuelCountListVo> collect = records
-    //             .parallelStream()
-    //             .map(i -> {
-    //                 FuelCountListVo fuelCountListVo1 = new FuelCountListVo();
-    //                 VehicleRealtimeStatusAdasDto vehicleRealtimeStatusAdasDto = realtimeStatusAdasDtoMap.get(i.getNumberPlate());
-    //                 if (vehicleRealtimeStatusAdasDto != null) {
-    //                     fuelCountListVo1
-    //                             .setFuelRemaining(EptUtil.isEmpty(vehicleRealtimeStatusAdasDto.getOil()) ? String.valueOf(0) : vehicleRealtimeStatusAdasDto.getOil())
-    //                             .setNumberPlate(vehicleRealtimeStatusAdasDto.getPlate())
-    //                             .setUpdateTime(LocalDateTime.now());
-    //                 } else {
-    //                     fuelCountListVo1.setNumberPlate(i.getNumberPlate()).setFuelRemaining(String.valueOf(0)).setUpdateTime(LocalDateTime.now());
-    //                 }
-    //                 return fuelCountListVo1;
-    //             })
-    //             .collect(Collectors.toList());
-    //
-    //     RowData<FuelCountListVo> rowData = new RowData<FuelCountListVo>()
-    //             .setRows(collect)
-    //             .setTotal(vehicleIPage.getTotal())
-    //             .setTotalPages(vehicleIPage.getTotal());
-    //     return Result.ok(rowData);
-    // }
-
-    // @Limit("data:fuelCount")
-    // @PostMapping("/export")
-    // public void export(FuelCountListDto dto, HttpServletResponse response) throws Exception {
-    //
-    //     //先从数据库查询所有车辆牌号
-    //     List<Vehicle> vehicles = iVehicleService.list(
-    //             new QueryWrapper<Vehicle>()
-    //                     .like(EptUtil.isNotEmpty(dto.getNumberPlate()), "number_plate", dto.getNumberPlate())
-    //     );
-    //
-    //     List<String> plates = vehicles.parallelStream().map(Vehicle::getNumberPlate).collect(Collectors.toList());
-    //
-    //     List<VehicleRealtimeStatusAdasDto> vehicleRealtimeStatusAdasDtos = iVehicle.ListVehicleRealtimeStatusByPlates(plates);
-    //     Map<String, VehicleRealtimeStatusAdasDto> vehicleMap = vehicleRealtimeStatusAdasDtos.parallelStream().collect(Collectors.toMap(i -> i.getPlate(), i -> i));
-    //     List<FuelCountListVo> fuelCountListVos = vehicles.parallelStream().map(i -> {
-    //         VehicleRealtimeStatusAdasDto vehicleRealtimeStatusAdasDto = vehicleMap.get(i.getNumberPlate());
-    //         FuelCountListVo fuelCountListVo = new FuelCountListVo();
-    //         if (vehicleRealtimeStatusAdasDto != null) {
-    //             String oil = vehicleRealtimeStatusAdasDto.getOil();
-    //             fuelCountListVo.setFuelRemaining(EptUtil.isEmpty(oil) ? String.valueOf(0) : oil)
-    //                     .setNumberPlate(i.getNumberPlate())
-    //             ;
-    //         } else {
-    //             fuelCountListVo.setFuelRemaining("0");
-    //         }
-    //         fuelCountListVo.setNumberPlate(i.getNumberPlate()).setUpdateTime(LocalDateTime.now());
-    //         return fuelCountListVo;
-    //     }).collect(Collectors.toList());
-    //
-    //
-    //     String[] headers = {"序号", "车牌号", "更新时间", "油耗余量(单位L)"};
-    //     String[] keys = {"number", "numberPlate", "updateTime", "fuelRemaining"};
-    //
-    //     ExcelUtil.excelExport(response, "油耗统计.xlsx", "油耗统计", fuelCountListVos, Arrays.asList(headers), Arrays.asList(keys));
-    // }
-
     @Limit("data:fuelCount:query")
     @GetMapping("/list")
     public Result<Object> list(FuelCountListDto dto) {
@@ -184,12 +96,13 @@ public class FuelCountController {
 
 
         //把车的状态的历史记录按车分类
-        Map<String, List<VehicleRealTimeStatus>> vehicleRealTimeStatusesMap = vehicleRealTimeStatuses.parallelStream().collect(Collectors.groupingBy(VehicleRealTimeStatus::getPlate));
+        Map<String, List<VehicleRealTimeStatus>> vehicleRealTimeStatusesMap = vehicleRealTimeStatuses.parallelStream()
+                .collect(Collectors.groupingBy(VehicleRealTimeStatus::getPlate));
 
         //车辆统计数据
         HashMap<String, FuelCountListVo> allFuelConsumeMap = getStringFuelCountListVoHashMap(vehicleRealTimeStatuses, vehicleRealTimeStatusesMap);
 
-        List<FuelCountListVo> collect = records
+        return records
                 .parallelStream()
                 .map(i -> {
                     FuelCountListVo fuelCountListVo1 = new FuelCountListVo();
@@ -212,7 +125,6 @@ public class FuelCountController {
                     return fuelCountListVo1;
                 })
                 .collect(Collectors.toList());
-        return collect;
     }
 
     private HashMap<String, FuelCountListVo> getStringFuelCountListVoHashMap(
@@ -224,7 +136,11 @@ public class FuelCountController {
         for (Map.Entry<String, List<VehicleRealTimeStatus>> entry : vehicleRealTimeStatusesMap.entrySet()) {
             List<VehicleRealTimeStatus> value = entry.getValue();
             double fuelConsume = 0;
+            //
             double lastOil = 0;
+            //剩余油量
+
+            //最新剩余油量
             String fuelRemaining = "0";
             if (EptUtil.isNotEmpty(vehicleRealTimeStatuses)) {
                 String oil = vehicleRealTimeStatuses.get(vehicleRealTimeStatuses.size() - 1).getOil();
@@ -233,6 +149,7 @@ public class FuelCountController {
                 }
             }
 
+            //计算油量消耗
             for (VehicleRealTimeStatus vehicleRealTimeStatus : value) {
                 String oil = vehicleRealTimeStatus.getOil();
                 if (EptUtil.isEmpty(oil)) {

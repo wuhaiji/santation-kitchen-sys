@@ -7,8 +7,8 @@ import com.yuntun.sanitationkitchen.util.SpringUtils;
 
 public interface ScheduledTask extends Runnable {
 
-    int DISABLED = 1;
-    int NOT_DISABLED = 0;
+    int DISABLED = 0;
+    int ENABLE = 1;
 
     /**
      * 定时任务方法

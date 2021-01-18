@@ -8,48 +8,51 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * <p>
- * 定时任务表
+ * 车辆表
  * </p>
  *
  * @author whj
- * @since 2020-12-15
+ * @since 2021-01-18
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("tb_sk_cron")
-public class Cron implements Serializable {
+@TableName("tb_sk_vehicle_day_fuel_count")
+public class VehicleDayFuelCount implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键id
-     */
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
-     * 定时任务完整类名
+     * 车牌号
      */
-    private String cronKey;
+    private String plate;
 
     /**
-     * cron表达式
+     * 油耗消耗统计，日期
      */
-    private String cronExpression;
+    private LocalDate date;
 
     /**
-     * 任务描述
+     * 当天油耗剩余，L
      */
-    private String taskExplain;
+    private Double fuelRemaining;
 
     /**
-     * 状态,1:正常;0:停用
+     * 当天加油量，L
      */
-    private Integer status;
+    private Double fuelAdd;
+
+    /**
+     * 当天消耗量，L
+     */
+    private Double fuelConsume;
 
 
 }
