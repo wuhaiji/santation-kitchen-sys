@@ -13,6 +13,13 @@ import java.util.List;
  */
 public class ReflexUtil {
 
+    /**
+     * 根据方法名，获取方法中的所有参数类型
+     *
+     * @param objectClass 类对象
+     * @param methodName  方法名
+     * @return
+     */
     public static Class<?>[] getMethodParameterTypes(Class objectClass, String methodName) {
         Class<?>[]  parameterTypes = null;
         Method[] declaredMethods = objectClass.getDeclaredMethods();
@@ -24,7 +31,13 @@ public class ReflexUtil {
         return parameterTypes;
     }
 
-    public static List<String> FieldNames(Class objectClass) {
+    /**
+     * 获取类对象的全部属性名
+     *
+     * @param objectClass 类对象
+     * @return
+     */
+    public static List<String> getFieldNames(Class objectClass) {
         Field[] fields = objectClass.getDeclaredFields();
         List<String> fieldNames = new ArrayList<>();
         String fieldName;
@@ -36,8 +49,13 @@ public class ReflexUtil {
         return fieldNames;
     }
 
-    public static String getMethodName(Field field) {
-        String fieldName = field.getName();
+    /**
+     * 根据属性名，获取该属性的get方法
+     *
+     * @param fieldName 属性名
+     * @return
+     */
+    public static String getterMethodName(String fieldName) {
         String firstLetter;
         String getMethodName;
 
@@ -47,8 +65,13 @@ public class ReflexUtil {
         return getMethodName;
     }
 
-    public static String setMethodName(Field field) {
-        String fieldName = field.getName();
+    /**
+     * 根据属性名，获取该属性的set方法
+     *
+     * @param fieldName 属性名
+     * @return
+     */
+    public static String setterMethodName(String fieldName) {
         String firstLetter;
         String setMethodName;
 
@@ -58,11 +81,22 @@ public class ReflexUtil {
         return setMethodName;
     }
 
-    public static <T> Object invokeMethod(String methodName, Class objectClass, T object) {
+    /**
+     * 根据传入的参数，调用指定方法
+     *
+     * @param methodName  方法名
+     * @param objectClass 类对象
+     * @param object      源对象
+     * @param value       传入的参数值（可选）
+     * @param <T>         泛型
+     * @return
+     */
+    public static <T> Object invokeMethod(String methodName, Class objectClass, T object, Object... value) {
         Object returnValue = null;
+        Class<?>[] methodParameterTypes = getMethodParameterTypes(objectClass, methodName);
         try {
-            Method method = objectClass.getDeclaredMethod(methodName);
-            returnValue = method.invoke(object);
+            Method method = objectClass.getDeclaredMethod(methodName, methodParameterTypes);
+            returnValue = method.invoke(object, value);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -73,6 +107,15 @@ public class ReflexUtil {
         return returnValue;
     }
 
+    /**
+     * 根据传入参数，调用指定的get方法
+     *
+     * @param getMethodName get方法名
+     * @param objectClass   类对象
+     * @param object        源对象
+     * @param <T>           泛型
+     * @return
+     */
     public static <T> Object invokeGetMethod(String getMethodName, Class objectClass, T object) {
         Object returnValue = null;
         try {
@@ -88,7 +131,16 @@ public class ReflexUtil {
         return returnValue;
     }
 
-    public static <T> void invokeSetMethod(String setMethodName, Class objectClass, T target, Object value) {
+    /**
+     * 根据传入参数，调用指定的set方法
+     *
+     * @param setMethodName set方法名
+     * @param objectClass   类对象
+     * @param target        目标对象
+     * @param value         传入的参数值（可选）
+     * @param <T>
+     */
+    public static <T> void invokeSetMethod(String setMethodName, Class objectClass, T target, Object... value) {
         Class<?>[] methodParameterTypes = getMethodParameterTypes(objectClass, setMethodName);
         try {
             Method method = objectClass.getDeclaredMethod(setMethodName, methodParameterTypes);
@@ -103,8 +155,14 @@ public class ReflexUtil {
 
     }
 
-    public static List<String> getterMethodNames(Class sourceClass) {
-        Field[] fields = sourceClass.getDeclaredFields();
+    /**
+     * 根据指定的class对象，获取其所有的get方法
+     *
+     * @param objectClass 类对象
+     * @return
+     */
+    public static List<String> getterMethodNames(Class objectClass) {
+        Field[] fields = objectClass.getDeclaredFields();
         List<String> fieldNames = new ArrayList<>();
         String fieldName;
         String firstLetter;
@@ -120,8 +178,14 @@ public class ReflexUtil {
         return fieldNames;
     }
 
-    public static List<String> setterMethodNames(Class sourceClass) {
-        Field[] fields = sourceClass.getDeclaredFields();
+    /**
+     * 根据指定的class对象，获取其所有的set方法
+     *
+     * @param objectClass 类对象
+     * @return
+     */
+    public static List<String> setterMethodNames(Class objectClass) {
+        Field[] fields = objectClass.getDeclaredFields();
         List<String> fieldNames = new ArrayList<>();
         String fieldName;
         String firstLetter;

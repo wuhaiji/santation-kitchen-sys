@@ -3,9 +3,6 @@ package com.yuntun.sanitationkitchen.weight.util;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,15 +41,15 @@ public class ObjectCopy {
             return;
         }
 
-        Field[] fields = sourceClass.getDeclaredFields();
+        List<String> fieldNames = ReflexUtil.getFieldNames(sourceClass);
         String getMethodName;
         String setMethodName;
 
-        for (Field field:fields) {
-            getMethodName = ReflexUtil.getMethodName(field);
+        for (String fieldName:fieldNames) {
+            getMethodName = ReflexUtil.getterMethodName(fieldName);
             Object targetObject = ReflexUtil.invokeGetMethod(getMethodName, targetClass, target);
             if (targetObject == null) {
-                setMethodName = ReflexUtil.setMethodName(field);
+                setMethodName = ReflexUtil.setterMethodName(fieldName);
                 // 将source中的属性放入到target中
                 Object sourceObject = ReflexUtil.invokeGetMethod(getMethodName, sourceClass, source);
                 ReflexUtil.invokeSetMethod(setMethodName, targetClass, target, sourceObject);
