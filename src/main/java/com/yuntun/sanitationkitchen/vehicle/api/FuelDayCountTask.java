@@ -5,7 +5,7 @@ import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.entity.VehicleDayFuelCount;
 import com.yuntun.sanitationkitchen.model.entity.VehicleRealTimeStatus;
-import com.yuntun.sanitationkitchen.service.IVehicleDayFuelServiceCount;
+import com.yuntun.sanitationkitchen.service.IVehicleDayFuelCountService;
 import com.yuntun.sanitationkitchen.service.IVehicleRealTimeStatusService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
@@ -43,7 +43,7 @@ public class FuelDayCountTask implements ScheduledTask {
     IVehicleRealTimeStatusService iVehicleRealTimeStatusService;
 
     @Autowired
-    IVehicleDayFuelServiceCount iVehicleDayFuelServiceCount;
+    IVehicleDayFuelCountService iVehicleDayFuelCountService;
 
     @Override
     public void execute() {
@@ -118,7 +118,7 @@ public class FuelDayCountTask implements ScheduledTask {
             vehicleDayFuelCounts.add(vehicleDayFuelCount);
         }
 
-        iVehicleDayFuelServiceCount.saveBatch(vehicleDayFuelCounts);
+        iVehicleDayFuelCountService.saveBatch(vehicleDayFuelCounts);
         log.info("统计每日油耗完成>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
 }

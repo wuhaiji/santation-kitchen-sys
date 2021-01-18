@@ -12,6 +12,6 @@ import com.yuntun.sanitationkitchen.model.entity.VehicleDayFuelCount;
  * @author whj
  * @since 2021-01-18
  */
-public interface IVehicleDayFuelServiceCount extends IService<VehicleDayFuelCount> {
+public interface IVehicleDayFuelCountService extends IService<VehicleDayFuelCount> {
 
 }

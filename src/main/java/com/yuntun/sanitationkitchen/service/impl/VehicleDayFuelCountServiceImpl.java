@@ -3,7 +3,7 @@ package com.yuntun.sanitationkitchen.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yuntun.sanitationkitchen.mapper.VehicleDayFuelCountMapper;
 import com.yuntun.sanitationkitchen.model.entity.VehicleDayFuelCount;
-import com.yuntun.sanitationkitchen.service.IVehicleDayFuelServiceCount;
+import com.yuntun.sanitationkitchen.service.IVehicleDayFuelCountService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2021-01-18
  */
 @Service
-public class VehicleDayFuelServiceCountImpl extends ServiceImpl<VehicleDayFuelCountMapper, VehicleDayFuelCount> implements IVehicleDayFuelServiceCount {
+public class VehicleDayFuelCountServiceImpl extends ServiceImpl<VehicleDayFuelCountMapper, VehicleDayFuelCount> implements IVehicleDayFuelCountService {
 
 }

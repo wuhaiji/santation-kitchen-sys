@@ -5,7 +5,7 @@ import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.model.entity.VehicleDayFuelCount;
 import com.yuntun.sanitationkitchen.model.entity.VehicleRealTimeStatus;
-import com.yuntun.sanitationkitchen.service.IVehicleDayFuelServiceCount;
+import com.yuntun.sanitationkitchen.service.IVehicleDayFuelCountService;
 import com.yuntun.sanitationkitchen.service.IVehicleRealTimeStatusService;
 import com.yuntun.sanitationkitchen.service.IVehicleService;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class VehicleTask implements ScheduledTask {
     IVehicleRealTimeStatusService iVehicleRealTimeStatusService;
 
     @Autowired
-    IVehicleDayFuelServiceCount iVehicleDayFuelServiceCount;
+    IVehicleDayFuelCountService iVehicleDayFuelCountService;
 
     @Override
     public void execute() {
@@ -80,7 +80,7 @@ public class VehicleTask implements ScheduledTask {
                 .collect(Collectors.toMap(VehicleRealTimeStatus::getPlate, i -> i));
 
         //查出当天油量集合并按车牌号分类
-        Map<String, VehicleDayFuelCount> dayFuelMap = iVehicleDayFuelServiceCount
+        Map<String, VehicleDayFuelCount> dayFuelMap = iVehicleDayFuelCountService
                 .list(
                         new LambdaQueryWrapper<VehicleDayFuelCount>()
                                 .in(VehicleDayFuelCount::getPlate, vehiclePates)
@@ -111,7 +111,7 @@ public class VehicleTask implements ScheduledTask {
             vehicleDayFuelCounts.add(vehicleDayFuelCount);
         }
         if (vehicleDayFuelCounts.size() > 0) {
-            iVehicleDayFuelServiceCount.updateBatchById(vehicleDayFuelCounts);
+            iVehicleDayFuelCountService.updateBatchById(vehicleDayFuelCounts);
         }
 
     }
