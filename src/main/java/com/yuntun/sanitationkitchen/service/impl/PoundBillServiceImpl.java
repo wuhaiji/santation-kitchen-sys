@@ -1,5 +1,7 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
+import static com.yuntun.sanitationkitchen.util.FormatDateUtils.getDay2;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -27,6 +29,8 @@ import com.yuntun.sanitationkitchen.service.IPoundBillService;
 import com.yuntun.sanitationkitchen.util.EptUtil;
 import com.yuntun.sanitationkitchen.util.ExcelUtil;
 import com.yuntun.sanitationkitchen.util.ListUtil;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
@@ -176,5 +180,26 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
       log.error("export PoundBill err,{}", e);
       throw new ServiceException(PoundBillCode.EXPORT_EXCEL);
     }
+  }
+
+  @Override
+  public List<PoundBillStatistic> getWeekWeightList(PoundBillDto dto) {
+
+    List<LocalDate> dateList = dto.getDateList();
+    System.out.println("dateList====" + dateList.toString());
+    List<PoundBillStatistic> list = new ArrayList<>();
+    for (int i = 0; i < dateList.size(); i++) {
+      PoundBillStatistic poundBillStatistic;
+      LocalDate date = dateList.get(i);
+      System.out.println("date====" + date.toString());
+      PoundBillDto poundBillDto = new PoundBillDto();
+      poundBillDto.setBeginTime(date);
+      poundBillDto.setEndTime(getDay2(date.toString()));
+      poundBillStatistic = poundBillMapper.getPoundDateTotal(poundBillDto);
+      if (poundBillStatistic != null) {
+        list.add(poundBillStatistic);
+      }
+    }
+    return list;
   }
 }

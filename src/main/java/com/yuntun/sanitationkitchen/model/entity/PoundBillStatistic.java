@@ -24,4 +24,5 @@ public class PoundBillStatistic {
    */
   private Integer dayCount;
 
+
 }

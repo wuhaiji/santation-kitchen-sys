@@ -7,7 +7,7 @@ import com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic;
 import com.yuntun.sanitationkitchen.model.response.RowData;
 import com.yuntun.sanitationkitchen.model.vo.PoundBillVo;
 import com.yuntun.sanitationkitchen.model.vo.SelectOptionVo;
-
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -20,27 +20,36 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface IPoundBillService extends IService<PoundBill> {
 
-    SelectOptionVo selectPoundBillOption();
+  SelectOptionVo selectPoundBillOption();
 
-    RowData<PoundBillVo> findPoundBillList(PoundBillDto poundBillDto);
+  RowData<PoundBillVo> findPoundBillList(PoundBillDto poundBillDto);
 
-    /**
-     * 分页列出磅单
-     * @param poundBillDto
-     * @return
-     */
-    RowData<PoundBill> pagePoundBill(PoundBillDto poundBillDto);
+  /**
+   * 分页列出磅单
+   *
+   * @param poundBillDto
+   * @return
+   */
+  RowData<PoundBill> pagePoundBill(PoundBillDto poundBillDto);
 
-    Integer countCurrentWeight(PoundBillDto poundBillDto);
+  Integer countCurrentWeight(PoundBillDto poundBillDto);
 
   /**
    * 单日磅单总量
+   *
    * @param poundBillDto
    * @return
    */
 
   PoundBillStatistic getPoundDateTotal(PoundBillDto poundBillDto);
 
+  /**
+   * 周每天磅单数统计
+   */
+  List<PoundBillStatistic> getWeekWeightList(PoundBillDto dto);
+
 
   void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
+
+
 }

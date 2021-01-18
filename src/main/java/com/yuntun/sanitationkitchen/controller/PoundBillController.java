@@ -5,9 +5,13 @@ import com.yuntun.sanitationkitchen.auth.Limit;
 import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.response.Result;
 import com.yuntun.sanitationkitchen.service.IPoundBillService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -81,13 +85,14 @@ public class PoundBillController {
   /**
    * 周地磅磅单数量
    *
-   * @param poundBillDto
+   * @param dto
    * @return
    */
   @Limit("data:poundBill:query")
   @RequestMapping("/week")
-  public Result getPoundWeekTotal(PoundBillDto poundBillDto) {
-    return Result.ok(iPoundBillService.getPoundDateTotal(poundBillDto));
+  public Result getWeekWeightList(PoundBillDto dto) {
+    System.out.println("传入" + dto.toString());
+    return Result.ok(iPoundBillService.getWeekWeightList(dto));
   }
 
   /**

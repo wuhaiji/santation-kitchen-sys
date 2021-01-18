@@ -163,4 +163,5 @@ public class PoundBillDto extends BasePageDto{
     private String version;
 
 
+    private List<LocalDate> dateList;
 }
