@@ -3,6 +3,8 @@ package com.yuntun.sanitationkitchen.model.entity;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
+
 /**
  * <p>
  * 磅单统计
@@ -28,6 +30,16 @@ public class PoundBillStatistic {
    * 单月磅单数
    */
   private Integer monthCount;
+
+  /**
+   * 按日期返回：yyyy-MM-dd
+   */
+  private String date;
+
+  /**
+   * 按月份返回：yyyy-MM
+   */
+  private String month;
 
 
 }
