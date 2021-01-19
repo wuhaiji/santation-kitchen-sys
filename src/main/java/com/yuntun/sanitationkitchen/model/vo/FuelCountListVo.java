@@ -37,4 +37,9 @@ public class FuelCountListVo {
      * 油耗消耗
      */
     private Double fuelConsume;
+
+    /**
+     * 今日消耗
+     */
+    private Double todayConsume;
 }
