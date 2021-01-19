@@ -158,7 +158,7 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
   public PoundBillStatistic getPoundDateTotal(PoundBillDto dto) {
     PoundBillStatistic poundBillStatistic = poundBillMapper.getPoundDateTotal(dto);
     if (poundBillStatistic != null) {
-      return poundBillMapper.getPoundDateTotal(dto);
+      return poundBillStatistic;
     } else {
       return null;
     }
@@ -202,4 +202,15 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
     }
     return list;
   }
+
+  @Override
+  public List<PoundBillStatistic> getCurrentMonthPoundTotal() {
+    return poundBillMapper.getCurrentMonthPoundTotal();
+  }
+
+  @Override
+  public List<PoundBillStatistic> getCurrentYearPoundTotal() {
+    return poundBillMapper.getCurrentYearPoundTotal();
+  }
+
 }

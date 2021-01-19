@@ -54,4 +54,8 @@ public interface PoundBillMapper extends BaseMapper<PoundBill> {
    * @return
    */
   Integer countCurrentWeight(@Param("dto") PoundBillDto dto);
+
+  List<PoundBillStatistic> getCurrentMonthPoundTotal();
+
+  List<PoundBillStatistic> getCurrentYearPoundTotal();
 }

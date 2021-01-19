@@ -24,5 +24,10 @@ public class PoundBillStatistic {
    */
   private Integer dayCount;
 
+  /**
+   * 单月磅单数
+   */
+  private Integer monthCount;
+
 
 }

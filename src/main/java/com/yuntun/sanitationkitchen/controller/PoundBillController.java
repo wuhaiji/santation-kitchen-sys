@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2020-12-02
  */
 @RestController
-@RequestMapping("/poundBill")
+@RequestMapping("/open")
 @Slf4j
 public class PoundBillController {
 
@@ -93,6 +93,30 @@ public class PoundBillController {
   public Result getWeekWeightList(PoundBillDto dto) {
     System.out.println("传入" + dto.toString());
     return Result.ok(iPoundBillService.getWeekWeightList(dto));
+  }
+
+  /**
+   * 本月地磅磅单数量
+   *
+   * @return
+   */
+  @Limit("data:poundBill:query")
+  @RequestMapping("/month")
+  public Result getMonthWeightList() {
+    System.out.println("查询当月榜单数据！");
+    return Result.ok(iPoundBillService.getCurrentMonthPoundTotal());
+  }
+
+  /**
+   * 本年地磅磅单数量
+   *
+   * @return
+   */
+  @Limit("data:poundBill:query")
+  @RequestMapping("/year")
+  public Result getYearWeightList() {
+    System.out.println("查询当年榜单数据！");
+    return Result.ok(iPoundBillService.getCurrentYearPoundTotal());
   }
 
   /**

@@ -133,12 +133,29 @@
     resultType="com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic">
     SELECT SUM(net_weight) as totalWeight, count(*)
     as dayCount FROM `tb_sk_pound_bill` where create_time
-    <if test="dto.beginTime != null">
-      between #{dto.beginTime}
-    </if>
-    <if test="dto.endTime != null">
-      and #{dto.endTime}
-    </if>
+    <where>
+      <if test="dto.beginTime != null">
+        create_time >= #{dto.beginTime}
+      </if>
+      <if test="dto.endTime != null">
+        create_time  &lt; #{dto.endTime}
+      </if>
+    </where>
+  </select>
+
+  <!-- 获取本周的榜单量和重量 -->
+  <select id="getCurrentWeekPoundTotal">
+
+  </select>
+
+  <!-- 获取本月的榜单量和重量,以天为单位返回 -->
+  <select id="getCurrentMonthPoundTotal" resultType="com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic">
+    SELECT COUNT(1) as dayCount, DATE_FORMAT(create_time,'%Y-%m-%d') as `date`, SUM(net_weight) as totalWeight FROM tb_sk_pound_bill WHERE create_time like CONCAT(DATE_FORMAT(NOW(),'%Y-%m'),'%')  GROUP BY DATE_FORMAT(create_time,'%Y-%m-%d');
+  </select>
+
+  <!-- 获取本年的榜单量和重量,以月为单位返回 -->
+  <select id="getCurrentYearPoundTotal" resultType="com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic">
+    SELECT COUNT(1) as monthCount, DATE_FORMAT(create_time,'%Y-%m') as `month`, SUM(net_weight) as totalWeight FROM tb_sk_pound_bill WHERE create_time like CONCAT(DATE_FORMAT(NOW(),'%Y'),'%') GROUP BY DATE_FORMAT(create_time,'%Y-%m');
   </select>
 
   <select
@@ -155,4 +172,5 @@
       <include refid="query"/>
     </where>
   </select>
+
 </mapper>

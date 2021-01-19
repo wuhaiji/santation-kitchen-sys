@@ -52,4 +52,7 @@ public interface IPoundBillService extends IService<PoundBill> {
   void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);
 
 
+  List<PoundBillStatistic> getCurrentMonthPoundTotal();
+
+  List<PoundBillStatistic> getCurrentYearPoundTotal();
 }
