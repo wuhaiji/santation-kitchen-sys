@@ -59,7 +59,6 @@ public class PoundBill implements Serializable {
      */
     private String driverRfid;
 
-
     /**
      * 司机名称
      */

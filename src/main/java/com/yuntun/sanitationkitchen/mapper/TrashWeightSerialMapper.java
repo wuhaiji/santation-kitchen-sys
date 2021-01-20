@@ -6,6 +6,8 @@ import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerialStatistic;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 
 /**
  * <p>
@@ -24,4 +26,8 @@ public interface TrashWeightSerialMapper extends BaseMapper<TrashWeightSerial> {
   TrashWeightSerialStatistic getTrashDateTotal(@Param("dto") TrashWeightSerialDto dto);
 
   Double countCurrentWeight(@Param("dto") TrashWeightSerialDto dto);
+
+  List<TrashWeightSerialStatistic> getCurrentMonthTrashTotal();
+
+  List<TrashWeightSerialStatistic> getCurrentYearTrashTotal();
 }

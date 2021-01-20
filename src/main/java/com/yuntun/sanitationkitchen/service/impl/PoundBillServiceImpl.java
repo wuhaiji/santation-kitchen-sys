@@ -1,7 +1,6 @@
 package com.yuntun.sanitationkitchen.service.impl;
 
 import static com.yuntun.sanitationkitchen.util.FormatDateUtils.getDay2;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -109,6 +108,7 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
 //                        // 皮重
 //                        .like(EptUtil.isNotEmpty(poundBillDto.getTare()), "tare", poundBillDto.getTare())
             .eq(EptUtil.isNotEmpty(poundBillDto.getSanitationOfficeId()), "sanitation_office_id", poundBillDto.getSanitationOfficeId())
+            .like(EptUtil.isNotEmpty(poundBillDto.getDriverName()), "driver_name", poundBillDto.getDriverName())
             .gt(EptUtil.isNotEmpty(poundBillDto.getBeginTime()), "create_time", poundBillDto.getBeginTime())
             .le(EptUtil.isNotEmpty(poundBillDto.getEndTime()), "create_time", poundBillDto.getEndTime())
             .orderByDesc("create_time")

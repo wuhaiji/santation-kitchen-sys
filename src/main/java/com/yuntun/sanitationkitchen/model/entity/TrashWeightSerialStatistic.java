@@ -38,6 +38,21 @@ public class TrashWeightSerialStatistic {
    */
   private Integer dayCount;
 
+  /**
+   * 单月餐厨单数
+   */
+  private Integer monthCount;
+
+  /**
+   * 按日期返回：yyyy-MM-dd
+   */
+  private String date;
+
+  /**
+   * 按月份返回：yyyy-MM
+   */
+  private String month;
+
 }
 
 

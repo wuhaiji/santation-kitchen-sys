@@ -71,7 +71,7 @@ public class TrashWeightSerialController {
    * @param dto
    * @return
    */
-  @Limit("data:poundBill:query")
+  @Limit("data:trashWeightSerial:query")
   @RequestMapping("/count/current/weight")
   public Result countCurrentWeight(TrashWeightSerialDto dto) {
     return Result.ok(trashWeightSerialService.countCurrentWeight(dto));
@@ -83,10 +83,47 @@ public class TrashWeightSerialController {
    * @param dto
    * @return
    */
-  @Limit("data:poundBill:query")
+  @Limit("data:trashWeightSerial:query")
   @RequestMapping("/date")
   public Result getTrashDateTotal(TrashWeightSerialDto dto) {
     return Result.ok(trashWeightSerialService.getTrashDateTotal(dto));
+  }
+
+  /**
+   * 周餐余数量
+   *
+   * @param dto
+   * @return
+   */
+  @Limit("data:trashWeightSerial:query")
+  @RequestMapping("/week")
+  public Result getWeekWeightList(TrashWeightSerialDto dto) {
+    System.out.println("传入" + dto.toString());
+    return Result.ok(trashWeightSerialService.getWeekWeightList(dto));
+  }
+
+  /**
+   * 本月餐余数量
+   *
+   * @return
+   */
+  @Limit("data:trashWeightSerial:query")
+  @RequestMapping("/month")
+  public Result getMonthWeightList() {
+    System.out.println("查询当月餐余数据！");
+    return Result.ok(trashWeightSerialService.getCurrentMonthTrashTotal());
+  }
+
+  /**
+   * 本年餐余数量
+   *
+   * @return
+   */
+  @Limit("data:trashWeightSerial:query")
+  @RequestMapping("/year")
+  public Result getYearWeightList() {
+    System.out.println("查询当年餐余数据！");
+    return Result.ok(trashWeightSerialService.getCurrentYearTrashTotal());
   }
 
   @Limit("data:trashWeightSerial:export")

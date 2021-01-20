@@ -1,6 +1,8 @@
 package com.yuntun.sanitationkitchen.model.dto;
 
 import java.time.LocalDate;
+import java.util.List;
+
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -47,5 +49,7 @@ public class TrashWeightSerialDto extends BasePageDto {
    * 结束时间
    */
   private LocalDate endTime;
+
+  private List<LocalDate> dateList;
 
 }

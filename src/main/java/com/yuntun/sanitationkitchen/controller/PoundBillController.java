@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2020-12-02
  */
 @RestController
-@RequestMapping("/open")
+@RequestMapping("/poundBill")
 @Slf4j
 public class PoundBillController {
 
