@@ -43,7 +43,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
                 clazz = Class.forName(cron.getCronKey());
                 task = context.getBean(clazz);
             } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("spring_scheduled_cron表数据" + cron.getCronKey() + "有误", e);
+                throw new IllegalArgumentException("未找到对应任务类：{}：" + cron.getCronKey(), e);
             } catch (BeansException e) {
                 throw new IllegalArgumentException(cron.getCronKey() + "未纳入到spring管理", e);
             }
