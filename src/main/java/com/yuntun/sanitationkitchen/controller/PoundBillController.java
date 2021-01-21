@@ -32,7 +32,7 @@ public class PoundBillController {
   IPoundBillService iPoundBillService;
 
   /**
-   * 地磅榜单 下拉框
+   * 地磅磅单 下拉框
    *
    * @author wujihong
    * @since 2020-12-02 11:21
@@ -90,9 +90,9 @@ public class PoundBillController {
    */
   @Limit("data:poundBill:query")
   @RequestMapping("/week")
-  public Result getWeekWeightList(PoundBillDto dto) {
+  public Result getCurrentWeekPoundTotal(PoundBillDto dto) {
     System.out.println("传入" + dto.toString());
-    return Result.ok(iPoundBillService.getWeekWeightList(dto));
+    return Result.ok(iPoundBillService.getCurrentWeekPoundTotal(dto));
   }
 
   /**
@@ -103,7 +103,7 @@ public class PoundBillController {
   @Limit("data:poundBill:query")
   @RequestMapping("/month")
   public Result getMonthWeightList() {
-    System.out.println("查询当月榜单数据！");
+    System.out.println("查询当月磅单数据！");
     return Result.ok(iPoundBillService.getCurrentMonthPoundTotal());
   }
 
@@ -115,12 +115,12 @@ public class PoundBillController {
   @Limit("data:poundBill:query")
   @RequestMapping("/year")
   public Result getYearWeightList() {
-    System.out.println("查询当年榜单数据！");
+    System.out.println("查询当年磅单数据！");
     return Result.ok(iPoundBillService.getCurrentYearPoundTotal());
   }
 
   /**
-   * 用excel的形式导出榜单
+   * 用excel的形式导出磅单
    *
    * @param poundBillDto
    * @param response

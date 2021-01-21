@@ -1,12 +1,9 @@
 package com.yuntun.sanitationkitchen.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yuntun.sanitationkitchen.model.dto.PoundBillDto;
 import com.yuntun.sanitationkitchen.model.dto.TrashWeightSerialDto;
-import com.yuntun.sanitationkitchen.model.entity.PoundBillStatistic;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerial;
 import com.yuntun.sanitationkitchen.model.entity.TrashWeightSerialStatistic;
-
 import java.util.List;
 
 /**
@@ -28,7 +25,7 @@ public interface ITrashWeightSerialService extends IService<TrashWeightSerial> {
 
   Double countCurrentWeight(TrashWeightSerialDto dto);
 
-  List<TrashWeightSerialStatistic> getWeekWeightList(TrashWeightSerialDto dto);
+  List<TrashWeightSerialStatistic> getCurrentWeekTrashTotal(TrashWeightSerialDto dto);
 
   List<TrashWeightSerialStatistic> getCurrentMonthTrashTotal();
 

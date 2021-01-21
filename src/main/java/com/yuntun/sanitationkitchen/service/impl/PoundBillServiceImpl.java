@@ -183,24 +183,9 @@ public class PoundBillServiceImpl extends ServiceImpl<PoundBillMapper, PoundBill
   }
 
   @Override
-  public List<PoundBillStatistic> getWeekWeightList(PoundBillDto dto) {
+  public List<PoundBillStatistic> getCurrentWeekPoundTotal(PoundBillDto dto) {
+    return poundBillMapper.getCurrentWeekPoundTotal(dto);
 
-    List<LocalDate> dateList = dto.getDateList();
-    System.out.println("dateList====" + dateList.toString());
-    List<PoundBillStatistic> list = new ArrayList<>();
-    for (int i = 0; i < dateList.size(); i++) {
-      PoundBillStatistic poundBillStatistic;
-      LocalDate date = dateList.get(i);
-      System.out.println("date====" + date.toString());
-      PoundBillDto poundBillDto = new PoundBillDto();
-      poundBillDto.setBeginTime(date);
-      poundBillDto.setEndTime(getDay2(date.toString()));
-      poundBillStatistic = poundBillMapper.getPoundDateTotal(poundBillDto);
-      if (poundBillStatistic != null) {
-        list.add(poundBillStatistic);
-      }
-    }
-    return list;
   }
 
   @Override

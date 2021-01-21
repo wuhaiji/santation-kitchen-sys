@@ -299,7 +299,7 @@ public class CommonService {
         }
     }
 
-    // 生成榜单
+    // 生成磅单
     public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) throws ServiceException {
         PoundBill poundBill = new PoundBill();
 

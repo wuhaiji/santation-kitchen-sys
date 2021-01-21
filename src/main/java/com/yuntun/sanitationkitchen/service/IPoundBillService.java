@@ -46,7 +46,7 @@ public interface IPoundBillService extends IService<PoundBill> {
   /**
    * 周每天磅单数统计
    */
-  List<PoundBillStatistic> getWeekWeightList(PoundBillDto dto);
+  List<PoundBillStatistic> getCurrentWeekPoundTotal(PoundBillDto dto);
 
 
   void exportPoundBill(PoundBillDto poundBillDto, HttpServletResponse response);

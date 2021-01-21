@@ -50,6 +50,5 @@ public class TrashWeightSerialDto extends BasePageDto {
    */
   private LocalDate endTime;
 
-  private List<LocalDate> dateList;
 
 }

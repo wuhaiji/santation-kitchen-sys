@@ -52,23 +52,8 @@ public class TrashWeightSerialServiceImpl extends ServiceImpl<TrashWeightSerialM
   }
 
   @Override
-  public List<TrashWeightSerialStatistic> getWeekWeightList(TrashWeightSerialDto dto) {
-    List<LocalDate> dateList = dto.getDateList();
-    System.out.println("dateList====" + dateList.toString());
-    List<TrashWeightSerialStatistic> list = new ArrayList<>();
-    for (int i = 0; i < dateList.size(); i++) {
-      TrashWeightSerialStatistic trashWeightSerialStatistic;
-      LocalDate date = dateList.get(i);
-      System.out.println("date====" + date.toString());
-      TrashWeightSerialDto trashWeightSerialDto = new TrashWeightSerialDto();
-      trashWeightSerialDto.setBeginTime(date);
-      trashWeightSerialDto.setEndTime(getDay2(date.toString()));
-      trashWeightSerialStatistic = weightSerialMapper.getTrashDateTotal(trashWeightSerialDto);
-      if (trashWeightSerialStatistic != null) {
-        list.add(trashWeightSerialStatistic);
-      }
-    }
-    return list;
+  public List<TrashWeightSerialStatistic> getCurrentWeekTrashTotal(TrashWeightSerialDto dto) {
+    return weightSerialMapper.getCurrentWeekTrashTotal(dto);
   }
 
   @Override

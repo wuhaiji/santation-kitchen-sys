@@ -97,9 +97,9 @@ public class TrashWeightSerialController {
    */
   @Limit("data:trashWeightSerial:query")
   @RequestMapping("/week")
-  public Result getWeekWeightList(TrashWeightSerialDto dto) {
+  public Result getCurrentWeekPoundTotal(TrashWeightSerialDto dto) {
     System.out.println("传入" + dto.toString());
-    return Result.ok(trashWeightSerialService.getWeekWeightList(dto));
+    return Result.ok(trashWeightSerialService.getCurrentWeekTrashTotal(dto));
   }
 
   /**

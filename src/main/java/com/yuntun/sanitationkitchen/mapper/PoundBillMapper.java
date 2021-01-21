@@ -45,7 +45,7 @@ public interface PoundBillMapper extends BaseMapper<PoundBill> {
   PoundBillStatistic getPoundDateTotal(@Param("dto") PoundBillDto poundBillDto);
 
 
-  List<PoundBillStatistic> getWeekWeightList(@Param("dto") PoundBillDto poundBillDto);
+  List<PoundBillStatistic> getCurrentWeekPoundTotal(@Param("dto") PoundBillDto poundBillDto);
 
   /**
    * 根据条件，查询垃圾重量
