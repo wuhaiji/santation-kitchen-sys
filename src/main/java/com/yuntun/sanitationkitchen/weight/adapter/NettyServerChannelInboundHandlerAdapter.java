@@ -16,9 +16,7 @@ import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.propertise.TrashDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
 import com.yuntun.sanitationkitchen.weight.service.TrashCanTask;
-import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
-import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
-import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
+import com.yuntun.sanitationkitchen.weight.util.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -203,9 +201,15 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                         RedisUtils.delKey("sk:" + deviceNumber + "_boundWeight");
 
                         // 发送打印小票机请求
-                        MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+                        String sb = "卡号：" + ticketBill.getCardNo() + "\r\n" +
+                                "司机：" + ticketBill.getDriverName() + "\r\n" +
+                                "车牌号：" + ticketBill.getPlateNo() + "\r\n" +
+                                "称重重量：" + ticketBill.getWeight() + "\r\n" +
+                                "时间：" + ticketBill.getTime() + "\r\n"
+                                ;
+                        byte[] printerBytes = PrintUtil.getPrinterBytes(sb, 1, "utf-8");
+                        MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, PrintUtil.bytes2Hex(printerBytes));
                     }
-
                 }
 
                 ScheduledFuture future = task.get(deviceNumber);
