@@ -1,18 +1,11 @@
 package com.yuntun.sanitationkitchen.weight.adapter;
 
-import com.alibaba.fastjson.JSONObject;
-import com.sun.el.stream.Stream;
-import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
-import com.yuntun.sanitationkitchen.model.entity.Driver;
-import com.yuntun.sanitationkitchen.model.entity.TrashCan;
-import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
-import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
-import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
+import com.yuntun.sanitationkitchen.weight.mqtt.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.propertise.TrashDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
 import com.yuntun.sanitationkitchen.weight.service.TrashCanTask;
@@ -26,9 +19,11 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -52,7 +47,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
     private static ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(4);
 
     // 任务
-    private static ConcurrentHashMap<String, ScheduledFuture> task = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, ScheduledFuture<?>> task = new ConcurrentHashMap<>();
 
 
     /**
@@ -66,7 +61,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         channels.add(ctx.channel());//加入ChannelGroup
-        System.out.println(ctx.channel().id() + " 设备上线," + "Online: " + channels.size());
+        logger.info(ctx.channel().id() + " 设备上线," + "Online: " + channels.size());
     }
 
     /**
@@ -78,7 +73,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("channelRegistered");
+        logger.info("channelRegistered");
     }
 
     /**
@@ -96,7 +91,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
         String clientIp = insocket.getAddress().getHostAddress();
         int port = insocket.getPort();
         //此处不能使用ctx.close()，否则客户端始终无法与服务端建立连接
-        System.out.println("channelActive clientAddress:" + clientIp + ":" + port + " " + ctx.name());
+        logger.info("channelActive clientAddress:" + clientIp + ":" + port + " " + ctx.name());
     }
 
     /**
@@ -111,61 +106,53 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
         ByteBuf bytebuf = (ByteBuf) msg;
         byte[] bytes = new byte[bytebuf.readableBytes()];
         bytebuf.readBytes(bytes);
-        for (int i = 0; i < bytes.length; i++) {
-            if (i == 0) {
-                System.out.print("{ ");
-            }
-
-            System.out.print(bytes[i]);
-            if (i + 1 == bytes.length) {
-                System.out.println(" }");
-            } else {
-                System.out.print(", ");
-            }
-
-        }
+        printBytes(bytes);
 
         // 判断它是否是UDC协议
         if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
             // 判断它是否是登录
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
-                System.out.println("登录响应！");
+                logger.info("登录响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
             }
 
             // 判断它是否是数据上报
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.UPLOAD_PACKAGE) {
-                String deviceNumber = udcDataUtil.getDeviceNumber(bytes);
+                //udc的设备号就是sim卡号
                 logger.info("数据上报！");
+                String deviceNumber = udcDataUtil.getDeviceNumber(bytes);
+                logger.info("deviceNumber:{}", deviceNumber);
                 // 解析数据
                 SKDataBody resolve = myService.resolve(udcDataUtil.getDataBody(bytes));
-                Set<String> epcs = resolve.getEpcs();
                 logger.info("resolve:{}", resolve);
 
-                for (String epc:epcs) {
-                    String rfidType;
-                    try {
-                        rfidType = myService.getRFIDType(epc);
-                        logger.info("rfidType:{}", rfidType);
-                    } catch (ServiceException ex) {
-                        logger.error(ex.getMsg());
-                        throw ex;
+                Set<String> epcs = resolve.getEpcs();
+                logger.info("epcs:{}",epcs);
+                if (epcs != null) {
+                    for (String epc : epcs) {
+                        String rfidType;
+                        try {
+                            rfidType = myService.getRFIDType(epc);
+                            logger.info("rfidType:{}", rfidType);
+                        } catch (ServiceException ex) {
+                            logger.error(ex.getMsg());
+                            throw ex;
+                        }
+                        // 根据EPC号 处理数据
+                        myService.disposeEPC(ctx, bytes, deviceNumber, epc, rfidType);
                     }
-
-                    // 根据EPC号 处理数据
-                    myService.disposeEPC(ctx,bytes,deviceNumber,epc,rfidType);
                 }
 
                 // 垃圾桶重量
                 Double trashWeight = resolve.getTrashWeight();
                 if (trashWeight != null) {
                     // 将垃圾桶重量存储到redis,并设置有效时间10s（超过时间后，就算完成称重）
-                    RedisUtils.setValue("sk:"+deviceNumber, "valid");
+                    RedisUtils.setValue("sk:" + deviceNumber, "valid");
                     Integer weightWaitTime = trashDataPackageFormat.getWeightWaitTime();
-                    RedisUtils.expireSeconds("sk:"+deviceNumber, weightWaitTime);
-                    RedisUtils.listPush("sk:"+deviceNumber+"_weight",trashWeight);
+                    RedisUtils.expireSeconds("sk:" + deviceNumber, weightWaitTime);
+                    RedisUtils.listPush("sk:" + deviceNumber + "_weight", trashWeight);
 
-                    List<Double> weightList = RedisUtils.listGetAll("sk:"+deviceNumber + "_weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
+                    List<Double> weightList = RedisUtils.listGetAll("sk:" + deviceNumber + "_weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
                             .boxed().collect(Collectors.toList());
                     logger.info("缓存区中的垃圾桶重量：{}", weightList);
                 }
@@ -173,51 +160,41 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 // 地磅车辆重量
                 Double boundWeight = resolve.getBoundWeight();
                 if (boundWeight != null) {
-                    RedisUtils.setValue("sk:"+deviceNumber+"_boundWeight", boundWeight);
-                    TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+                    RedisUtils.setValue("sk:" + deviceNumber + "_boundWeight", boundWeight);
+                    TicketBill ticketBill = (TicketBill) RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
 
-                    ticketBill.setWeight(boundWeight+"kg");
+                    ticketBill.setWeight(boundWeight + "kg");
                     logger.info("地磅称重结果：{}", ticketBill);
-                    RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
+                    RedisUtils.setValue("sk:" + deviceNumber + "_ticketBill", ticketBill);
 
                 }
 
                 Object redisBoundWeight = RedisUtils.getValue("sk:" + deviceNumber + "_boundWeight");
                 if (redisBoundWeight != null) {
                     // 生成地磅流水
-                    String vehicleEPC = RedisUtils.getString("sk:"+deviceNumber + "_vehicleEPC");
+                    String vehicleEPC = RedisUtils.getString("sk:" + deviceNumber + "_vehicleEPC");
                     String driverEPC = RedisUtils.getString("sk:" + deviceNumber + "_driverEPC");
                     if (vehicleEPC != null && driverEPC != null) {
                         String driverName = myService.getDriverInfo(driverEPC).getName();
-                        TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+                        TicketBill ticketBill = (TicketBill) RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                         ticketBill.setDriverName(driverName);
-                        String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
-                        myService.generatePoundBill(deviceNumber,vehicleEPC,driverEPC,Double.valueOf(redisBoundWeight.toString()));
+                        myService.generatePoundBill(deviceNumber, vehicleEPC, driverEPC, Double.valueOf(redisBoundWeight.toString()));
 
                         // 清空此次地磅称重数据
-                        RedisUtils.delKey("sk:"+deviceNumber+"_vehicleEPC");
-                        RedisUtils.delKey("sk:"+deviceNumber+"_driverEPC");
-                        RedisUtils.delKey("sk:"+deviceNumber+"_ticketBill");
+                        RedisUtils.delKey("sk:" + deviceNumber + "_vehicleEPC");
+                        RedisUtils.delKey("sk:" + deviceNumber + "_driverEPC");
+                        RedisUtils.delKey("sk:" + deviceNumber + "_ticketBill");
                         RedisUtils.delKey("sk:" + deviceNumber + "_boundWeight");
-
-                        // 发送打印小票机请求
-                        String sb = "卡号：" + ticketBill.getCardNo() + "\r\n" +
-                                "司机：" + ticketBill.getDriverName() + "\r\n" +
-                                "车牌号：" + ticketBill.getPlateNo() + "\r\n" +
-                                "称重重量：" + ticketBill.getWeight() + "\r\n" +
-                                "时间：" + ticketBill.getTime() + "\r\n"
-                                ;
-                        byte[] printerBytes = PrintUtil.getPrinterBytes(sb, 1, "utf-8");
-                        MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, PrintUtil.bytes2Hex(printerBytes));
+                        myService.send2TicketText(ticketBill, deviceNumber);
                     }
                 }
 
-                ScheduledFuture future = task.get(deviceNumber);
+                ScheduledFuture<?> future = task.get(deviceNumber);
                 // trashCanTareWeight为垃圾桶皮重
-                String trashCanEPC = RedisUtils.getString("sk:"+deviceNumber + "_trashCanEPC");
-                String driverEPC = RedisUtils.getString("sk:"+deviceNumber + "_driverEPC");
-                List<Object> redisWeight = RedisUtils.listGetAll("sk:"+deviceNumber + "_weight");
-                Object redisTicketBill = RedisUtils.getValue("sk:"+deviceNumber + "_ticketBill");
+                String trashCanEPC = RedisUtils.getString("sk:" + deviceNumber + "_trashCanEPC");
+                String driverEPC = RedisUtils.getString("sk:" + deviceNumber + "_driverEPC");
+                List<Object> redisWeight = RedisUtils.listGetAll("sk:" + deviceNumber + "_weight");
+                Object redisTicketBill = RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                 logger.info("trashCanEPC：{}", trashCanEPC);
                 logger.info("driverEPC：{}", driverEPC);
                 logger.info("future：{}", future);
@@ -228,41 +205,66 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 if (redisWeight != null && redisWeight.size() != 0 && redisTicketBill != null && future == null) {
                     ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(() ->
                     {
-                        List<Double> weightList = RedisUtils.listGetAll("sk:"+deviceNumber + "_weight").stream().mapToDouble(weight -> Double.parseDouble(weight.toString()))
+                        List<Double> weightList = RedisUtils.listGetAll("sk:" + deviceNumber + "_weight")
+                                .stream()
+                                .mapToDouble(weight -> Double.parseDouble(weight.toString()))
                                 .boxed().collect(Collectors.toList());
-                        Long expire = RedisUtils.getTTl("sk:"+deviceNumber);
-                        TicketBill ticketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+                        Long expire = RedisUtils.getTTl("sk:" + deviceNumber);
+                        TicketBill ticketBill = (TicketBill) RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
                         logger.info("称重倒计时：{}", expire);
                         logger.info("bill：{}", ticketBill);
 
                         // 当expire = -2，一种是：redis不存在key；一种是：该key过期了
-                        if ( expire == -2 ) {
+                        if (expire == -2) {
                             logger.info("垃圾桶称重集合：{}", weightList);
-                            TrashCanTask.resolveTrashCan(task,deviceNumber,trashCanEPC,driverEPC,weightList,ticketBill);
+                            TrashCanTask.resolveTrashCan(task, deviceNumber, trashCanEPC, driverEPC, weightList, ticketBill);
                         }
                     }, 0, 1, TimeUnit.SECONDS);
+
                     task.put(deviceNumber, scheduledFuture);
                 }
             }
 
             // 判断它是否是心跳
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.HEART_PACKAGE) {
-                System.out.println("进入了心跳响应！");
+                logger.info("进入了心跳响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.heartResponse(bytes)));
             }
 
             // 判断它是否是主动下线报文
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.OFFLINE_PACKAGE) {
-                System.out.println("进入了下线响应！");
-                MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.UDC_DIED, "设备离线");
+                logger.info("进入了下线响应！");
                 ctx.write(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
             }
 
         } else {
-            System.out.println("非法访问···！");
             logger.error("非法访问···！");
         }
 
+    }
+
+
+    /**
+     * 控制台打印字节信息
+     *
+     * @param bytes 字节数组
+     */
+    private void printBytes(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            if (i == 0) {
+                sb.append('[');
+            }
+            sb.append(bytes[i]);
+            if (i + 1 == bytes.length) {
+                sb.append(']');
+            } else {
+                sb.append(',');
+            }
+
+        }
+        // logger.info("\r\n" + sb.toString());
+        logger.info("\r\nhex:" + PrintUtil.bytes2Hex(bytes));
     }
 
     /**
@@ -273,7 +275,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws IOException {
-        logger.info("channel-Read-Complete");
+        // logger.info("channel-Read-Complete");
         ctx.flush();
     }
 
@@ -312,7 +314,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext context) {
-        System.out.println(context.channel().id() + " 设备离线," + "Online: " + channels.size());
+        logger.info(context.channel().id() + " 设备离线," + "Online: " + channels.size());
     }
 
     /**
@@ -323,7 +325,8 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws IOException {
-        logger.error("cause message:{}", cause.getMessage());
+
+        logger.error("cause", cause);
         logger.error("{} ,occurred into error", ctx.channel().id());
         ctx.close();//抛出异常，断开与客户端的连接
     }

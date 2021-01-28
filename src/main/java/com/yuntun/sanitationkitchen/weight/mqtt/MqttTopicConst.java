@@ -1,4 +1,4 @@
-package com.yuntun.sanitationkitchen.weight.mqtt.constant;
+package com.yuntun.sanitationkitchen.weight.mqtt;
 
 /**
  * Mqtt 主题

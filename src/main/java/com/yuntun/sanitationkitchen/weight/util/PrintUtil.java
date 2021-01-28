@@ -1,9 +1,12 @@
 package com.yuntun.sanitationkitchen.weight.util;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -33,10 +36,85 @@ public class PrintUtil {
     public static final int PAYTYPE_VOICE_DIY7577 = 7577;
     public static final int PAYTYPE_VOICE_DIY7578 = 7578;
     public static final int PAYTYPE_VOICE_DIY7579 = 7579;
-    private static final char[] HEXES = {'0', '1', '2', '3', '4', '5', '6',
-            '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    private static final int[] CRC16Table = {
-            0x2c6a, 0x1ef1, 0x0f78, 0x0000, 0x1189, 0x2312, 0x329b, 0x4624,
+
+    /**
+     * 支付播报固定语音字节数组
+     *
+     * @param imeiStr  IMEI设备唯一标识
+     * @param msgId    交易序列号，不大于32字节，保证唯一
+     * @param moneyStr 播报金额，最多两位小数
+     * @param payType  支付类型
+     * @return
+     */
+    public static byte[] getStaticVoiceBytes(String imeiStr, String msgId, String moneyStr, int payType) {
+        return getStaticVoiceStr(imeiStr, msgId, moneyStr, payType).getBytes();
+    }
+
+    /**
+     * 支付播报固定语音字符串
+     *
+     * @param imeiStr  IMEI设备唯一标识
+     * @param msgId    交易序列号，不大于32字节，保证唯一
+     * @param moneyStr 播报金额，最多两位小数
+     * @param payType  支付类型
+     * @return
+     */
+    public static String getStaticVoiceStr(String imeiStr, String msgId, String moneyStr, int payType) {
+        String str = imeiStr + "|1007|" + msgId + "|" + moneyStr + "|" + payType;
+        return str;
+    }
+
+    /**
+     * 获取打印内容，适用于云打印机
+     *
+     * @param printText   打印文本
+     * @param pageCount   打印联数
+     * @param encodingStr 编码方式，默认UTF-8
+     * @return
+     */
+    public static byte[] getPrinterBytes(final String printText,
+                                         final int pageCount, String encodingStr) {
+        try {
+            if (encodingStr.equals("")) {
+                encodingStr = "UTF-8";
+            }
+            byte[] msgByte = printText.getBytes(encodingStr);
+            // 消息数组
+            final byte[] dataByte = new byte[msgByte.length + 9];
+            dataByte[0] = 0x1E;
+            dataByte[1] = 0x10;
+            dataByte[2] = (byte) pageCount;// 打印多联
+            // 有效数据长度
+            final int len = dataByte.length - 5;
+            dataByte[3] = (byte) (len >> 8);
+            dataByte[4] = (byte) (len & 0xff);
+            // 数据内容
+            System.arraycopy(msgByte, 0, dataByte, 5, msgByte.length);
+            // 标识字节
+            dataByte[dataByte.length - 4] = 0x1b;
+            dataByte[dataByte.length - 3] = 0x63;
+            // 打印内容CRC校验
+            final byte[] dtCRC = getCRC(msgByte);
+            dataByte[dataByte.length - 2] = (byte) (dtCRC[0]);
+            dataByte[dataByte.length - 1] = (byte) (dtCRC[1]);
+            msgByte = dataByte;
+            return msgByte;
+        } catch (Exception ex) {
+            log.error("Exception", ex);
+        }
+        return null;
+    }
+
+    public static byte[] getPrinterVoiceBytes(String printTxt, int pageCount, String encodingStr, String imeiStr, String msgId, String moneyStr, int payType) {
+        byte[] voiceArray = getStaticVoiceBytes(imeiStr, msgId, moneyStr, payType);
+        byte[] printerArray = getPrinterBytes(printTxt, pageCount, encodingStr);
+        byte[] data = new byte[voiceArray.length + printerArray.length];
+        System.arraycopy(printerArray, 0, data, 0, printerArray.length);
+        System.arraycopy(voiceArray, 0, data, printerArray.length, voiceArray.length);
+        return data;
+    }
+
+    private static int[] CRC16Table = {0x0000, 0x1189, 0x2312, 0x329b, 0x4624,
             0x57ad, 0x6536, 0x74bf, 0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c,
             0xdbe5, 0xe97e, 0xf8f7, 0x1081, 0x0108, 0x3393, 0x221a, 0x56a5,
             0x472c, 0x75b7, 0x643e, 0x9cc9, 0x8d40, 0xbfdb, 0xae52, 0xdaed,
@@ -68,112 +146,8 @@ public class PrintUtil {
             0xb0a3, 0x8238, 0x93b1, 0x6b46, 0x7acf, 0x4854, 0x59dd, 0x2d62,
             0x3ceb, 0x0e70, 0x1ff9, 0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab,
             0xa022, 0x92b9, 0x8330, 0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3,
-    };
+            0x2c6a, 0x1ef1, 0x0f78};
 
-    /**
-     * 支付播报固定语音字节数组
-     *
-     * @param imeiStr  IMEI设备唯一标识
-     * @param msgId    交易序列号，不大于32字节，保证唯一
-     * @param moneyStr 播报金额，最多两位小数
-     * @param payType  支付类型
-     * @return
-     */
-    public static byte[] getStaticVoiceBytes(String imeiStr, String msgId, String moneyStr, int payType) {
-        return getStaticVoiceStr(imeiStr, msgId, moneyStr, payType).getBytes();
-    }
-
-    /**
-     * 支付播报固定语音字符串
-     *
-     * @param imeiStr  IMEI设备唯一标识
-     * @param msgId    交易序列号，不大于32字节，保证唯一
-     * @param moneyStr 播报金额，最多两位小数
-     * @param payType  支付类型
-     * @return
-     */
-    public static String getStaticVoiceStr(String imeiStr, String msgId, String moneyStr, int payType) {
-        return imeiStr + "|1007|" + msgId + "|" + moneyStr + "|" + payType;
-    }
-
-    /**
-     * 获取打印内容，适用于云打印机
-     * 多联打印指令
-     * （16进制格式）
-     * 1E 10 multi_cnt len_MSB len_LSB N1 N2 N3 … Nk 1B 63 CRC16_MSB CRC16_LSB
-     * <p>
-     * 1E 10: 固定头
-     * multi_cnt: 重复打印次数
-     * len_MSB: 有效数据长度, 高位字节, (有效数据长度包含打印内容和标识码和CRC16校验字节)
-     * len_LSB: 有效数据长度, 低位字节, (有效数据长度包含打印内容和标识码和CRC16校验字节)
-     * N1 N2 N3 … Nk 打印内容
-     * k 打印内容长度, k = (len_MSB*256 + len_LSB - 4) (k表示N1 N2 N3 … Nk的长度)
-     * 1B 63: 标识字节
-     * CRC16_MSB: CRC16校验码, 高位字节, 对打印内容进行的CRC16校验, 仅对 N1 N2 N3 … Nk 进行校验
-     * CRC16_LSB: CRC16校验码, 低位字节, 对打印内容进行的CRC16校验, 仅对 N1 N2 N3 … Nk 进行校验
-     * 例如: 打印3联内容为 “ABCD\r\n” 的订单
-     * 1E 10 | 03 | 00 0a | 41 42 43 44 0d 0a | 1B 63 | 6f 90
-     *
-     * @param printText   打印文本
-     * @param pageCount   打印联数
-     * @param encodingStr 编码方式，默认UTF-8
-     * @return
-     */
-    public static byte[] getPrinterBytes(
-            final String printText,
-            final int pageCount,
-            String encodingStr
-    ) throws UnsupportedEncodingException {
-        if (encodingStr.equals("")) {
-            encodingStr = "UTF-8";
-        }
-        byte[] msgByte = printText.getBytes(encodingStr);
-        // 消息数组
-        final byte[] dataByte = new byte[msgByte.length + 9];
-
-        dataByte[0] = 0x1E;
-        dataByte[1] = 0x10;
-        dataByte[2] = (byte) pageCount;// 打印多联
-        // 有效数据长度
-        final int len = dataByte.length - 5;
-        dataByte[3] = (byte) (len >> 8);// 取高八位
-        dataByte[4] = (byte) (len & 0xff);//取低八位
-        // 数据内容
-        System.arraycopy(msgByte, 0, dataByte, 5, msgByte.length);
-        // 标识字节
-        dataByte[dataByte.length - 4] = 0x1b;
-        dataByte[dataByte.length - 3] = 0x63;
-        // 打印内容CRC校验
-        final byte[] dtCRC = getCRC(msgByte);
-        dataByte[dataByte.length - 2] = dtCRC[0];
-        dataByte[dataByte.length - 1] = dtCRC[1];
-        msgByte = dataByte;
-        return msgByte;
-    }
-
-    public static byte[] getPrinterVoiceBytes(
-            String printTxt,
-            int pageCount,
-            String encodingStr,
-            String imeiStr,
-            String msgId,
-            String moneyStr,
-            int payType
-    ) throws UnsupportedEncodingException {
-        byte[] voiceArray = getStaticVoiceBytes(imeiStr, msgId, moneyStr, payType);
-        byte[] printerArray = getPrinterBytes(printTxt, pageCount, encodingStr);
-        byte[] data = new byte[voiceArray.length + printerArray.length];
-        System.arraycopy(printerArray, 0, data, 0, printerArray.length);
-        System.arraycopy(voiceArray, 0, data, printerArray.length, voiceArray.length);
-        return data;
-    }
-
-    /**
-     * 查表法性能更优
-     *
-     * @param bytes 字符串转成的byte数组
-     * @return crc字节数组
-     */
     private static byte[] getCRC(byte[] bytes) {
         int crc = 0xFFFF; // 初始值
         for (byte b : bytes) {
@@ -185,6 +159,8 @@ public class PrintUtil {
         return b;
     }
 
+    private static final char[] HEXES = {'0', '1', '2', '3', '4', '5', '6',
+            '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
      * byte数组 转换成 16进制小写字符串
@@ -199,5 +175,35 @@ public class PrintUtil {
             hex.append(HEXES[b & 0x0F]);
         }
         return hex.toString();
+    }
+
+    public static void main(String[] args) throws UnsupportedEncodingException {
+        // 发送打印小票机请求
+        String whj = LocalDateTimeUtil.format(LocalDateTime.now(), DatePattern.CHINESE_DATE_TIME_PATTERN);
+        String ticketInfo =
+                "________________________________"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "卡号：kh123456" + "\r\n"
+                        + "时间：" + whj + "\r\n"
+                        + "时间：" + whj + "\r\n"
+                        + "时间：" + whj + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "________________________________"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+
+                ;
+
+        byte[] printerBytes = PrintUtil.getPrinterBytes(ticketInfo, 1, "");
+        // for (byte printerByte : printerBytes) {
+        //     System.out.print(printerByte);
+        // }
+        System.out.println(bytes2Hex(printerBytes));
     }
 }

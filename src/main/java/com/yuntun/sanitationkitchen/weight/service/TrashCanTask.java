@@ -7,8 +7,6 @@ import com.yuntun.sanitationkitchen.model.entity.TrashCan;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
-import com.yuntun.sanitationkitchen.weight.mqtt.MqttSenderUtil;
-import com.yuntun.sanitationkitchen.weight.mqtt.constant.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
-import java.util.stream.Collectors;
 
 /**
  * @author wujihong
@@ -39,8 +36,8 @@ public class TrashCanTask {
      * @param weightList
      * @param ticketBill
      */
-    public static void resolveTrashCan(ConcurrentHashMap<String, ScheduledFuture> task, String deviceNumber, String trashCanEPC, String driverEPC,
-                  List<Double> weightList, TicketBill ticketBill) {
+    public static void resolveTrashCan(ConcurrentHashMap<String, ScheduledFuture<?>> task, String deviceNumber, String trashCanEPC, String driverEPC,
+                                       List<Double> weightList, TicketBill ticketBill) {
         try {
             // 根据DTU设备号，获取车牌号
             Vehicle vehicleByDTU = myService.getVehicleByDTU(deviceNumber);
@@ -54,23 +51,25 @@ public class TrashCanTask {
             Driver driverInfo = myService.getDriverInfo(driverEPC);
             // 获取垃圾桶称重结果
             Double weightResult = myService.getTrashWeight(weightList, trashCanInfo);
-            ticketBill.setWeight(weightResult+"kg");
+            ticketBill.setWeight(weightResult + "kg");
             String ticketBillStr = JSONObject.toJSONStringWithDateFormat(ticketBill, "yyyy-MM-dd HH:mm:ss");
 
             logger.info("小票机打印垃圾桶称重结果：{}", ticketBillStr);
-            // mqtt推送小票机内容
-            MqttSenderUtil.getMqttSender().sendToMqtt(MqttTopicConst.TICKET_MACHINE, ticketBillStr);
+
             // 生成垃圾桶流水单
-            myService.generateTrashWeightSerial(weightList,trashCanInfo, driverInfo);
+            myService.generateTrashWeightSerial(weightList, trashCanInfo, driverInfo);
+
+            // mqtt推送小票机内容
+            myService.send2TicketText(ticketBill, deviceNumber);
         } catch (ServiceException ex) {
             logger.error(ex.getMsg());
         } finally {
             // 清空此次称重缓存
-            RedisUtils.delKey("sk:"+deviceNumber);
-            RedisUtils.delKey("sk:"+deviceNumber+"_trashCanEPC");
-            RedisUtils.delKey("sk:"+deviceNumber+"_driverEPC");
-            RedisUtils.delKey("sk:"+deviceNumber+"_weight");
-            RedisUtils.delKey("sk:"+deviceNumber+"_ticketBill");
+            RedisUtils.delKey("sk:" + deviceNumber);
+            RedisUtils.delKey("sk:" + deviceNumber + "_trashCanEPC");
+            RedisUtils.delKey("sk:" + deviceNumber + "_driverEPC");
+            RedisUtils.delKey("sk:" + deviceNumber + "_weight");
+            RedisUtils.delKey("sk:" + deviceNumber + "_ticketBill");
 
             // 取消任务(完成称重)
             if (task.get(deviceNumber) != null) {
@@ -79,4 +78,6 @@ public class TrashCanTask {
             task.remove(deviceNumber);
         }
     }
+
+
 }

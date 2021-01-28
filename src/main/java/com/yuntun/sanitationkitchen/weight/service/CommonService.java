@@ -1,5 +1,8 @@
 package com.yuntun.sanitationkitchen.weight.service;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.LocalDateTimeUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.exception.ServiceException;
 import com.yuntun.sanitationkitchen.mapper.*;
@@ -7,37 +10,37 @@ import com.yuntun.sanitationkitchen.model.entity.*;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
-import com.yuntun.sanitationkitchen.weight.entity.G780Data;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
 import com.yuntun.sanitationkitchen.weight.resolve.ResolveProtocol;
+import com.yuntun.sanitationkitchen.weight.util.MqttTool;
 import com.yuntun.sanitationkitchen.weight.util.ObjectCopy;
-import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
+import com.yuntun.sanitationkitchen.weight.util.PrintUtil;
 import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
-import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
+import io.lettuce.core.RedisURI;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * @author wujihong
  */
 @Component
-@Slf4j
 public class CommonService {
 
     public static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+    private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
 
     @Autowired
     private List<ResolveProtocol> resolveProtocolList;
@@ -68,6 +71,9 @@ public class CommonService {
 
     @Autowired
     private TicketMachineMapper ticketMachineMapper;
+
+    @Autowired
+    MqttTool mqttTool;
 
     public static final String DRIVER = "driver";
 
@@ -197,7 +203,7 @@ public class CommonService {
             throw new ServiceException("rfid的epc号不能为空！");
         }
 
-        System.out.println("epc--"+epc);
+        System.out.println("epc--" + epc);
         Integer driverCount = driverMapper.selectCount(new QueryWrapper<Driver>().lambda().eq(Driver::getRfid, epc));
         if (driverCount != null && driverCount != 0) {
             return DRIVER;
@@ -242,7 +248,7 @@ public class CommonService {
         log.info("开始解析数据！...resolve");
         SKDataBody skDataBody = new SKDataBody();
 
-        for (ResolveProtocol resolveProtocol:resolveProtocolList) {
+        for (ResolveProtocol resolveProtocol : resolveProtocolList) {
             SKDataBody resolve = resolveProtocol.resolveAll(dataBody);
             // 拷贝
             ObjectCopy.copyNotNullObject(resolve, skDataBody);
@@ -260,11 +266,11 @@ public class CommonService {
      * @param epc
      * @param rfidType
      */
-    public void disposeEPC(ChannelHandlerContext ctx, byte[] bytes, String deviceNumber, String epc ,String rfidType) {
+    public void disposeEPC(ChannelHandlerContext ctx, byte[] bytes, String deviceNumber, String epc, String rfidType) {
         // 垃圾桶
         if (CommonService.TRASH.equals(rfidType)) {
             // 存储垃圾桶的epc
-            RedisUtils.setValue("sk:"+deviceNumber+"_trashCanEPC", epc);
+            RedisUtils.setValue("sk:" + deviceNumber + "_trashCanEPC", epc);
             log.info("DTU设备号为:{} 对垃圾桶下发数据采集指令！", deviceNumber);
             // 垃圾桶数据采集指令
             ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
@@ -272,11 +278,11 @@ public class CommonService {
 
         // 车辆
         if (CommonService.VEHICLE.equals(rfidType)) {
-            // 根据车辆EPC，去生成小票机
+            // 根据车辆EPC，去生成小票机流水信息
             TicketBill ticketBill = getTicketBillByVehicleEPC(epc, deviceNumber);
             log.info("ticketBill:{}", ticketBill);
-            RedisUtils.setValue("sk:"+deviceNumber+"_vehicleEPC", epc);
-            RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
+            RedisUtils.setValue("sk:" + deviceNumber + "_vehicleEPC", epc);
+            RedisUtils.setValue("sk:" + deviceNumber + "_ticketBill", ticketBill);
 
             // 对地磅下发数据采集指令（读取毛重）
             log.info("DTU设备号为:{} 对地磅下发数据采集指令！", deviceNumber);
@@ -290,24 +296,24 @@ public class CommonService {
 
             // 将此次小票机信息存入到redis中--直到称重结束，再打印小票机
             log.info("这是司机-------------");
-            TicketBill redisTicketBill = (TicketBill)RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
+            TicketBill redisTicketBill = (TicketBill) RedisUtils.getValue("sk:" + deviceNumber + "_ticketBill");
             if (redisTicketBill != null) {
                 BeanUtils.copyProperties(redisTicketBill, ticketBill);
             }
-            RedisUtils.setValue("sk:"+deviceNumber+"_ticketBill", ticketBill);
-            RedisUtils.setValue("sk:"+deviceNumber+"_driverEPC", epc);
+            RedisUtils.setValue("sk:" + deviceNumber + "_ticketBill", ticketBill);
+            RedisUtils.setValue("sk:" + deviceNumber + "_driverEPC", epc);
         }
     }
 
     // 生成磅单
-    public void generatePoundBill (String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) throws ServiceException {
+    public void generatePoundBill(String deviceNumber, String vehicleEPC, String driverEPC, Double boundWeight) throws ServiceException {
         PoundBill poundBill = new PoundBill();
 
         Vehicle vehicleInfo = getVehicleInfo(vehicleEPC);
 
         String format = dtf.format(LocalDateTime.now());
         // 获取流水号
-        poundBill.setSerialCode(vehicleInfo.getNumberPlate()+"-"+format);
+        poundBill.setSerialCode(vehicleInfo.getNumberPlate() + "-" + format);
 
         // 获取所属机构信息
         // 根据地磅的网络设备编号去查询地磅所属机构信息
@@ -337,7 +343,7 @@ public class CommonService {
         poundBill.setTare(Double.valueOf(vehicleInfo.getWeight().toString()));
 
         // 获取净重(单位：kg)
-        poundBill.setNetWeight(boundWeight-poundBill.getTare());
+        poundBill.setNetWeight(boundWeight - poundBill.getTare());
 
         poundBill.setUid(SnowflakeUtil.getUnionId());
         log.info("poundBill地磅流水:{}", poundBill);
@@ -383,9 +389,62 @@ public class CommonService {
 
     public Double getTrashWeight(List<Double> weightList, TrashCan trashCanInfo) {
         Double trashCanTareWeight = trashCanInfo.getWeight();
-        Double weightResult = weightList.stream().filter(weight -> weight > trashCanTareWeight).collect(Collectors.averagingDouble(x -> x-trashCanTareWeight));
+        Double weightResult = weightList.stream().filter(weight -> weight > trashCanTareWeight).collect(Collectors.averagingDouble(x -> x - trashCanTareWeight));
         log.info("称重结果：{}kg", weightResult);
         return weightResult;
     }
 
+    /**
+     * 发送到小票机打印
+     *
+     * @param ticketBill   小票信息
+     * @param deviceNumber dtu卡号
+     */
+    public void send2TicketText(TicketBill ticketBill, String deviceNumber) {
+        TicketMachine ticketMachine = this.getTicketMachineByDTU(deviceNumber);
+        String trashCanEPC = RedisUtils.getString("sk:" + deviceNumber + "_trashCanEPC");
+        TrashCan trashCanInfo=new TrashCan();
+        if(trashCanEPC!=null){
+             trashCanInfo = this.getTrashCanInfo(trashCanEPC);
+        }else{
+            log.warn("未找到缓存中的垃圾桶，deviceNumber:"+deviceNumber);
+        }
+        log.info("开始发送小票机打印信息,ticketBill"+ JSON.toJSONString(ticketBill));
+        // 发送打印小票机请求
+        String format = LocalDateTimeUtil.format(ticketBill.getTime(), DatePattern.CHINESE_DATE_TIME_PATTERN);
+        String ticketInfo =
+                "________________________________"
+                        + "\r\n"
+                        + "\r\n"
+                        + "          垃圾桶称重结果\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "司机：" + ticketBill.getDriverName() + "\r\n"
+                        + "\r\n"
+                        + "车牌号：" + ticketBill.getPlateNo() + "\r\n"
+                        + "\r\n"
+                        + "称重重量：" + ticketBill.getWeight() + "\r\n"
+                        + "\r\n"
+                        + "垃圾桶RFID：" + trashCanInfo.getRfid() + "\r\n"
+                        + "\r\n"
+                        + "垃圾桶地址：" + trashCanInfo.getAddress() + "\r\n"
+                        + "\r\n"
+                        + "时间：" + format + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "________________________________"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n"
+                        + "\r\n";
+        byte[] printerBytes = PrintUtil.getPrinterBytes(ticketInfo, 1, "utf-8");
+        String payload = PrintUtil.bytes2Hex(printerBytes);
+        log.info("结果:{}", payload);
+        log.info("小票机发送的数据hex:{}", payload);
+        String deviceCode = ticketMachine.getDeviceCode();
+        log.info("小票机发送的主题:{}", deviceCode);
+        // MqttSenderUtil.getMqttSender().sendToMqtt(deviceCode, payload);
+         mqttTool.publish(deviceCode, printerBytes);
+    }
 }

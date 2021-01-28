@@ -26,11 +26,6 @@ public class App {
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
-        try {
-            new NettyServer().bind(8088);
-        } catch (Exception e) {
-            log.error("netty启动失败", e);
-        }
     }
 
 }

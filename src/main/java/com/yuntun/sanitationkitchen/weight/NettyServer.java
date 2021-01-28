@@ -9,12 +9,37 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import com.yuntun.sanitationkitchen.weight.channel.NettyServerChannelInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 /**
  * netty的server
  *
  */
+@Component
 public class NettyServer {
+
+    private static final Logger log = LoggerFactory.getLogger(Thread.currentThread().getStackTrace()[1].getClassName());
+
+    @PostConstruct
+    public void init(){
+        try {
+            new Thread(() -> {
+                try {
+                    this.bind(8088);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+            log.info("netty server 启动成功，端口号8088");
+        } catch (Exception e) {
+            log.error("netty启动失败", e);
+        }
+
+    }
 
     public void bind(int port) throws Exception {
 
@@ -54,7 +79,7 @@ public class NettyServer {
              */
             serverBootstrap = serverBootstrap.childHandler(new NettyServerChannelInitializer<SocketChannel>());
 
-            System.out.println("netty server start success!");
+
             /**
              * 绑定端口，同步等待成功
              */
@@ -65,7 +90,7 @@ public class NettyServer {
             f.channel().closeFuture().sync();
 
         } catch (InterruptedException e) {
-
+            log.error("ex",e);
         } finally {
             /**
              * 退出，释放线程池资源

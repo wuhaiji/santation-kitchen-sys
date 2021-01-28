@@ -39,13 +39,14 @@ public class ByteUtil {
         return b;
     }
 
+
     /**
      * byte[] 转 int 低字节在前（低字节序）
      *
      * @param b 目标数组
      * @return 结果整型
      */
-    public int byteToIntLH(byte[] b) {
+    public static int byteToIntLH(byte[] b) {
         int res = 0;
         for (int i = 0; i < b.length; i++) {
             res += (b[i] & 0xff) << (i * 8);

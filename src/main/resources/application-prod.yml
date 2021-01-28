@@ -48,8 +48,8 @@ spring:
 
 # sql 打印
 mybatis-plus:
-  #  configuration:
-  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-delete-field: deleted  # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
@@ -71,8 +71,8 @@ id:
 # mqtt 配置
 mqtt:
   host: tcp://mqtt:1883
-  username: xxx
-  password: xxx
+  username: sk-app
+  password: sk-app
 
 #来源云平台
 lyy:
