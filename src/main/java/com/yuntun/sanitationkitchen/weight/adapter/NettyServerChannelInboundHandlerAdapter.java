@@ -5,17 +5,20 @@ import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.weight.config.UDCDataHeaderType;
 import com.yuntun.sanitationkitchen.weight.entity.SKDataBody;
 import com.yuntun.sanitationkitchen.weight.entity.TicketBill;
-import com.yuntun.sanitationkitchen.weight.mqtt.MqttTopicConst;
 import com.yuntun.sanitationkitchen.weight.propertise.TrashDataPackageFormat;
 import com.yuntun.sanitationkitchen.weight.service.CommonService;
 import com.yuntun.sanitationkitchen.weight.service.TrashCanTask;
-import com.yuntun.sanitationkitchen.weight.util.*;
+import com.yuntun.sanitationkitchen.weight.util.PrintUtil;
+import com.yuntun.sanitationkitchen.weight.util.SpringUtil;
+import com.yuntun.sanitationkitchen.weight.util.UDCDataResponse;
+import com.yuntun.sanitationkitchen.weight.util.UDCDataUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,17 +106,23 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ByteBuf bytebuf = (ByteBuf) msg;
-        byte[] bytes = new byte[bytebuf.readableBytes()];
-        bytebuf.readBytes(bytes);
-        printBytes(bytes);
+        byte[] bytes;
+        ByteBuf bytebuf = null;
+        try {
+            bytebuf = (ByteBuf) msg;
+            bytes = new byte[bytebuf.readableBytes()];
+            bytebuf.readBytes(bytes);
+            printBytes(bytes);
+        } finally {
+            ReferenceCountUtil.release(bytebuf);
+        }
 
         // 判断它是否是UDC协议
         if (udcDataUtil.getFlag(bytes) == UDCDataHeaderType.PACKAGE_SYMBOL) {
             // 判断它是否是登录
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.LOGIN_PACKAGE) {
                 logger.info("登录响应！");
-                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
+                ctx.writeAndFlush(Unpooled.copiedBuffer(UDCDataResponse.loginResponse(bytes)));
             }
 
             // 判断它是否是数据上报
@@ -127,7 +136,7 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
                 logger.info("resolve:{}", resolve);
 
                 Set<String> epcs = resolve.getEpcs();
-                logger.info("epcs:{}",epcs);
+                logger.info("epcs:{}", epcs);
                 if (epcs != null) {
                     for (String epc : epcs) {
                         String rfidType;
@@ -228,13 +237,13 @@ public class NettyServerChannelInboundHandlerAdapter extends ChannelInboundHandl
             // 判断它是否是心跳
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.HEART_PACKAGE) {
                 logger.info("进入了心跳响应！");
-                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.heartResponse(bytes)));
+                ctx.writeAndFlush(Unpooled.copiedBuffer(UDCDataResponse.heartResponse(bytes)));
             }
 
             // 判断它是否是主动下线报文
             if (udcDataUtil.getDataPackageType(bytes) == UDCDataHeaderType.OFFLINE_PACKAGE) {
                 logger.info("进入了下线响应！");
-                ctx.write(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
+                ctx.writeAndFlush(Unpooled.copiedBuffer(UDCDataResponse.offlineResponse(bytes)));
             }
 
         } else {

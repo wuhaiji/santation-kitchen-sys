@@ -273,7 +273,7 @@ public class CommonService {
             RedisUtils.setValue("sk:" + deviceNumber + "_trashCanEPC", epc);
             log.info("DTU设备号为:{} 对垃圾桶下发数据采集指令！", deviceNumber);
             // 垃圾桶数据采集指令
-            ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
+            ctx.writeAndFlush(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.trashCollectOrder)));
         }
 
         // 车辆
@@ -286,7 +286,7 @@ public class CommonService {
 
             // 对地磅下发数据采集指令（读取毛重）
             log.info("DTU设备号为:{} 对地磅下发数据采集指令！", deviceNumber);
-            ctx.write(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.BoundCollectOrder)));
+            ctx.writeAndFlush(Unpooled.copiedBuffer(UDCDataResponse.response(bytes, UDCDataHeaderType.SEND_PACKAGE, UDCDataHeaderType.BoundCollectOrder)));
         }
 
         // 司机
@@ -416,7 +416,7 @@ public class CommonService {
                 "________________________________"
                         + "\r\n"
                         + "\r\n"
-                        + "          垃圾桶称重结果\r\n"
+                        + "        垃圾桶称重结果\r\n"
                         + "\r\n"
                         + "\r\n"
                         + "司机：" + ticketBill.getDriverName() + "\r\n"

@@ -1,5 +1,6 @@
 package com.yuntun.sanitationkitchen.vehicle.api;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yuntun.sanitationkitchen.config.Scheduled.ScheduledTask;
 import com.yuntun.sanitationkitchen.model.entity.Vehicle;
@@ -66,6 +67,15 @@ public class FuelDayCountTask implements ScheduledTask {
                             .orderByAsc("create_time")
             );
         }
+
+        //查询出昨天所有车辆最后剩余的油量，方便今天计算油耗累加值
+        Map<String, VehicleDayFuelCount> yesTodayFuelCountMap = iVehicleDayFuelCountService.list(
+                new LambdaQueryWrapper<VehicleDayFuelCount>()
+                        .in(VehicleDayFuelCount::getPlate, plates)
+                        .eq(VehicleDayFuelCount::getDate, LocalDate.now().plusDays(-1))
+        ).parallelStream().collect(Collectors.toMap(VehicleDayFuelCount::getPlate, i -> i));
+
+
         //按车辆分类
         Map<String, List<VehicleRealTimeStatus>> statusGroupByPlateMap = vehicleRealTimeStatuses.parallelStream()
                 .collect(Collectors.groupingBy(VehicleRealTimeStatus::getPlate));
@@ -74,6 +84,10 @@ public class FuelDayCountTask implements ScheduledTask {
         ArrayList<VehicleDayFuelCount> vehicleDayFuelCounts = new ArrayList<>();
         for (Map.Entry<String, List<VehicleRealTimeStatus>> entry : statusGroupByPlateMap.entrySet()) {
             List<VehicleRealTimeStatus> value = entry.getValue();
+
+            //找出昨天的最后油耗
+            String plate = entry.getKey();
+            VehicleDayFuelCount yesTodayVehicleDayFuelCount = yesTodayFuelCountMap.get(plate);
 
             //当天消耗量
             double fuelConsume = 0;
@@ -87,8 +101,15 @@ public class FuelDayCountTask implements ScheduledTask {
             //当天最后剩余油量
             double fuelRemaining = 0;
 
-            if (EptUtil.isNotEmpty(vehicleRealTimeStatuses)) {
-                String oil = vehicleRealTimeStatuses.get(vehicleRealTimeStatuses.size() - 1).getOil();
+            if (yesTodayVehicleDayFuelCount != null) {
+                lastOil = yesTodayVehicleDayFuelCount.getFuelRemaining();
+            } else {
+                log.warn("车号{}未找到日期{}前一天的剩余油耗，默认为0L", plate, LocalDate.now());
+            }
+
+            //获取当天11：30最后的油量值
+            if (EptUtil.isNotEmpty(value)) {
+                String oil = value.get(value.size() - 1).getOil();
                 if (EptUtil.isNotEmpty(oil)) {
                     fuelRemaining = Double.parseDouble(oil);
                 }
@@ -112,13 +133,13 @@ public class FuelDayCountTask implements ScheduledTask {
             VehicleDayFuelCount vehicleDayFuelCount = new VehicleDayFuelCount()
                     .setDate(now)
                     .setFuelRemaining(fuelRemaining)
-                    .setPlate(entry.getKey())
+                    .setPlate(plate)
                     .setFuelConsume(fuelConsume)
                     .setFuelAdd(fuelAdd);
             vehicleDayFuelCounts.add(vehicleDayFuelCount);
         }
 
-        iVehicleDayFuelCountService.saveBatch(vehicleDayFuelCounts);
+        // iVehicleDayFuelCountService.saveBatch(vehicleDayFuelCounts);
         log.info("统计每日油耗完成>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
 }

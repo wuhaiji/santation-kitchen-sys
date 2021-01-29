@@ -23,6 +23,7 @@ import com.yuntun.sanitationkitchen.util.ErrorUtil;
 import com.yuntun.sanitationkitchen.util.RSAUtils;
 import com.yuntun.sanitationkitchen.util.RedisUtils;
 import com.yuntun.sanitationkitchen.util.SnowflakeUtil;
+import com.yuntun.sanitationkitchen.vehicle.api.FuelDayCountTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -261,5 +262,12 @@ public class LoginController {
         return passwordDecrypt;
     }
 
+    @Autowired
+    FuelDayCountTask fuelDayCountTask;
+    @GetMapping("/start/count/day/fuel")
+    public Result<?> list()  {
+        fuelDayCountTask.execute();
+        return Result.ok();
+    }
 
 }

@@ -9,6 +9,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import com.yuntun.sanitationkitchen.weight.channel.NettyServerChannelInitializer;
+import io.netty.util.ResourceLeakDetector;
+import io.netty.util.ResourceLeakTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -28,6 +30,7 @@ public class NettyServer {
     public void init(){
         try {
             new Thread(() -> {
+                // ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID);
                 try {
                     this.bind(8088);
                 } catch (Exception e) {
